@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cmdline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\lafe_err.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\test_utils\test_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\test_utils\test_main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_basic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_cmdline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_Z.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_absolute_paths.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_bz2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_grz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_gz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_lrz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_lz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_lz4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_lzma.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_lzo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_xz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_extract_cpio_zstd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_format_newc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_gcpio_compat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_missing_file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_B_upper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_C_upper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_J_upper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_L_upper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_Z_upper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_a.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_b64encode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_c.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_d.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_f.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_grzip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_help.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_l.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_lrzip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_lz4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_lzma.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_lzop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_m.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_passphrase.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_t.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_u.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_uuencode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_version.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_xz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_y.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_z.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_option_zstd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_owner_parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_passthrough_dotdot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test_passthrough_reverse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\test\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{6E764DE1-49D0-312E-9BE3-DEF2DB1090CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{214FA7F6-35FC-309B-97D2-A54FE3654AE8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

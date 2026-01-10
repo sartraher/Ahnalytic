@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cmdline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cpio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\lafe_err.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\line_reader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\passphrase.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cpio_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cpio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cpio_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\lafe_err.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\lafe_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\line_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\libarchive_fe\passphrase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\cpio_windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\build\Ahnalytic\3rdParty\libarchive\cpio\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{6E764DE1-49D0-312E-9BE3-DEF2DB1090CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{214FA7F6-35FC-309B-97D2-A54FE3654AE8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

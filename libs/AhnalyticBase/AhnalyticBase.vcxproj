@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{083d0b35-ab94-482b-bc6b-62f930799cea}</ProjectGuid>
+    <RootNamespace>AhnalyticBase</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)\out\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\out\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)\out\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\out\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;AHNALYTICBASE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;AHNALYTICBASE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>LIBARCHIVE_STATIC;_DEBUG;AHNALYTICBASE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);AHNALYTICBASE_EXPORTS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\zlib\build;$(SolutionDir)\3rdParty\zlib;$(SolutionDir)\3rdParty\fastpfor;$(SolutionDir)\3rdParty\zstd\lib;$(SolutionDir)\3rdParty\lz4\lib;$(SolutionDir)\3rdParty\lzma\C;$(SolutionDir)\3rdParty\libbsc\libbsc;$(SolutionDir)\3rdParty;$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\libs;$(SolutionDir)\3rdParty\thread-pool\include;$(SolutionDir)\3rdParty\soci\build\include;$(SolutionDir)\3rdParty\soci\include;$(SolutionDir)\3rdParty\expat\Source\lib;$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\3rdParty\cpp-httplib;$(SolutionDir)\3rdParty\json\include;$(SolutionDir)\3rdParty\openssl-3.5.4\include;$(SolutionDir)\3rdParty\libarchive\libarchive</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>archive_static.lib;libexpat.lib;Tree-Sitter.lib;Tree-Sitter-CPP.lib;soci_sqlite3_4_1.lib;soci_odbc_4_1.lib;soci_core_4_1.lib;libbsc.lib;libzstd.lib;LzmaLib.lib;zlibstatic.lib;FastPFor.lib;liblz4_static.lib;libssl_static.lib;libcrypto_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\3rdParty\expat\Bin;$(SolutionDir)\3rdParty;$(SolutionDir)\out\bin\$(Platform)\$(Configuration)\;$(SolutionDir)\out\lib\$(Platform)\$(Configuration)\;$(SolutionDir)\3rdParty\openssl-3.5.4</AdditionalLibraryDirectories>
+      <StackReserveSize>10</StackReserveSize>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(SolutionDir)\3rdParty\expat\Bin\libexpat.dll $(SolutionDir)\out\bin\$(Platform)\$(Configuration)\</Command>
+      <Message>copy /Y $(SolutionDir)\3rdParty\expat\Bin\libexpat.dll $(SolutionDir)\out\bin\$(Platform)\$(Configuration)\</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>LIBARCHIVE_STATIC;NDEBUG;AHNALYTICBASE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);AHNALYTICBASE_EXPORTS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\zlib\build;$(SolutionDir)\3rdParty\zlib;$(SolutionDir)\3rdParty\fastpfor;$(SolutionDir)\3rdParty\zstd\lib;$(SolutionDir)\3rdParty\lz4\lib;$(SolutionDir)\3rdParty\lzma\C;$(SolutionDir)\3rdParty\libbsc\libbsc;$(SolutionDir)\3rdParty;$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\libs;$(SolutionDir)\3rdParty\thread-pool\include;$(SolutionDir)\3rdParty\soci\build\include;$(SolutionDir)\3rdParty\soci\include;$(SolutionDir)\3rdParty\expat\Source\lib;$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\3rdParty\cpp-httplib;$(SolutionDir)\3rdParty\json\include;$(SolutionDir)\3rdParty\openssl-3.5.4\include;$(SolutionDir)\3rdParty\libarchive\libarchive</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>archive_static.lib;libexpat.lib;Tree-Sitter.lib;Tree-Sitter-CPP.lib;soci_sqlite3_4_1.lib;soci_odbc_4_1.lib;soci_core_4_1.lib;libbsc.lib;libzstd.lib;LzmaLib.lib;zlibstatic.lib;FastPFor.lib;liblz4_static.lib;libssl_static.lib;libcrypto_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\3rdParty\expat\Bin;$(SolutionDir)\3rdParty;$(SolutionDir)\out\bin\$(Platform)\$(Configuration)\;$(SolutionDir)\out\lib\$(Platform)\$(Configuration)\;$(SolutionDir)\3rdParty\openssl-3.5.4</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <StackReserveSize>10</StackReserveSize>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(SolutionDir)\3rdParty\expat\Bin\libexpat.dll $(SolutionDir)\out\bin\$(Platform)\$(Configuration)\</Command>
+      <Message>copy /Y $(SolutionDir)\3rdParty\expat\Bin\libexpat.dll $(SolutionDir)\out\bin\$(Platform)\$(Configuration)\</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="bsc.hpp" />
+    <ClInclude Include="compressionManager.hpp" />
+    <ClInclude Include="compressor.hpp" />
+    <ClInclude Include="Database.hpp" />
+    <ClInclude Include="datadump.hpp" />
+    <ClInclude Include="deltaModifier.hpp" />
+    <ClInclude Include="diagnostic.hpp" />
+    <ClInclude Include="enviroment.hpp" />
+    <ClInclude Include="export.hpp" />
+    <ClInclude Include="FileDatabase.hpp" />
+    <ClInclude Include="github.hpp" />
+    <ClInclude Include="githubcrawler.hpp" />
+    <ClInclude Include="GitHubRepoDatabase.hpp" />
+    <ClInclude Include="gzip.hpp" />
+    <ClInclude Include="huffmanCompressor.hpp" />
+    <ClInclude Include="inireader.hpp" />
+    <ClInclude Include="lz4Compressor.hpp" />
+    <ClInclude Include="lz4Helper.hpp" />
+    <ClInclude Include="lzma.hpp" />
+    <ClInclude Include="modifier.hpp" />
+    <ClInclude Include="noneModifier.hpp" />
+    <ClInclude Include="pforCompressor.hpp" />
+    <ClInclude Include="RateLimit.hpp" />
+    <ClInclude Include="ScanDatabase.hpp" />
+    <ClInclude Include="SnippedDatabase.hpp" />
+    <ClInclude Include="SourceScanner.hpp" />
+    <ClInclude Include="SourceStructureTree.hpp" />
+    <ClInclude Include="sse2asx2memcmp.hpp" />
+    <ClInclude Include="StackExchangeExtractDatabase.hpp" />
+    <ClInclude Include="stackoverflow.hpp" />
+    <ClInclude Include="Tree.hpp" />
+    <ClInclude Include="TreeSearch.hpp" />
+    <ClInclude Include="updateserver.hpp" />
+    <ClInclude Include="vsencode.hpp" />
+    <ClInclude Include="zstd.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bsc.cpp" />
+    <ClCompile Include="compressData.cpp" />
+    <ClCompile Include="compressData.hpp" />
+    <ClCompile Include="compressionManager.cpp" />
+    <ClCompile Include="Database.cpp" />
+    <ClCompile Include="datadump.cpp" />
+    <ClCompile Include="deltaModifier.cpp" />
+    <ClCompile Include="diagnostic.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="enviroment.cpp" />
+    <ClCompile Include="FileDatabase.cpp" />
+    <ClCompile Include="github.cpp" />
+    <ClCompile Include="githubcrawler.cpp" />
+    <ClCompile Include="GitHubRepoDatabase.cpp" />
+    <ClCompile Include="gzip.cpp" />
+    <ClCompile Include="huffmanCompressor.cpp" />
+    <ClCompile Include="inireader.cpp" />
+    <ClCompile Include="lz4Compressor.cpp" />
+    <ClCompile Include="lz4Helper.cpp" />
+    <ClCompile Include="lzma.cpp" />
+    <ClCompile Include="pforCompressor.cpp" />
+    <ClCompile Include="RateLimit.cpp" />
+    <ClCompile Include="ScanDatabase.cpp" />
+    <ClCompile Include="scanserver.cpp" />
+    <ClCompile Include="SnippedDatabase.cpp" />
+    <ClCompile Include="SourceScanner.cpp" />
+    <ClCompile Include="SourceStructureTree.cpp" />
+    <ClCompile Include="StackExchangeExtractDatabase.cpp" />
+    <ClCompile Include="stackoverflow.cpp" />
+    <ClCompile Include="TreeSearch.cpp" />
+    <ClCompile Include="updateserver.cpp" />
+    <ClCompile Include="vsencode.cpp" />
+    <ClCompile Include="zstd.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="scanserver.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

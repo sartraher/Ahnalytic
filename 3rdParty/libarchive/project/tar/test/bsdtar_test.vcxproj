@@ -1,0 +1,458 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BE918373-57E5-38D9-A423-AA8C8E5B81FA}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>bsdtar_test</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\bin\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bsdtar_test.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bsdtar_test</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\bin\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bsdtar_test.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bsdtar_test</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\bin\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">bsdtar_test.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">bsdtar_test</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\bin\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">bsdtar_test.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">bsdtar_test</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w14062 /w14254 /w14295 /w14296 /w14389 /w14505 /w14514 /w14702 /w14706</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/Debug/bsdtar_test.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/build/Ahnalytic/3rdParty/libarchive/project/bin/Debug/bsdtar_test.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/Release/bsdtar_test.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/build/Ahnalytic/3rdParty/libarchive/project/bin/Release/bsdtar_test.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/MinSizeRel/bsdtar_test.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/build/Ahnalytic/3rdParty/libarchive/project/bin/MinSizeRel/bsdtar_test.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;LIST_H;HAVE_CONFIG_H;_CRT_SECURE_NO_DEPRECATE;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\build\Ahnalytic\3rdParty\libarchive\libarchive;C:\build\Ahnalytic\3rdParty\libarchive\project;C:\build\Ahnalytic\3rdParty\libarchive\tar\..\libarchive_fe;C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test;C:\build\Ahnalytic\3rdParty\libarchive\test_utils;C:\build\Ahnalytic\3rdParty\libarchive\tar\test;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention></DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImportLibrary>C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/RelWithDebInfo/bsdtar_test.lib</ImportLibrary>
+      <LinkErrorReporting></LinkErrorReporting>
+      <ProgramDataBaseFile>C:/build/Ahnalytic/3rdParty/libarchive/project/bin/RelWithDebInfo/bsdtar_test.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/build/Ahnalytic/3rdParty/libarchive/tar/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/build/Ahnalytic/3rdParty/libarchive -BC:/build/Ahnalytic/3rdParty/libarchive/project --check-stamp-file C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\list.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/build/Ahnalytic/3rdParty/libarchive/tar/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/build/Ahnalytic/3rdParty/libarchive -BC:/build/Ahnalytic/3rdParty/libarchive/project --check-stamp-file C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\list.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/build/Ahnalytic/3rdParty/libarchive/tar/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/build/Ahnalytic/3rdParty/libarchive -BC:/build/Ahnalytic/3rdParty/libarchive/project --check-stamp-file C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\list.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/build/Ahnalytic/3rdParty/libarchive/tar/test/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/build/Ahnalytic/3rdParty/libarchive -BC:/build/Ahnalytic/3rdParty/libarchive/project --check-stamp-file C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\list.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\build\Ahnalytic\3rdParty\libarchive\project\tar\test\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\test_utils\test_utils.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\test_utils\test_main.c" />
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test.h" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_0.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_basic.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_copy.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_crlf_mtree.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_empty_mtree.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_Z.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_bz2.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_grz.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_gz.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_lrz.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_lz.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_lz4.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_lzma.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_lzo.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_xz.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_extract_tar_zstd.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_format_newc.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_help.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_leading_slash.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_list_item.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_missing_file.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_C_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_C_mtree.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_H_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_L_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_O_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_P_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_T_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_U_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_X_upper.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_a.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_acls.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_b.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_b64encode.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_exclude.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_exclude_vcs.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_fflags.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_gid_gname.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_group.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_grzip.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_ignore_zeros.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_j.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_k.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_keep_newer_files.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_lrzip.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_lz4.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_lzma.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_lzop.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_mtime.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_n.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_newer_than.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_nodump.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_older_than.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_owner.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_passphrase.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_q.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_r.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_s.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_safe_writes.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_uid_uname.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_uuencode.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_xattrs.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_xz.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_z.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_option_zstd.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_patterns.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_print_longpath.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_stdio.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_strip_components.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_symlink_dir.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_version.c" />
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\tar\test\test_windows.c" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="C:\build\Ahnalytic\3rdParty\libarchive\project\ZERO_CHECK.vcxproj">
+      <Project>{CF466657-9DF2-353A-A62E-DC34559C919C}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

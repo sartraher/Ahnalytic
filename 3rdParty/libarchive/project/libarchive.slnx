@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Solution>
+	<Configurations>
+		<BuildType Name="Debug"/>
+		<BuildType Name="Release"/>
+		<BuildType Name="MinSizeRel"/>
+		<BuildType Name="RelWithDebInfo"/>
+		<Platform Name="x64"/>
+	</Configurations>
+	<Project Path="ALL_BUILD.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="0e14c7ad-7624-3b83-a077-cb41ad9e7866" DefaultStartup="true">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libarchive/archive.vcxproj"/>
+		<BuildDependency Project="libarchive/archive_static.vcxproj"/>
+		<BuildDependency Project="cat/bsdcat.vcxproj"/>
+		<BuildDependency Project="cat/test/bsdcat_test.vcxproj"/>
+		<BuildDependency Project="cpio/bsdcpio.vcxproj"/>
+		<BuildDependency Project="cpio/test/bsdcpio_test.vcxproj"/>
+		<BuildDependency Project="tar/bsdtar.vcxproj"/>
+		<BuildDependency Project="tar/test/bsdtar_test.vcxproj"/>
+		<BuildDependency Project="libarchive/test/libarchive_test.vcxproj"/>
+	</Project>
+	<Project Path="INSTALL.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="0e8e3e11-37ec-3a11-b617-c5e2669bea29">
+		<BuildDependency Project="ALL_BUILD.vcxproj"/>
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Debug|*" Project="false"/>
+		<Build Solution="Release|*" Project="false"/>
+		<Build Solution="MinSizeRel|*" Project="false"/>
+		<Build Solution="RelWithDebInfo|*" Project="false"/>
+	</Project>
+	<Project Path="RUN_TESTS.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="6f904d78-7499-3bdd-8f55-470c60861032">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<Build Solution="Debug|*" Project="false"/>
+		<Build Solution="Release|*" Project="false"/>
+		<Build Solution="MinSizeRel|*" Project="false"/>
+		<Build Solution="RelWithDebInfo|*" Project="false"/>
+	</Project>
+	<Project Path="ZERO_CHECK.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="cf466657-9df2-353a-a62e-dc34559c919c"/>
+	<Project Path="libarchive/archive.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="21fa73d6-ff00-30e7-a28c-a7df103b4249">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="libarchive/archive_static.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="c062388d-891a-3a52-929e-e8a803dfd91b">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="cat/bsdcat.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="9356a55f-92f3-392c-a980-2b4bf90d12d9">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libarchive/archive_static.vcxproj"/>
+	</Project>
+	<Project Path="cat/test/bsdcat_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="9f176d11-5129-3003-b9f0-27e1dc92d9b7">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="cpio/bsdcpio.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="8c7ec7ed-b362-3094-ba1b-898f1aa26f81">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libarchive/archive_static.vcxproj"/>
+	</Project>
+	<Project Path="cpio/test/bsdcpio_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="6877491c-b03b-3e2f-aee3-6db69fb381da">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="tar/bsdtar.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="b4ba6363-383f-3e5f-895b-7f29134af77f">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libarchive/archive_static.vcxproj"/>
+	</Project>
+	<Project Path="tar/test/bsdtar_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="be918373-57e5-38d9-a423-aa8c8e5b81fa">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+	</Project>
+	<Project Path="libarchive/test/libarchive_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="216927c8-fa97-3589-acc2-6b586375eb8b">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libarchive/archive_static.vcxproj"/>
+	</Project>
+	<Project Path="run_all_tests.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="57bf567e-bce1-3b65-a0eb-dbc594aa90d2">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="cat/test/run_bsdcat_test.vcxproj"/>
+		<BuildDependency Project="cpio/test/run_bsdcpio_test.vcxproj"/>
+		<BuildDependency Project="tar/test/run_bsdtar_test.vcxproj"/>
+		<BuildDependency Project="libarchive/test/run_libarchive_test.vcxproj"/>
+		<Build Solution="Debug|*" Project="false"/>
+		<Build Solution="Release|*" Project="false"/>
+		<Build Solution="MinSizeRel|*" Project="false"/>
+		<Build Solution="RelWithDebInfo|*" Project="false"/>
+	</Project>
+	<Project Path="cat/test/run_bsdcat_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="d63d59ba-f5ac-361a-b5db-e65ca9f81162">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="cat/bsdcat.vcxproj"/>
+		<BuildDependency Project="cat/test/bsdcat_test.vcxproj"/>
+	</Project>
+	<Project Path="cpio/test/run_bsdcpio_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="febc9502-5d4c-3714-97a7-713cb4891b73">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="cpio/bsdcpio.vcxproj"/>
+		<BuildDependency Project="cpio/test/bsdcpio_test.vcxproj"/>
+	</Project>
+	<Project Path="tar/test/run_bsdtar_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="37420b5f-800f-367d-848b-6692c58f0f1e">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="tar/bsdtar.vcxproj"/>
+		<BuildDependency Project="tar/test/bsdtar_test.vcxproj"/>
+	</Project>
+	<Project Path="libarchive/test/run_libarchive_test.vcxproj" Type="8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942" Id="2239a4f1-5b98-3942-ac54-c917f4c66255">
+		<BuildDependency Project="ZERO_CHECK.vcxproj"/>
+		<BuildDependency Project="libarchive/test/libarchive_test.vcxproj"/>
+	</Project>
+</Solution>

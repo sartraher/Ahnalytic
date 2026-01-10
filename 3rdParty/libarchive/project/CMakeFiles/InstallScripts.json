@@ -1,0 +1,17 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/libarchive/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/libarchive/test/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/cat/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/cat/test/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/tar/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/tar/test/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/cpio/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/cpio/test/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/unzip/cmake_install.cmake",
+		"C:/build/Ahnalytic/3rdParty/libarchive/project/unzip/test/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

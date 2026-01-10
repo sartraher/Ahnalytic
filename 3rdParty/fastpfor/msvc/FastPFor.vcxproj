@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{42D8ABA4-FC4E-426C-A833-D64D06081F92}</ProjectGuid>
+    <RootNamespace>FastPFor</RootNamespace>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)\out\lib\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\out\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)\out\lib\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\out\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../headers</AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../headers</AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\bitpacking.cpp" />
+    <ClCompile Include="..\src\bitpackingaligned.cpp" />
+    <ClCompile Include="..\src\bitpackingunaligned.cpp" />
+    <ClCompile Include="..\src\codecfactory.cpp" />
+    <ClCompile Include="..\src\horizontalbitpacking.cpp" />
+    <ClCompile Include="..\src\simdbitpacking.cpp" />
+    <ClCompile Include="..\src\simdunalignedbitpacking.cpp" />
+    <ClCompile Include="..\src\streamvbyte.c" />
+    <ClCompile Include="..\src\varintdecode.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\headers\bitpacking.h" />
+    <ClInclude Include="..\headers\bitpackingaligned.h" />
+    <ClInclude Include="..\headers\bitpackinghelpers.h" />
+    <ClInclude Include="..\headers\bitpackingunaligned.h" />
+    <ClInclude Include="..\headers\blockpacking.h" />
+    <ClInclude Include="..\headers\codecfactory.h" />
+    <ClInclude Include="..\headers\codecs.h" />
+    <ClInclude Include="..\headers\common.h" />
+    <ClInclude Include="..\headers\compositecodec.h" />
+    <ClInclude Include="..\headers\cpubenchmark.h" />
+    <ClInclude Include="..\headers\csv.h" />
+    <ClInclude Include="..\headers\deltautil.h" />
+    <ClInclude Include="..\headers\entropy.h" />
+    <ClInclude Include="..\headers\externalvector.h" />
+    <ClInclude Include="..\headers\fastpfor.h" />
+    <ClInclude Include="..\headers\horizontalbitpacking.h" />
+    <ClInclude Include="..\headers\maropuparser.h" />
+    <ClInclude Include="..\headers\memutil.h" />
+    <ClInclude Include="..\headers\mersenne.h" />
+    <ClInclude Include="..\headers\newpfor.h" />
+    <ClInclude Include="..\headers\optpfor.h" />
+    <ClInclude Include="..\headers\packingvectors.h" />
+    <ClInclude Include="..\headers\pfor.h" />
+    <ClInclude Include="..\headers\pfor2008.h" />
+    <ClInclude Include="..\headers\rolledbitpacking.h" />
+    <ClInclude Include="..\headers\simdbinarypacking.h" />
+    <ClInclude Include="..\headers\simdbitpacking.h" />
+    <ClInclude Include="..\headers\simdfastpfor.h" />
+    <ClInclude Include="..\headers\simdgroupsimple.h" />
+    <ClInclude Include="..\headers\simdnewpfor.h" />
+    <ClInclude Include="..\headers\simdoptpfor.h" />
+    <ClInclude Include="..\headers\simdpfor.h" />
+    <ClInclude Include="..\headers\simdvariablebyte.h" />
+    <ClInclude Include="..\headers\simple16.h" />
+    <ClInclude Include="..\headers\simple8b.h" />
+    <ClInclude Include="..\headers\simple8b_rle.h" />
+    <ClInclude Include="..\headers\simple9.h" />
+    <ClInclude Include="..\headers\simple9_rle.h" />
+    <ClInclude Include="..\headers\snappydelta.h" />
+    <ClInclude Include="..\headers\streamvariablebyte.h" />
+    <ClInclude Include="..\headers\stringutil.h" />
+    <ClInclude Include="..\headers\synthetic.h" />
+    <ClInclude Include="..\headers\usimdbitpacking.h" />
+    <ClInclude Include="..\headers\util.h" />
+    <ClInclude Include="..\headers\variablebyte.h" />
+    <ClInclude Include="..\headers\VarIntG8IU.h" />
+    <ClInclude Include="..\headers\varintgb.h" />
+    <ClInclude Include="..\headers\vsencoding.h" />
+    <ClInclude Include="..\headers\ztimer.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

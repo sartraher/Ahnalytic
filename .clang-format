@@ -1,0 +1,49 @@
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
+
+# Indentation
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+
+# Braces on new line (Allman)
+BreakBeforeBraces: Allman
+
+# Pointer / reference bind to type
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# Lambda formatting
+LambdaBodyIndentation: OuterScope
+AllowShortLambdasOnASingleLine: Inline
+
+# Avoid unnecessary line breaks
+ColumnLimit: 160
+BinPackParameters: true
+BinPackArguments: true
+
+# Control statements: force body on new line
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+# Functions: force multiline even if empty
+AllowShortFunctionsOnASingleLine: None
+
+# Function & return formatting
+AlwaysBreakAfterReturnType: None
+AlwaysBreakAfterDefinitionReturnType: None
+BreakConstructorInitializers: AfterColon
+
+# Templates: always break before the class/struct keyword
+AlwaysBreakTemplateDeclarations: true
+
+# Spacing
+SpaceBeforeParens: ControlStatements
+
+# Namespace formatting
+NamespaceIndentation: None
+
+# Includes
+SortIncludes: true

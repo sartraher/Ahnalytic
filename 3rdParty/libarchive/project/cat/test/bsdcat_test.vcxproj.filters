@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\test_utils\test_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\test_utils\test_main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_empty_gz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_empty_lz4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_empty_xz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_empty_zstd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_error.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_error_mixed.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_Z.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_bz2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_gz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_lz4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_mixed.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_plain.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_xz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_expand_zstd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_help.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_stdin.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test_version.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\build\Ahnalytic\3rdParty\libarchive\cat\test\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{6E764DE1-49D0-312E-9BE3-DEF2DB1090CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{214FA7F6-35FC-309B-97D2-A54FE3654AE8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
