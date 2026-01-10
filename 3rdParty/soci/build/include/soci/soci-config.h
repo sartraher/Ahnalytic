@@ -1,0 +1,28 @@
+#ifndef SOCI_SOCICONFIG_H_INCLUDED
+#define SOCI_SOCICONFIG_H_INCLUDED
+
+#define SOCI_HAVE_EMPTY 1
+
+#define SOCI_HAVE_DB2 1
+
+#define SOCI_HAVE_FIREBIRD 1
+
+#define SOCI_HAVE_MYSQL 1
+
+#define SOCI_HAVE_ODBC 1
+
+#define SOCI_HAVE_ORACLE 1
+
+#define SOCI_HAVE_POSTGRESQL 1
+
+#define SOCI_HAVE_SQLITE3 1
+
+/* #define SOCI_HAVE_VISIBILITY_SUPPORT */
+
+#define SOCI_SIZEOF_LONG 4
+
+/* #define SOCI_INT64_T_IS_LONG */
+
+/* #define SOCI_INT8_T_IS_CHAR */
+
+#endif
