@@ -91,6 +91,8 @@ premake5 vs2022
 Open Ahnalytics.sln in the repository root and build using Visual Studio.
 ```
 
+### Linux
+
 ```bash
 premake5 gmake2
 make

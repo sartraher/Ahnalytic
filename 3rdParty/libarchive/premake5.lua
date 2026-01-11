@@ -4,8 +4,8 @@ project "archive_static"
     cppdialect "C++20"
 
     -- Output directories
-    targetdir ("../../out/lib/%{cfg.platform}/%{cfg.buildcfg}")
-    objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+    targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
+    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 
     -- Virtual folders for VS
     vpaths {

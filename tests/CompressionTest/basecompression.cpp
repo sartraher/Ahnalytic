@@ -1,4 +1,4 @@
-#include "AhnalyticBase/compressionManager.hpp"
+#include "AhnalyticBase/compression/compressionManager.hpp"
 #include "gtest/gtest.h"
 
 template <typename T> void cmpData(T inData, ModAlgosE mod, CompressionAlgosE algo)

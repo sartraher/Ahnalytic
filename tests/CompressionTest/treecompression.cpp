@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "AhnalyticBase\SourceScanner.hpp"
-#include "AhnalyticBase\SourceStructureTree.hpp"
+#include "AhnalyticBase/tree/SourceScanner.hpp"
+#include "AhnalyticBase/tree/SourceStructureTree.hpp"
 
 #include <filesystem>
 

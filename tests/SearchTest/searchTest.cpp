@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "AhnalyticBase\SnippedDatabase.hpp"
-#include "AhnalyticBase\SourceScanner.hpp"
-#include "AhnalyticBase\SourceStructureTree.hpp"
-#include "AhnalyticBase\TreeSearch.hpp"
+#include "AhnalyticBase/database/SnippedDatabase.hpp"
+#include "AhnalyticBase/tree/SourceScanner.hpp"
+#include "AhnalyticBase/tree/SourceStructureTree.hpp"
+#include "AhnalyticBase/tree/TreeSearch.hpp"
 
 #define TESTSEARCH(nameBase, nameSearch, options)                                                                                                              \
   TEST(TreeSearchFileTest, TreeCompression##nameBase##nameSearch)                                                                                              \

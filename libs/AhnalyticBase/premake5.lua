@@ -4,20 +4,20 @@ project "AhnalyticBase"
     language "C++"
     cppdialect "C++20"
 
-    targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
-    objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+    targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
+    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
 	dependson { "OpenSSL", "archive_static", "FastPFor", "libbsc", "liblz4_static", "zstd", "LzmaLib", "zlibstatic", "SrvLib", "soci_core", "soci_odbc", "soci_sqlite3", "TreeSitter", "TreeSitterCPP" }
 	
 	vpaths {
-		["Header Files"] = { "**.h", "**.hpp" },
-		["Source Files"] = { "**.cpp" },
+		["Header Files/*"] = { "**.h", "**.hpp" },
+		["Source Files/*"] = { "**.cpp" },
 	}
 
     files {
-        "*.cpp",
-        "*.hpp",
-        "*.h"
+        "**.cpp",
+        "**.hpp",
+        "**.h",
     }
 
     includedirs {

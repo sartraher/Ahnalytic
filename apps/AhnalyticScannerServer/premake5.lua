@@ -2,8 +2,8 @@ project "AhnalyticScannerServer"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
-    targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
-    objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+    targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
+    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
 	dependson { "AhnalyticBase" }
 

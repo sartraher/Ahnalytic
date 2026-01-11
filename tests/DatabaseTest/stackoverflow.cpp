@@ -1,10 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "AhnalyticBase/SnippedDatabase.hpp"
-#include "AhnalyticBase/SourceScanner.hpp"
-#include "AhnalyticBase/datadump.hpp"
-
-#include "AhnalyticBase/stackoverflow.hpp"
+#include "AhnalyticBase/database/SnippedDatabase.hpp"
+#include "AhnalyticBase/tree/SourceScanner.hpp"
+#include "AhnalyticBase/stackexchange/DataDump.hpp"
+#include "AhnalyticBase/stackexchange/StackOverflow.hpp"
 /*
 TEST(TestCaseStackOverflow, ImportDataDump)
 {

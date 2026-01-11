@@ -1,11 +1,11 @@
 #include "gtest/gtest.h"
 
-#include "AhnalyticBase/FileDatabase.hpp"
-#include "AhnalyticBase/SnippedDatabase.hpp"
-#include "AhnalyticBase/SourceScanner.hpp"
-#include "AhnalyticBase/datadump.hpp"
-#include "AhnalyticBase/github.hpp"
-#include "AhnalyticBase/githubcrawler.hpp"
+#include "AhnalyticBase/database/FileDatabase.hpp"
+#include "AhnalyticBase/database/SnippedDatabase.hpp"
+#include "AhnalyticBase/tree/SourceScanner.hpp"
+#include "AhnalyticBase/stackexchange/DataDump.hpp"
+#include "AhnalyticBase/github/Github.hpp"
+#include "AhnalyticBase/github/GithubCrawler.hpp"
 
 #include "BS_thread_pool.hpp"
 
