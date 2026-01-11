@@ -24,7 +24,7 @@ Key principles:
 
 - 🔒 **Fully local scanning** — your source code never leaves your machine
 - 📦 Open-source reference data is **downloaded locally** for comparison
-- 🧬 Focus on *code ancestry* (Ahnenforschung × Analytics)
+- 🧬 Focus on *code ancestry*
 
 Scan performance depends heavily on:
 - the hardware running the scan
@@ -88,12 +88,13 @@ This software is intended to run **inside a trusted environment**.
 
 ```bash
 premake5 vs2022
-
 Open Ahnalytics.sln in the repository root and build using Visual Studio.
+```
 
 ```bash
 premake5 gmake2
 make
+```
 
 # Data
 
