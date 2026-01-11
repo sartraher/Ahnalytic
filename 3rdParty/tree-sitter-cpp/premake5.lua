@@ -5,9 +5,11 @@ project "TreeSitterCPP"
     systemversion "latest"
     characterset "Unicode"
 	
+	targetname "Tree-Sitter-CPP"
+	
 	dependson { "TreeSitter" }
 	
-	targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
+	targetdir ("../../out/lib/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 
 	vpaths {

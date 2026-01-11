@@ -7,7 +7,7 @@ project "AhnalyticBase"
     targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
-	dependson { "OpenSSL" }
+	dependson { "OpenSSL", "archive_static", "FastPFor", "libbsc", "liblz4_static", "zstd", "LzmaLib", "zlibstatic", "SrvLib", "soci_core", "soci_odbc", "soci_sqlite3", "TreeSitter", "TreeSitterCPP" }
 	
 	vpaths {
 		["Header Files"] = { "**.h", "**.hpp" },

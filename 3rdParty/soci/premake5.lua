@@ -3,6 +3,8 @@ project "soci_core"
     language "C++"
     cppdialect "C++14"
     characterset "MBCS"
+	
+	targetname "soci_core_4_1"
 
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
@@ -77,6 +79,8 @@ project "soci_odbc"
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
+	targetname "soci_odbc_4_1"
+	
 	dependson { "soci_core" }
 
     files {
@@ -111,7 +115,7 @@ project "soci_odbc"
         defines { [[CMAKE_INTDIR="Debug"]] }
         links {
             "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core.lib",
+            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
             "kernel32.lib", "user32.lib", "gdi32.lib",
             "winspool.lib", "shell32.lib", "ole32.lib",
             "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
@@ -123,7 +127,7 @@ project "soci_odbc"
         defines { "NDEBUG", [[CMAKE_INTDIR="Release"]] }
         links {
             "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core.lib",
+            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
             "kernel32.lib", "user32.lib", "gdi32.lib",
             "winspool.lib", "shell32.lib", "ole32.lib",
             "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
@@ -140,6 +144,8 @@ project "soci_odbc"
     systemversion "10.0"
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+	
+	targetname "soci_sqlite3_4_1"
 	
 	dependson { "soci_core" }
 
@@ -164,7 +170,7 @@ project "soci_odbc"
         defines { [[CMAKE_INTDIR="Debug"]] }
         links {
             "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core.lib",
+            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
             "kernel32.lib", "user32.lib", "gdi32.lib",
             "winspool.lib", "shell32.lib", "ole32.lib",
             "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
@@ -176,7 +182,7 @@ project "soci_odbc"
         defines { "NDEBUG", [[CMAKE_INTDIR="Release"]] }
         links {
             "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core.lib",
+            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
             "kernel32.lib", "user32.lib", "gdi32.lib",
             "winspool.lib", "shell32.lib", "ole32.lib",
             "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"

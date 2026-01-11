@@ -4,6 +4,8 @@ project "AhnalyticScannerServer"
     cppdialect "C++20"
     targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+	
+	dependson { "AhnalyticBase" }
 
     -- Virtual folder grouping inside VS solution (optional)
     vpaths {
@@ -14,7 +16,9 @@ project "AhnalyticScannerServer"
     files {
         "*.cpp",
         "*.hpp",
-        "*.h"
+        "*.h",
+		"resource.rc",
+		"../../images/logo.ico"
     }
 
     includedirs {

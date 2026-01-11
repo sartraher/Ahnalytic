@@ -44,18 +44,22 @@ externalproject "CompressionTest"
     kind "ConsoleApp"
     language "C++"
     location "tests/CompressionTest" -- path where the .vcxproj resides
+	dependson { "AhnalyticBase" }
 	
 externalproject "DatabaseTest"
     kind "ConsoleApp"
     language "C++"
     location "tests/DatabaseTest" -- path where the .vcxproj resides
+	dependson { "AhnalyticBase" }
 	
 externalproject "ImportTest"
     kind "ConsoleApp"
     language "C++"
     location "tests/ImportTest" -- path where the .vcxproj resides
+	dependson { "AhnalyticBase" }
 	
 externalproject "SearchTest"
     kind "ConsoleApp"
     language "C++"
     location "tests/SearchTest" -- path where the .vcxproj resides
+	dependson { "AhnalyticBase" }

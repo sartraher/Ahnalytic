@@ -3,7 +3,9 @@ project "TreeSitter"
     language "C++"
     cppdialect "C++20"
 	
-	targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
+	targetname "Tree-Sitter"
+	
+	targetdir ("../../out/lib/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 
 	vpaths {

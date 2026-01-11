@@ -4,6 +4,8 @@ project "AhnalyticUpdateServer"
     cppdialect "C++20"
     targetdir ("../../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("../../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+	
+	dependson { "AhnalyticBase" }
 
     -- Virtual folders for Visual Studio
     vpaths {
