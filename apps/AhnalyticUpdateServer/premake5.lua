@@ -16,7 +16,9 @@ project "AhnalyticUpdateServer"
     files {
         "*.cpp",
         "*.hpp",
-        "*.h"
+        "*.h",
+		"resource.rc",
+		"../../images/update.ico"
     }
 
     includedirs {

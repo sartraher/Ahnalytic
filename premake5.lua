@@ -63,3 +63,24 @@ externalproject "SearchTest"
     language "C++"
     location "tests/SearchTest" -- path where the .vcxproj resides
 	dependson { "AhnalyticBase" }
+	
+group "install"
+project "Install"
+    kind "Utility"
+    language "C"
+    targetname "install_build"
+	
+	targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
+    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+	
+	dependson { "AhnalyticScannerServer", "AhnalyticUpdateServer" }
+    
+    filter "system:linux or system:macosx"
+		prebuildcommands {
+			("")
+		}
+	
+	filter "system:windows"
+		prebuildcommands {
+			("if not exist \"%{wks.location}bin\" (mkdir \"%{wks.location}bin\") && for /R \"%{wks.location}out\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\" %%f in (*.dll) do copy \"%%f\" \"%{wks.location}bin\\\" && for /R \"%{wks.location}out\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\" %%f in (*.exe) do copy \"%%f\" \"%{wks.location}bin\\\"")
+		}
