@@ -188,7 +188,20 @@ project "archive_static"
         "./libarchive/."
     }
 
-    defines { "LIBARCHIVE_STATIC", "HAVE_CONFIG_H" }
+    defines { "LIBARCHIVE_STATIC" }
+	
+	
+	filter "system:windows"
+		defines { "HAVE_CONFIG_H" }
+		
+	filter "system:linux"
+		defines {
+			"HAVE_STDINT_H",
+			"HAVE_INTTYPES_H",
+			"HAVE_SYS_STAT_H",
+			"HAVE_UNISTD_H",
+			"_FILE_OFFSET_BITS=64"
+		}
 
     filter "system:windows"
         systemversion "latest"
@@ -219,4 +232,24 @@ project "archive_static"
         symbols "On"
         defines { "NDEBUG" }
 
-    filter {}
+    -- Exclude Windows-only files on Linux/macOS
+	filter { "system:linux or system:macosx" }
+		removefiles {
+			"**/*_windows.c",
+			"**/*_windows.h",
+			"**/archive_windows.c",
+			"**/archive_read_disk_windows.c",
+			"**/archive_write_disk_windows.c",
+			"**/filter_fork_windows.c"
+		}
+
+	-- Exclude POSIX-only files on Windows
+	filter "system:windows"
+		removefiles {
+			"**/*_posix.c",
+			"**/filter_fork_posix.c",
+			"**/archive_read_disk_posix.c",
+			"**/archive_write_disk_posix.c"
+		}
+
+	filter {}
