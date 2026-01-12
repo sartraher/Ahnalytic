@@ -1,7 +1,7 @@
 ﻿#ifndef inireader_hpp__
 #define inireader_hpp__
 
-#include "AhnalyticBase/export.hpp"
+#include "AhnalyticBase/Export.hpp"
 
 #include <algorithm>
 #include <fstream>

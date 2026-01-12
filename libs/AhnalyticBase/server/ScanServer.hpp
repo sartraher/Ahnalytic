@@ -1,7 +1,7 @@
 #ifndef scanserver_hpp__
 #define scanserver_hpp__
 
-#include "AhnalyticBase/export.hpp"
+#include "AhnalyticBase/Export.hpp"
 
 #include <filesystem>
 #include <string>

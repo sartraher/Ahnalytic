@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include "AhnalyticBase/export.hpp"
+#include "AhnalyticBase/Export.hpp"
 
 #include <ankerl/unordered_dense.h>
 
