@@ -14,6 +14,7 @@
 #include "AhnalyticBase/helper/Diagnostic.hpp"
 
 #include <cstring> 
+#include <algorithm>
 
 CompressionManager::CompressionManager()
 {

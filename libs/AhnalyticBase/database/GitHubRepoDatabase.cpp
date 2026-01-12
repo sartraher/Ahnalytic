@@ -7,6 +7,7 @@
 
 #include <nlohmann/json.hpp>
 #include <sstream>
+#include <algorithm>
 
 using json = nlohmann::json;
 
