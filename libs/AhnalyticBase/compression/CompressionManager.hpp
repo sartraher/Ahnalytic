@@ -3,7 +3,7 @@
 
 #include "AhnalyticBase/Export.hpp"
 
-#include "AhnalyticBase/compression/compressData.hpp"
+#include "AhnalyticBase/compression/CompressData.hpp"
 #include "AhnalyticBase/compression/Compressor.hpp"
 #include "AhnalyticBase/compression/Modifier.hpp"
 
