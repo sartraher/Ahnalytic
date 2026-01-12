@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include <cstring> 
+
 void compress_memory(const std::vector<char>& input, std::vector<char>& out_data)
 {
   const size_t propsSize = LZMA_PROPS_SIZE;

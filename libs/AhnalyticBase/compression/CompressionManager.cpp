@@ -13,6 +13,8 @@
 
 #include "AhnalyticBase/helper/Diagnostic.hpp"
 
+#include <cstring> 
+
 CompressionManager::CompressionManager()
 {
   registerModifier(ModAlgosE::None, new NoneModifier());

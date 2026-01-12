@@ -1,5 +1,7 @@
 #include "CompressData.hpp"
 
+#include <cstring> 
+
 CompressData::CompressData(const std::vector<uint32_t>& inData, bool withHeader)
 {
   if (withHeader)
