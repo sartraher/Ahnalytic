@@ -5,7 +5,7 @@
 
 #include <vector>
 
-enum class DLLEXPORT CompressionAlgosE : uint32_t
+enum class CompressionAlgosE : uint32_t DLLEXPORT
 {
   None = 0,
   // GZip = 1,
@@ -18,7 +18,7 @@ enum class DLLEXPORT CompressionAlgosE : uint32_t
   //Test = 8
 };
 
-enum class DLLEXPORT ModAlgosE : uint32_t
+enum class ModAlgosE : uint32_t DLLEXPORT
 {
   None = 0,
   Delta = 1

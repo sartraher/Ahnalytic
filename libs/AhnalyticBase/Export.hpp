@@ -1,5 +1,7 @@
 #pragma warning(disable : 4251)
 
+#include <cstdint>
+
 #if defined(_WIN32) || defined(_WIN64)
 #ifdef AHNALYTICBASE_EXPORTS
 #define DLLEXPORT __declspec(dllexport)
