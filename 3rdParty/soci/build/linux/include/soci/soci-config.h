@@ -19,10 +19,12 @@
 
 /* #define SOCI_HAVE_VISIBILITY_SUPPORT */
 
-#define SOCI_SIZEOF_LONG 4
+#define SOCI_SIZEOF_LONG 8
 
-/* #define SOCI_INT64_T_IS_LONG */
+#define SOCI_INT64_T_IS_LONG
 
-/* #define SOCI_INT8_T_IS_CHAR */
+#undef SOCI_INT32_T_IS_LONG
+#undef SOCI_INT64_T_IS_LONG_LONG
+#undef SOCI_INT8_T_IS_CHAR
 
 #endif

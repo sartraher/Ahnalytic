@@ -1,4 +1,4 @@
-#include "zstd.hpp"
+#include "ZStd.hpp"
 
 /*
 #include <stdexcept>

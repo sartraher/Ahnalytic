@@ -1,4 +1,4 @@
-#include "gzip.hpp"
+#include "GZip.hpp"
 
 /*
 #include "deflate.h"

@@ -1,4 +1,4 @@
-#include "lzma.hpp"
+#include "LZMA.hpp"
 
 #include "LzmaLib.h" // From the official LZMA SDK
 #include <cstring>

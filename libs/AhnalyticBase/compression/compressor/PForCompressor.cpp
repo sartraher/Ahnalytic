@@ -1,4 +1,4 @@
-#include "pforCompressor.hpp"
+#include "PForCompressor.hpp"
 
 /*
 #include "headers/codecfactory.h"

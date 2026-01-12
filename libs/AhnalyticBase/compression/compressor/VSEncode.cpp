@@ -1,4 +1,6 @@
-#include "vsencode.hpp"
+#include "VSEncode.hpp"
+
+/*
 
 #include <cstdint>
 #include <iostream>
@@ -133,30 +135,6 @@ void vsdecodeSimdGrow(const std::vector<char>& in, std::vector<uint32_t>& out, s
   }
 }
 
-/*
-int main() {
-  std::vector<uint32_t> input = { 5, 300, 1000, 65536, 123456, 1, 42, 9001 };
-
-  std::vector<char> compressed;
-
-  std::vector<uint32_t> decoded;
-
-  vsencode_simd_grow(input, compressed);
-
-  vsdecode_simd_grow(compressed, decoded, input.size());
-
-  std::cout << "Original vs Decoded:\n";
-
-  for (size_t i = 0; i < input.size(); ++i)
-
-    std::cout << input[i] << " vs " << decoded[i] << "\n";
-
-  std::cout << "Compressed size: " << compressed.size() << " bytes\n";
-
-  return 0;
-}
-*/
-
 VSEncodeCompressor::VSEncodeCompressor()
 {
 }
@@ -179,3 +157,4 @@ std::string VSEncodeCompressor::getId()
 {
   return "vsencode";
 }
+*/

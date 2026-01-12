@@ -64,4 +64,10 @@ project "libbsc"
             'CMAKE_INTDIR="RelWithDebInfo"'
         }
 
+	filter "system:linux or system:macosx"
+		buildoptions {
+			"-std=c++17",
+			"-I/usr/include/x86_64-linux-gnu/c++/13"
+		}
+
     filter {}

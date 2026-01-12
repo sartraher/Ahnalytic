@@ -1,4 +1,4 @@
-#include "lz4Compressor.hpp"
+#include "LZ4Compressor.hpp"
 
 /*
 #include "AhnalyticBase/compression/LZ4Helper.hpp"

@@ -2,8 +2,7 @@ project "soci_core"
     kind "SharedLib"
     language "C++"
     cppdialect "C++14"
-    characterset "MBCS"
-	
+	architecture "x86_64"
 	targetname "soci_core_4_1"
 
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
@@ -23,117 +22,69 @@ project "soci_core"
         "./build/include"
     }
 
-    defines {
-		"SOCI_DLL",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"_CRT_SECURE_NO_WARNINGS",
-		"_CRT_NONSTDC_NO_WARNING",
-		"_SCL_SECURE_NO_WARNINGS",
-		"NOMINMAX",
-		"WIN32_LEAN_AND_MEAN",
-		[[DEFAULT_BACKENDS_PATH="C:/Program Files (x86)/SOCI/lib"]],
-		[[SOCI_LIB_PREFIX="soci_"]],
-		[[SOCI_LIB_SUFFIX=".dll"]],
-		[[SOCI_DEBUG_POSTFIX=""]],
-		[[SOCI_ABI_VERSION="4_1"]]
-	}
+      defines {
+        "SOCI_CORE",
+        [[SOCI_ABI_VERSION="4_1"]]
+    }
 
+	filter "system:windows"
+		includedirs {
+			"./build/windows/include"
+		}
+
+    filter "system:windows"
+        characterset "MBCS"
+        systemversion "10.0.26100.0"
+
+        defines {
+            "SOCI_DLL",
+            "WIN32_LEAN_AND_MEAN",
+            "NOMINMAX",
+            "_CRT_SECURE_NO_WARNINGS",
+            [[DEFAULT_BACKENDS_PATH="C:/Program Files (x86)/SOCI/lib"]],
+            [[SOCI_LIB_PREFIX="soci_"]],
+            [[SOCI_LIB_SUFFIX=".dll"]],
+            [[SOCI_DEBUG_POSTFIX=""]],
+        }
+
+        links {
+            "kernel32", "user32", "gdi32", "winspool",
+            "shell32", "ole32", "oleaut32",
+            "uuid", "comdlg32", "advapi32"
+        }
+
+        buildoptions { "/bigobj", "/utf-8" }
+
+	filter "system:linux or system:macosx"      
+		includedirs {
+			"./build/linux/include"
+		}
+
+    filter "system:linux or system:macosx"        
+        pic "On"
+        defines {
+            "SOCI_DLL",
+            [[SOCI_LIB_SUFFIX=".so"]],
+            [[SOCI_LIB_PREFIX="libsoci_"]],
+        }
 
     filter "configurations:Debug"
-        defines { "_DEBUG", "CMAKE_INTDIR=\"Debug\"", "soci_core_EXPORTS" }
         runtime "Debug"
         symbols "On"
         optimize "Off"
+        defines { "_DEBUG", "soci_core_EXPORTS" }
 
     filter "configurations:Release"
-        defines { "NDEBUG", "CMAKE_INTDIR=\"Release\"", "soci_core_EXPORTS" }
         runtime "Release"
         optimize "Speed"
         symbols "Off"
-
-    filter "configurations:MinSizeRel"
-        defines { "NDEBUG", "CMAKE_INTDIR=\"MinSizeRel\"", "soci_core_EXPORTS" }
-        runtime "Release"
-        optimize "Size"
-        symbols "Off"
-
-    filter "configurations:RelWithDebInfo"
-        defines { "NDEBUG", "CMAKE_INTDIR=\"RelWithDebInfo\"", "soci_core_EXPORTS" }
-        runtime "Release"
-        optimize "Speed"
-        symbols "On"
-
-    filter "system:windows"
-        systemversion "10.0.26100.0"
-        links { "kernel32", "user32", "gdi32", "winspool", "shell32",
-                "ole32", "oleaut32", "uuid", "comdlg32", "advapi32" }
-        buildoptions { "/bigobj", "/utf-8" }
-        linkoptions { "/machine:x64" }
-
-    filter {}
-
-project "soci_odbc"
-    kind "SharedLib"
-    language "C++"
-    cppdialect "C++14"
-    targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
-    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
-	
-	targetname "soci_odbc_4_1"
-	
-	dependson { "soci_core" }
-
-    files {
-        "src/backends/odbc/**.cpp",
-        "include/soci/odbc/**.h"
-    }
-
-    includedirs {
-        "./include/private",
-        "./include",
-        "./build/include"
-    }
-
-    defines {
-        "WIN32",
-        "_WINDOWS",
-        "SOCI_DLL",
-        "_CRT_SECURE_NO_DEPRECATE",
-        "_CRT_SECURE_NO_WARNINGS",
-        "_CRT_NONSTDC_NO_WARNING",
-        "_SCL_SECURE_NO_WARNINGS",
-        "NOMINMAX",
-        "WIN32_LEAN_AND_MEAN",
-        "soci_odbc_EXPORTS"
-    }
-	
-	filter "system:windows"
-		buildoptions { "/Zc:wchar_t" } -- Treat wchar_t as built-in
-		characterset "MBCS"  -- important: sets MultiByte, not Unicode
-
-    filter "configurations:Debug"
-        defines { [[CMAKE_INTDIR="Debug"]] }
-        links {
-            "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
-            "kernel32.lib", "user32.lib", "gdi32.lib",
-            "winspool.lib", "shell32.lib", "ole32.lib",
-            "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
-        }
-        runtime "Debug"
-        symbols "On"
-
-    filter "configurations:Release"
-        defines { "NDEBUG", [[CMAKE_INTDIR="Release"]] }
-        links {
-            "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
-            "kernel32.lib", "user32.lib", "gdi32.lib",
-            "winspool.lib", "shell32.lib", "ole32.lib",
-            "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
-        }
-        runtime "Release"
-        optimize "Speed"
+        defines { "NDEBUG", "soci_core_EXPORTS" }
+		
+	filter "system:linux or system:macosx"
+		buildoptions {
+			"-std=c++17",
+			"-I/usr/include/x86_64-linux-gnu/c++/13"
+		}
 
     filter {}
  
@@ -141,12 +92,12 @@ project "soci_odbc"
     kind "SharedLib"
     language "C++"
     cppdialect "C++14"
-    systemversion "10.0"
+    architecture "x86_64"
+	
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
 	targetname "soci_sqlite3_4_1"
-	
 	dependson { "soci_core" }
 
     files {
@@ -158,16 +109,18 @@ project "soci_odbc"
     includedirs {
         "./include",
         "./include/private",
-        "./3rdparty/sqlite3",
-        "./build/include"
+        "./3rdparty/sqlite3"
     }
 
-    defines { "WIN32", "_WINDOWS", "SOCI_DLL", "_CRT_SECURE_NO_DEPRECATE", "_CRT_SECURE_NO_WARNINGS",
-              "_CRT_NONSTDC_NO_WARNING", "_SCL_SECURE_NO_WARNINGS", "NOMINMAX", "WIN32_LEAN_AND_MEAN",
-              "soci_sqlite3_EXPORTS" }
-
-    filter "configurations:Debug"
-        defines { [[CMAKE_INTDIR="Debug"]] }
+    -- Windows-specific defines and includes
+    filter "system:windows"
+        defines { 
+            "WIN32", "_WINDOWS", "SOCI_DLL", 
+            "_CRT_SECURE_NO_DEPRECATE", "_CRT_SECURE_NO_WARNINGS",
+            "_CRT_NONSTDC_NO_WARNING", "_SCL_SECURE_NO_WARNINGS", 
+            "NOMINMAX", "WIN32_LEAN_AND_MEAN", "soci_sqlite3_EXPORTS"
+        }
+        includedirs { "./build/windows/include" }
         links {
             "odbc32.lib",
             "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
@@ -175,16 +128,31 @@ project "soci_odbc"
             "winspool.lib", "shell32.lib", "ole32.lib",
             "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
         }
+
+    -- Linux/macOS-specific defines and includes
+    filter "system:linux or system:macosx"
+        defines { 
+            "SOCI_INT64_T_IS_LONG", 
+            "SOCI_LONG_LONG_IS_64BIT", 
+            "SOCI_DLL", 
+            "soci_sqlite3_EXPORTS"
+        }
+        includedirs { "./build/linux/include" }
+        buildoptions { 
+            "-std=c++17", 
+            "-I/usr/include/x86_64-linux-gnu/c++/13" 
+        }
+
+    -- Configuration-specific defines
+    filter "configurations:Debug"
+        defines { [[CMAKE_INTDIR="Debug"]] }
         runtime "Debug"
         symbols "On"
 
     filter "configurations:Release"
         defines { "NDEBUG", [[CMAKE_INTDIR="Release"]] }
-        links {
-            "odbc32.lib",
-            "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}/soci_core_4_1.lib",
-            "kernel32.lib", "user32.lib", "gdi32.lib",
-            "winspool.lib", "shell32.lib", "ole32.lib",
-            "oleaut32.lib", "uuid.lib", "comdlg32.lib", "advapi32.lib"
-        }
         runtime "Release"
+        optimize "Speed"
+
+    filter {}
+

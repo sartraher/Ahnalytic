@@ -1,4 +1,4 @@
-#include "bsc.hpp"
+#include "BSC.hpp"
 
 #include "libbsc.h" // from libbsc
 #include <cstring>

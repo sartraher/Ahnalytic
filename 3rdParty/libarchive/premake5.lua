@@ -187,13 +187,15 @@ project "archive_static"
         "./libarchive",
         "./libarchive/."
     }
+	
+	defines { "LIBARCHIVE_STATIC", "HAVE_CONFIG_H" }
 
 	filter "system:windows"
 		includedirs {			
 			"./project"
 		}
 
-    defines { "LIBARCHIVE_STATIC", "HAVE_CONFIG_H" }
+    
 			
     filter "system:windows"
         systemversion "latest"

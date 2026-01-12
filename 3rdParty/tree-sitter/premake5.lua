@@ -2,7 +2,7 @@ project "TreeSitter"
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
-	
+	architecture "x86_64"
 	targetname "Tree-Sitter"
 	
 	targetdir ("../../out/lib/%{cfg.platform}/%{cfg.buildcfg}")
@@ -14,7 +14,10 @@ project "TreeSitter"
 	}
 
     -- Universal include dirs
-    includedirs { "./lib/include" }
+    includedirs { 
+		"./lib/include",
+		"./lib/src"
+	}
 
     files {
 		"lib/src/alloc.h",
@@ -58,11 +61,6 @@ project "TreeSitter"
 
     filter "system:windows"
         staticruntime "Off"  -- lets /MD or /MDd be applied automatically
-
-    -- Precompiled headers (Win32 only)
-    filter { "system:windows", "architecture:x86" }
-        pchheader "pch.h"
-        pchsource "lib/src/pch.cpp"
 
     filter "configurations:Debug"
         runtime "Debug"      -- /MDd

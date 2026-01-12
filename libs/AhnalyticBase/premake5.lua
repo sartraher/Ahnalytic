@@ -3,7 +3,7 @@ project "AhnalyticBase"
     kind "SharedLib"
     language "C++"
     cppdialect "C++20"
-
+	architecture "x86_64"
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
@@ -97,6 +97,16 @@ project "AhnalyticBase"
             "crypto",
             "pthread"
         }
+
+	filter "system:windows"
+		includedirs {
+			"../../3rdParty/soci/build/windows/include"
+		}
+
+	filter "system:linux or system:macosx"      
+		includedirs {
+			"../../3rdParty/soci/build/linux/include"
+		}
 
     filter "configurations:Debug"
         runtime "Debug"

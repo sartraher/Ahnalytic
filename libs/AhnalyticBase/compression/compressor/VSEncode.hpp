@@ -1,6 +1,7 @@
 #ifndef vsencodeCompressor_hpp__
 #define vsencodeCompressor_hpp__
 
+/*
 #include "AhnalyticBase/compression/Compressor.hpp"
 
 class VSEncodeCompressor : public CompressorI
@@ -12,5 +13,6 @@ public:
   virtual CompressData decompress(const CompressData& data);
   virtual std::string getId();
 };
+*/
 
 #endif

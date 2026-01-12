@@ -19,21 +19,6 @@ project "SrvLib"
         systemversion "10.0"
         cppdialect "C++20"
 
-    -- Win32/x86
-    filter "platforms:x86"
-        architecture "x86"
-        filter "configurations:Debug"
-            runtime "Debug"
-            symbols "On"
-            optimize "Off"
-            defines { "WIN32", "_DEBUG", "_CONSOLE" }
-            flags { "MultiProcessorCompile" }
-        filter "configurations:Release"
-            runtime "Release"
-            optimize "Speed"
-            defines { "WIN32", "NDEBUG", "_CONSOLE" }
-            flags { "LinkTimeOptimization", "MultiProcessorCompile" }
-
     -- x64
     filter "platforms:x64"
         architecture "x86_64"
@@ -48,5 +33,11 @@ project "SrvLib"
             optimize "Speed"
             defines { "NDEBUG", "_CONSOLE" }
             flags { "LinkTimeOptimization", "MultiProcessorCompile" }
+			
+	filter "system:linux or system:macosx"
+		buildoptions {
+			"-std=c++17",
+			"-I/usr/include/x86_64-linux-gnu/c++/13"
+		}
 
     filter {}
