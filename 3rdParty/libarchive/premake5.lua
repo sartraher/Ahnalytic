@@ -183,26 +183,18 @@ project "archive_static"
     }
 
     includedirs {
+	    ".",
         "./libarchive",
-        "./project",
         "./libarchive/."
     }
 
-    defines { "LIBARCHIVE_STATIC" }
-	
-	
 	filter "system:windows"
-		defines { "HAVE_CONFIG_H" }
-		
-	filter "system:linux"
-		defines {
-			"HAVE_STDINT_H",
-			"HAVE_INTTYPES_H",
-			"HAVE_SYS_STAT_H",
-			"HAVE_UNISTD_H",
-			"_FILE_OFFSET_BITS=64"
+		includedirs {			
+			"./project"
 		}
 
+    defines { "LIBARCHIVE_STATIC", "HAVE_CONFIG_H" }
+			
     filter "system:windows"
         systemversion "latest"
         characterset "MBCS"
@@ -253,3 +245,9 @@ project "archive_static"
 		}
 
 	filter {}
+	
+	filter "system:linux or system:macosx"
+    prebuildcommands {
+        "chmod +x %{wks.location}/3rdParty/libarchive/configure",
+        "%{wks.location}/3rdParty/libarchive/configure"
+    }

@@ -36,12 +36,12 @@ CompressionManager::CompressionManager()
   // registerCompressor(new PForCompressor("simdnewpfor"));
   // registerCompressor(new PForCompressor("newpfor"));
   // registerCompressor(new PForCompressor("optpfor"));
-  registerCompressor(CompressionAlgosE::SIMDoptpFor, new PForCompressor("simdoptpfor"));
+  //registerCompressor(CompressionAlgosE::SIMDoptpFor, new PForCompressor("simdoptpfor"));
   // registerCompressor(CompressionAlgosE::Test,new PForCompressor("varint"));
   // registerCompressor(CompressionAlgosE::Test, new PForCompressor("vbyte"));
   // registerCompressor(new PForCompressor("maskedvbyte"));
   // registerCompressor(new PForCompressor("streamvbyte"));
-  registerCompressor(CompressionAlgosE::Test, new PForCompressor("varintgb"));
+  //registerCompressor(CompressionAlgosE::Test, new PForCompressor("varintgb"));
   /*
   registerCompressor(new PForCompressor("simple16;"));
   registerCompressor(new PForCompressor("simple9"));
@@ -55,7 +55,7 @@ CompressionManager::CompressionManager()
   // registerCompressor(CompressionAlgosE::LZ4, new Lz4Compressor());
   // registerCompressor(CompressionAlgosE::GZip, new GZipCompressor());
   registerCompressor(CompressionAlgosE::LZMA, new LZMACompressor());
-  registerCompressor(CompressionAlgosE::ZStd, new ZStdCompressor());
+  //registerCompressor(CompressionAlgosE::ZStd, new ZStdCompressor());
   registerCompressor(CompressionAlgosE::BSC, new BscCompressor());
 
   // registerCompressor(new HuffmannCompressor(HuffmannCompressor::Byte1));

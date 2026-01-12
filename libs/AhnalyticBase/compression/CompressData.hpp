@@ -9,13 +9,13 @@ enum class DLLEXPORT CompressionAlgosE : uint32_t
 {
   None = 0,
   // GZip = 1,
-  VSEncoding = 2,
-  SIMDoptpFor = 3,
+  //VSEncoding = 2,
+  //SIMDoptpFor = 3,
   LZMA = 4,
-  ZStd = 5,
-  BSC = 6,
-  LZ4 = 7,
-  Test = 8
+  //ZStd = 5,
+  BSC = 6//,
+  //LZ4 = 7,
+  //Test = 8
 };
 
 enum class DLLEXPORT ModAlgosE : uint32_t

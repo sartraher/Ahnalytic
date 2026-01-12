@@ -7,7 +7,7 @@ project "AhnalyticBase"
     targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 	
-	dependson { "OpenSSL", "archive_static", "FastPFor", "libbsc", "liblz4_static", "zstd", "LzmaLib", "zlibstatic", "SrvLib", "soci_core", "soci_odbc", "soci_sqlite3", "TreeSitter", "TreeSitterCPP" }
+	dependson { "OpenSSL", "archive_static", "libbsc", "zlib", "LzmaLib", "SrvLib", "soci_core", "soci_odbc", "soci_sqlite3", "TreeSitter", "TreeSitterCPP" }
 	
 	vpaths {
 		["Header Files/*"] = { "**.h", "**.hpp" },
@@ -25,9 +25,9 @@ project "AhnalyticBase"
         "../../3rdParty",
         "../../3rdParty/zlib",
         "../../3rdParty/zlib/build",
-        "../../3rdParty/fastpfor",
-        "../../3rdParty/zstd/lib",
-        "../../3rdParty/lz4/lib",
+        --"../../3rdParty/fastpfor",
+        --"../../3rdParty/zstd/lib",
+        --"../../3rdParty/lz4/lib",
         "../../3rdParty/lzma/C",
         "../../3rdParty/libbsc/libbsc",
         "../../3rdParty/tree-sitter/lib/include",
@@ -66,11 +66,11 @@ project "AhnalyticBase"
             "soci_odbc_4_1",
             "soci_core_4_1",
             "libbsc",
-            "libzstd",
+            --"libzstd",
             "LzmaLib",
             "zlibstatic",
-            "FastPFor",
-            "liblz4_static",
+            --"FastPFor",
+            --"liblz4_static",
             "libssl_static",
             "libcrypto_static"
         }
@@ -89,9 +89,9 @@ project "AhnalyticBase"
         links {
             "archive",
             "expat",
-            "z",
-            "zstd",
-            "lz4",
+            --"z",
+            --"zstd",
+            --"lz4",
             "lzma",
             "ssl",
             "crypto",

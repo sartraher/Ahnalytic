@@ -1,5 +1,6 @@
 #include "pforCompressor.hpp"
 
+/*
 #include "headers/codecfactory.h"
 #include "headers/deltautil.h"
 
@@ -56,3 +57,4 @@ std::string PForCompressor::getId()
 {
   return codecId;
 }
+*/

@@ -1,6 +1,7 @@
 #ifndef pforCompressor_hpp__
 #define pforCompressor_hpp__
 
+/*
 #include "AhnalyticBase/compression/Compressor.hpp"
 
 class PForCompressor : public CompressorI
@@ -15,5 +16,6 @@ public:
 private:
   std::string codecId;
 };
+*/
 
 #endif

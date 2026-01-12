@@ -1,5 +1,6 @@
 #include "gzip.hpp"
 
+/*
 #include "deflate.h"
 #include "zlib.h"
 
@@ -111,3 +112,4 @@ std::string GZipCompressor::getId()
 {
   return "gzip";
 }
+*/

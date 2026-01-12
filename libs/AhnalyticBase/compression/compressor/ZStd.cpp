@@ -1,5 +1,6 @@
 #include "zstd.hpp"
 
+/*
 #include <stdexcept>
 #include <vector>
 #include <zstd.h> // Make sure this is installed and properly included
@@ -65,3 +66,4 @@ std::string ZStdCompressor::getId()
 {
   return "zstd";
 }
+*/

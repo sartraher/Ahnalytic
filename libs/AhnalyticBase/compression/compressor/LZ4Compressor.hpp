@@ -1,6 +1,7 @@
 #ifndef lz4Compressor_hpp__
 #define lz4Compressor_hpp__
 
+/*
 #include "AhnalyticBase/compression/Compressor.hpp"
 
 class Lz4Compressor : public CompressorI
@@ -12,5 +13,6 @@ public:
   virtual CompressData decompress(const CompressData& data);
   virtual std::string getId();
 };
+*/
 
 #endif

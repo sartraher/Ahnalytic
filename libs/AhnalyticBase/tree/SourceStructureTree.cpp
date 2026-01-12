@@ -10,9 +10,6 @@
 #include <set>
 #include <unordered_map>
 
-#include "headers/codecfactory.h"
-#include "headers/deltautil.h"
-
 void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeList, const std::vector<uint32_t>& indexList, std::vector<char>& data,
                                     Diagnostic* dia)
 {

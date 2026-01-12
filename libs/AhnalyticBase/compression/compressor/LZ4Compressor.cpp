@@ -1,5 +1,6 @@
 #include "lz4Compressor.hpp"
 
+/*
 #include "AhnalyticBase/compression/LZ4Helper.hpp"
 
 Lz4Compressor::Lz4Compressor()
@@ -24,3 +25,4 @@ std::string Lz4Compressor::getId()
 {
   return "lz4";
 }
+*/

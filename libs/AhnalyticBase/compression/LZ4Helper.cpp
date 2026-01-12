@@ -1,5 +1,6 @@
 #include "lz4Helper.hpp"
 
+/*
 #include <lz4.h>
 
 bool LZ4Helper::compressLZ4(const std::vector<char>& input, std::vector<char>& output)
@@ -33,3 +34,4 @@ bool LZ4Helper::decompressLZ4(const std::vector<char>& input, std::vector<char>&
 
   return true;
 }
+*/

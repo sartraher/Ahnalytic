@@ -11,10 +11,10 @@ workspace "Ahnalytics"
 group "3rdParty"	
 group "3rdParty/compression"
 dofile("3rdParty/libarchive/premake5.lua")
-dofile("3rdParty/fastpfor/premake5.lua")
+--dofile("3rdParty/fastpfor/premake5.lua")
 dofile("3rdParty/libbsc/premake5.lua")
-dofile("3rdParty/lz4/premake5.lua")
-dofile("3rdParty/zstd/premake5.lua")
+--dofile("3rdParty/lz4/premake5.lua")
+--dofile("3rdParty/zstd/premake5.lua")
 dofile("3rdParty/lzma/premake5.lua")
 dofile("3rdParty/zlib/premake5.lua")
 
