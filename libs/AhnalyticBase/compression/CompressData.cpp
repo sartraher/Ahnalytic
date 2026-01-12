@@ -1,4 +1,4 @@
-#include "compressData.hpp"
+#include "CompressData.hpp"
 
 CompressData::CompressData(const std::vector<uint32_t>& inData, bool withHeader)
 {

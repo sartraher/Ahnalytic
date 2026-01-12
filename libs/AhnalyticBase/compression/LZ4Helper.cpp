@@ -1,4 +1,4 @@
-#include "lz4Helper.hpp"
+#include "LZ4Helper.hpp"
 
 /*
 #include <lz4.h>

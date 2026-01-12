@@ -1,15 +1,15 @@
-#include "compressionManager.hpp"
+#include "CompressionManager.hpp"
 
 #include "AhnalyticBase/compression/modifier/DeltaModifier.hpp"
 #include "AhnalyticBase/compression/modifier/NoneModifier.hpp"
 
-#include "AhnalyticBase/compression/compressor/bsc.hpp"
-#include "AhnalyticBase/compression/compressor/gzip.hpp"
-#include "AhnalyticBase/compression/compressor/lz4Compressor.hpp"
-#include "AhnalyticBase/compression/compressor/lzma.hpp"
-#include "AhnalyticBase/compression/compressor/pforCompressor.hpp"
-#include "AhnalyticBase/compression/compressor/vsencode.hpp"
-#include "AhnalyticBase/compression/compressor/zstd.hpp"
+#include "AhnalyticBase/compression/compressor/BSC.hpp"
+#include "AhnalyticBase/compression/compressor/GZip.hpp"
+#include "AhnalyticBase/compression/compressor/LZ4Compressor.hpp"
+#include "AhnalyticBase/compression/compressor/LZMA.hpp"
+#include "AhnalyticBase/compression/compressor/PForCompressor.hpp"
+#include "AhnalyticBase/compression/compressor/VSEncode.hpp"
+#include "AhnalyticBase/compression/compressor/ZStd.hpp"
 
 #include "AhnalyticBase/helper/Diagnostic.hpp"
 

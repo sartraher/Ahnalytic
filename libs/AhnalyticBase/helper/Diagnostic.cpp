@@ -1,4 +1,4 @@
-#include "diagnostic.hpp"
+#include "Diagnostic.hpp"
 
 #include <iostream>
 #include <sstream>

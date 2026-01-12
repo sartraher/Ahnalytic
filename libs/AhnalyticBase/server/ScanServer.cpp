@@ -1,4 +1,4 @@
-#include "scanserver.hpp"
+#include "ScanServer.hpp"
 #include "AhnalyticBase/database/ScanDatabase.hpp"
 #include "AhnalyticBase/tree/TreeSearch.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"

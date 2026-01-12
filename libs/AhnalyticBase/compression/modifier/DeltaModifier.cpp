@@ -1,4 +1,4 @@
-#include "deltaModifier.hpp"
+#include "DeltaModifier.hpp"
 
 DeltaModifier::DeltaModifier()
 {

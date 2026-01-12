@@ -1,4 +1,4 @@
-#include "inireader.hpp"
+#include "IniReader.hpp"
 
 IniReader::IniReader(const std::string& fileName)
 {
