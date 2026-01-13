@@ -25,11 +25,17 @@ project "expat"
         defines { 
             "WIN32","_WINDOWS","VER_FILEVERSION=2,7,3,0","_CRT_SECURE_NO_WARNINGS",[[CMAKE_INTDIR="RelWithDebInfo"]],"expat_EXPORTS"
         }
+		includedirs {
+			"./build/windows"
+		}
 		
 	filter "system:linux or system:macosx"
         defines { 
             "VER_FILEVERSION=2,7,3,0","_CRT_SECURE_NO_WARNINGS",[[CMAKE_INTDIR="RelWithDebInfo"]],"expat_EXPORTS"
         }
+		includedirs {
+			"./build/linux"
+		}
 		buildoptions { 
             "-std=c++17", 
             "-I/usr/include/x86_64-linux-gnu/c++/13" 
