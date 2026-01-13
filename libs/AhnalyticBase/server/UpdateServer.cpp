@@ -2,8 +2,8 @@
 #include "AhnalyticBase/helper/Enviroment.hpp"
 
 #include "AhnalyticBase/database/FileDatabase.hpp"
-#include "AhnalyticBase/github/github.hpp"
-#include "AhnalyticBase/github/githubcrawler.hpp"
+#include "AhnalyticBase/github/Github.hpp"
+#include "AhnalyticBase/github/GithubCrawler.hpp"
 
 #define CPPHTTPLIB_NO_MULTIPART_FORM_DATA
 #define CPPHTTPLIB_OPENSSL_SUPPORT

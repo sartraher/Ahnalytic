@@ -6,6 +6,7 @@
 // #include "soci/postgresql/soci-postgresql.h"
 
 #include <fstream>
+#include <atomic>
 
 // #include "BS_thread_pool.hpp"
 

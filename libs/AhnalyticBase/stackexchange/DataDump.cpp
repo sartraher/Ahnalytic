@@ -6,6 +6,7 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <cstring>
 
 #include <expat.h>
 
@@ -36,9 +37,19 @@ DataDump::~DataDump()
 
 void DataDump::parseXMLFile(const char* fileName)
 {
+#ifdef _WIN32
   errno_t error = fopen_s(&privateData->file, fileName, "r");
+#else
+  privateData->file = fopen(fileName, "r");
+  int error = (privateData->file == nullptr) ? errno : 0;
+#endif
 
-  if (error == 0)
+  if (error != 0)
+    return;
+
+  //errno_t error = fopen_s(&privateData->file, fileName, "r");
+
+  //if (error == 0)
   {
     if (!privateData->file)
     {

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="build">
+      <UniqueIdentifier>{D5562E0F-416B-56C0-0AED-F91F76C052F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="build\lib">
+      <UniqueIdentifier>{7B589319-E7C2-4790-3001-F9359CAA25E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{3C8C880B-A895-887C-3111-9F7C9D19947C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\xmlparse.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xmlrole.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xmltok.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build\lib\libexpat.def">
+      <Filter>build\lib</Filter>
+    </None>
+  </ItemGroup>
+</Project>

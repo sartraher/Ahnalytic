@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
+#include <list>
 
 struct TSTreeCursor;
 struct TSLanguage;

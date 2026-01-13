@@ -1,6 +1,6 @@
 workspace "Ahnalytics"
     configurations { "Debug", "Release" }
-    platforms { "Win32", "x64" }
+    platforms { "x64" }
 
     filter "platforms:x64"
         architecture "x86_64"
@@ -21,6 +21,7 @@ dofile("3rdParty/zlib/premake5.lua")
 group "3rdParty/other"
 dofile("3rdParty/SrvLib/premake5.lua")
 dofile("3rdParty/openssl-3.5.4/premake5.lua")
+dofile("3rdParty/expat/premake5.lua")
 
 group "3rdParty/soci"
 dofile("3rdParty/soci/premake5.lua")
