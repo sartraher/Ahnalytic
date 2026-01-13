@@ -17,7 +17,6 @@ project "AhnalyticScannerServer"
         "*.cpp",
         "*.hpp",
         "*.h",
-		"resource.rc",
 		"../../images/logo.ico"
     }
 
@@ -36,6 +35,9 @@ project "AhnalyticScannerServer"
         systemversion "latest"
         characterset "Unicode"
         links { "ws2_32" }  -- if you need WinSock
+		files {
+			"resource.rc"
+		}
 
     filter "system:linux or system:macosx"
         pic "On"

@@ -16,8 +16,7 @@ project "AhnalyticUpdateServer"
     files {
         "*.cpp",
         "*.hpp",
-        "*.h",
-		"resource.rc",
+        "*.h",		
 		"../../images/update.ico"
     }
 
@@ -36,6 +35,9 @@ project "AhnalyticUpdateServer"
         systemversion "latest"
         characterset "Unicode"
         links { "ws2_32" }  -- optional for networking
+		files {
+			"resource.rc"
+		}
 
     filter "system:linux or system:macosx"
         pic "On"
