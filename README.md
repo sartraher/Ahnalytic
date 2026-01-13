@@ -95,7 +95,7 @@ Open Ahnalytics.sln in the repository root and build using Visual Studio.
 
 ```bash
 premake5 gmake2
-make
+make config=release_x64
 ```
 
 # Data

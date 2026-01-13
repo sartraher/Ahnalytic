@@ -39,32 +39,6 @@ group "apps"
 dofile("apps/AhnalyticScannerServer/premake5.lua")
 dofile("apps/AhnalyticUpdateServer/premake5.lua")
 
--- tests, visual studio only
-group "tests"
-externalproject "CompressionTest"
-    kind "ConsoleApp"
-    language "C++"
-    location "tests/CompressionTest" -- path where the .vcxproj resides
-	dependson { "AhnalyticBase" }
-	
-externalproject "DatabaseTest"
-    kind "ConsoleApp"
-    language "C++"
-    location "tests/DatabaseTest" -- path where the .vcxproj resides
-	dependson { "AhnalyticBase" }
-	
-externalproject "ImportTest"
-    kind "ConsoleApp"
-    language "C++"
-    location "tests/ImportTest" -- path where the .vcxproj resides
-	dependson { "AhnalyticBase" }
-	
-externalproject "SearchTest"
-    kind "ConsoleApp"
-    language "C++"
-    location "tests/SearchTest" -- path where the .vcxproj resides
-	dependson { "AhnalyticBase" }
-	
 group "install"
 project "Install"
     kind "Utility"
@@ -85,3 +59,19 @@ project "Install"
 		prebuildcommands {
 			("if not exist \"%{wks.location}bin\" (mkdir \"%{wks.location}bin\") && for /R \"%{wks.location}out\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\" %%f in (*.dll) do copy \"%%f\" \"%{wks.location}bin\\\" && for /R \"%{wks.location}out\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\" %%f in (*.exe) do copy \"%%f\" \"%{wks.location}bin\\\"")
 		}
+		
+-- tests, visual studio only
+if _ACTION:match("vs") and os.target() == "windows" then
+    group "tests"
+    
+    local tests = { "CompressionTest", "DatabaseTest", "ImportTest", "SearchTest" }
+    for _, t in ipairs(tests) do
+        externalproject(t)
+            kind "ConsoleApp"
+            language "C++"
+            location("tests/" .. t)
+            dependson { "AhnalyticBase" }
+    end
+end
+
+filter {} 

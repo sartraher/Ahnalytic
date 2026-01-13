@@ -25,11 +25,27 @@ project "AhnalyticScannerServer"
         "../../3rdParty/SrvLib",
         "../../3rdParty"
     }
+	
+	libdirs {
+		"../../3rdParty",
+		"../../3rdParty/openssl-3.5.4",
+		"../../out/lib/%{cfg.platform}/%{cfg.buildcfg}",
+		"../../out/bin/%{cfg.platform}/%{cfg.buildcfg}"
+	}
 
     links {
         "SrvLib",
-        "AhnalyticBase"
-    }
+        "AhnalyticBase",
+		"archive_static",
+		"libexpat",
+		"Tree-Sitter",
+		"Tree-Sitter-CPP",
+		"soci_sqlite3_4_1",
+		"soci_core_4_1",
+		"libbsc",
+		"LzmaLib",
+		"zlibstatic"
+    }    
 
     filter "system:windows"
         systemversion "latest"
