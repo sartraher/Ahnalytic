@@ -119,6 +119,8 @@ void SnippedDatabase::iterateSnippeds(std::function<void(uint32_t, const std::st
 
     if (lastSourceTreeId != sourceTreeDataID)
     {
+      delete root;
+      root = nullptr;
       std::vector<char> sourceTreeData;
       lastSourceTreeId = sourceTreeDataID;
       getSourceTreeData(sourceTreeDataID, sourceTreeData);
@@ -132,4 +134,6 @@ void SnippedDatabase::iterateSnippeds(std::function<void(uint32_t, const std::st
     if (root != nullptr && root->children.size() > sourceTreeDataIndex)
       callback(internalId, licence, (SourceStructureTree*)root->children.at(sourceTreeDataIndex));
   }
+
+  delete root;
 }

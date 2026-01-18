@@ -38,6 +38,7 @@ dofile("libs/AhnalyticBase/premake5.lua")
 group "apps"
 dofile("apps/AhnalyticScannerServer/premake5.lua")
 dofile("apps/AhnalyticUpdateServer/premake5.lua")
+dofile("apps/AhnalyticUpdateRunner/premake5.lua")
 
 group "install"
 project "Install"
@@ -57,7 +58,7 @@ project "Install"
 	
 	filter "system:windows"
 		prebuildcommands {
-			("if not exist \"%{wks.location}bin\" (mkdir \"%{wks.location}bin\") && for /R \"%{wks.location}out\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\" %%f in (*.dll) do copy \"%%f\" \"%{wks.location}bin\\\" && for /R \"%{wks.location}out\\bin\\%{cfg.platform}\\%{cfg.buildcfg}\" %%f in (*.exe) do copy \"%%f\" \"%{wks.location}bin\\\"")
+			("if not exist \"%{wks.location}bin\" ( packbuild.cmd %{wks.location}\\bin %{wks.location}\\out\\bin\\%{cfg.platform}\\%{cfg.buildcfg} )")
 		}
 		
 -- tests, visual studio only

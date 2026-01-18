@@ -69,7 +69,6 @@ project "AhnalyticBase"
             "Tree-Sitter",
             "Tree-Sitter-CPP",
             "soci_sqlite3_4_1",
-            "soci_odbc_4_1",
             "soci_core_4_1",
             "libbsc",
             "LzmaLib",

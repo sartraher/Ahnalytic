@@ -15,6 +15,7 @@ public:
   std::filesystem::path workFolder;
   std::filesystem::path dataFolder;
   std::filesystem::path scanFolder;
+  std::filesystem::path webFolder;
 
 private:
 protected:

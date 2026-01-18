@@ -44,3 +44,19 @@ void StackExchangeExtractDatabase::processSnippeds(std::function<void(const Snip
   for (const soci::row& r : rowSet)
     callback({r.get<std::string>("StackExId"), r.get<std::string>("Code"), r.get<std::string>("Licence"), r.get<std::string>("Date")});
 }
+
+void StackExchangeExtractDatabase::getSnipped(const std::string& stackExId, std::string& date, std::string& licence, std::string& code)
+{
+  const std::lock_guard<std::recursive_mutex> lock(mutex);
+
+  soci::rowset<soci::row> rowSet =
+      (sql->prepare << "SELECT Date,Licence,Code FROM StackExSnipped WHERE StackExId=:stackExId", soci::use(stackExId, "stackExId"));
+
+  for (const soci::row& r : rowSet)
+  {
+    date = r.get<std::string>("Date");
+    licence = r.get<std::string>("Licence");
+    code = r.get<std::string>("Code");
+    break;
+  }
+}

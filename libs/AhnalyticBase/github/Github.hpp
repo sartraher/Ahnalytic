@@ -38,7 +38,7 @@ public:
   bool scanTag(std::unordered_map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
                std::unordered_map<std::string, ScanTreeData>& lastFiles, std::unordered_map<std::string, std::string>& lastFileData) const;
 
-  std::string cleanFileName(const std::string& name) const;
+  static std::string cleanFileName(const std::string& name);
 
 private:
   std::string basePath;

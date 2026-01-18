@@ -31,6 +31,21 @@ struct DLLEXPORT Tree
       delete child;
   }
 
+  Tree<T>* clone() const
+  {
+    Tree<T>* ret = new Tree<T>(data);
+    ret->children.reserve(children.size());
+
+    for (Tree<T>* child : children)
+    {
+      Tree<T>* childClone = child->clone();
+      childClone->parent = ret;
+      ret->children.push_back(childClone);
+    }
+
+    return ret;
+  }
+
   bool operator!=(const Tree<T>& other) const
   {
     return !((*this) == other);
@@ -248,7 +263,7 @@ Tree<T>* rebuildTree(const std::vector<FlatNodeDeDup<T>>& dedupedNodes, const st
   {
     auto iter = treeLookup.find(index);
     if (iter != treeLookup.end())
-      return iter->second;
+      return iter->second->clone();
     else
     {
       FlatNode<T>* flatNode = flatList[index];

@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 struct TagInfo
 {
   std::string name;
@@ -20,7 +23,7 @@ struct BranchInfo
   std::string commitSha;
 };
 
-struct RepoInfo
+struct DLLEXPORT RepoInfo
 {
   std::string name;
   std::string fullName;
@@ -33,6 +36,9 @@ struct RepoInfo
 
   std::vector<TagInfo> tags;
   std::vector<BranchInfo> branches;
+
+  json serialize() const;
+  void deserialize(const json& data);
 };
 
 class DLLEXPORT GitHubRepoDatabase : public Database

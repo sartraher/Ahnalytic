@@ -5,11 +5,63 @@
 // #include "soci/mysql/soci-mysql.h"
 #include "soci/postgresql/soci-postgresql.h"
 
-#include <nlohmann/json.hpp>
-#include <sstream>
 #include <algorithm>
+#include <sstream>
 
-using json = nlohmann::json;
+inline void to_json(json& j, const TagInfo& t)
+{
+  j = json{{"name", t.name}, {"commitSha", t.commitSha}};
+}
+
+inline void from_json(const json& j, TagInfo& t)
+{
+  j.at("name").get_to(t.name);
+  j.at("commitSha").get_to(t.commitSha);
+}
+
+inline void to_json(json& j, const BranchInfo& b)
+{
+  j = json{{"name", b.name}, {"commitSha", b.commitSha}};
+}
+
+inline void from_json(const json& j, BranchInfo& b)
+{
+  j.at("name").get_to(b.name);
+  j.at("commitSha").get_to(b.commitSha);
+}
+
+inline void to_json(json& j, const RepoInfo& r)
+{
+  j = json{{"name", r.name},         {"fullName", r.fullName},     {"htmlUrl", r.htmlUrl},       {"license", r.license},
+           {"language", r.language}, {"lastPushed", r.lastPushed}, {"headBranch", r.headBranch}, {"headSha", r.headSha},
+           {"tags", r.tags},         {"branches", r.branches}};
+}
+
+inline void from_json(const json& j, RepoInfo& r)
+{
+  j.at("name").get_to(r.name);
+  j.at("fullName").get_to(r.fullName);
+  j.at("htmlUrl").get_to(r.htmlUrl);
+  j.at("license").get_to(r.license);
+  j.at("language").get_to(r.language);
+  j.at("lastPushed").get_to(r.lastPushed);
+  j.at("headBranch").get_to(r.headBranch);
+  j.at("headSha").get_to(r.headSha);
+  j.at("tags").get_to(r.tags);
+  j.at("branches").get_to(r.branches);
+}
+
+json RepoInfo::serialize() const
+{
+  json ret;
+  to_json(ret, *this);
+  return ret;
+}
+
+void RepoInfo::deserialize(const json& data)
+{
+  from_json(data, *this);
+}
 
 // -----------------------------------------------------------------------------
 // Constructor

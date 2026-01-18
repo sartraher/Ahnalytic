@@ -1,8 +1,8 @@
 #ifndef treesearch_hpp__
 #define treesearch_hpp__
 
-#include "AhnalyticBase/tree/SourceStructureTree.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
+#include "AhnalyticBase/tree/SourceStructureTree.hpp"
 
 #include <filesystem>
 #include <map>
@@ -38,6 +38,13 @@ struct TreeSearchResultSet
 class TreeSearchResult : public std::vector<TreeSearchResultSet>
 {
 public:
+  enum ResultSourceTypeE
+  {
+    Stackexchange,
+    Github,
+    SourceForge
+  };
+
   TreeSearchResult() {};
 
   std::string sourceDb;
@@ -47,6 +54,10 @@ public:
   uint32_t sourceInternalId = 0;
 
   std::string searchFile;
+  ResultSourceTypeE type;
+
+  std::string sourceContent;
+  std::string searchContent;
 
   operator bool() const
   {
@@ -58,8 +69,12 @@ class TreeResultInterface
 {
 public:
   virtual bool isAborted() = 0;
+
   virtual void addResult(const TreeSearchResult& result) = 0;
   virtual std::vector<TreeSearchResult> getResult() = 0;
+
+  virtual void addDeepResult(const TreeSearchResult& result) = 0;
+  virtual std::vector<TreeSearchResult> getDeepResult() = 0;
 };
 
 struct SearchNodes
@@ -84,13 +99,16 @@ public:
   TreeSearchResult searchTree(SourceStructureTree* base, SourceStructureTree* search, const TreeSearchOptions& options);
   TreeSearchResult searchTree(const SearchNodes& baseNodes, const SearchNodes& searchNodes, const TreeSearchOptions& options);
 
-  TreeSearchResult searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize);
+  TreeSearchResult searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize, bool fast);
 
   void search(std::filesystem::path& path, const EnviromentC& env, TreeResultInterface* resultInter);
   void searchDeep(std::filesystem::path& path, const EnviromentC& env, TreeResultInterface* resultInter);
 
 private:
 protected:
+  std::string getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha);
+  std::string getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision);
+  std::string getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId);
 };
 
 #endif

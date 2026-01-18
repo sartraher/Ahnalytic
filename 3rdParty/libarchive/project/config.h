@@ -1290,9 +1290,10 @@ typedef uint64_t uintmax_t;
 
 /* Define to 1 if you have the <zlib.h> header file. */
 /* #undef HAVE_ZLIB_H */
+#define HAVE_ZLIB_H 1
 
 /* Define to 1 if you have the <zstd.h> header file. */
-/* #undef HAVE_ZSTD_H */
+#undef HAVE_ZSTD_H
 
 /* Define to 1 if you have the `ctime_s' function. */
 #define HAVE_CTIME_S 1

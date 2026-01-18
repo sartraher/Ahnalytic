@@ -1,9 +1,10 @@
 #include "ScanServer.hpp"
 #include "AhnalyticBase/database/ScanDatabase.hpp"
-#include "AhnalyticBase/tree/TreeSearch.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
+#include "AhnalyticBase/tree/TreeSearch.hpp"
 
-#define CPPHTTPLIB_NO_MULTIPART_FORM_DATA
+// Remove multipart restriction to enable file uploads
+// #define CPPHTTPLIB_NO_MULTIPART_FORM_DATA
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #define CPPHTTPLIB_ZLIB_SUPPORT
 #include <httplib.h>
@@ -15,6 +16,7 @@ using json = nlohmann::json;
 
 #include <archive.h>
 #include <archive_entry.h>
+#include <fstream>
 
 class ScanServerPrivate
 {
@@ -215,11 +217,39 @@ void ScanServer::init()
     json result;
     for (auto& [id, name] : priv->scanDatabase->getScans(std::stoull(req.matches[1]), std::stoull(req.matches[2]), std::stoull(req.matches[3])))
       result[std::to_string(id)] = name;
-
     ok(res, result);
   });
 
-  /* ===================== START / ABORT ===================== */
+  priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/upload)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    const size_t groupId = std::stoull(req.matches[1]);
+    const size_t projectId = std::stoull(req.matches[2]);
+    const size_t versionId = std::stoull(req.matches[3]);
+    const size_t scanId = std::stoull(req.matches[4]);
+
+    if (!req.form.has_file("file"))
+      return bad_request(res, "Missing 'file' in multipart form data");
+
+    httplib::FormData file = req.form.get_file("file");
+
+    if (file.content.empty())
+      return bad_request(res, "File content is empty");
+
+    try
+    {
+      // Convert file content to vector<char>
+      std::vector<char> fileData(file.content.begin(), file.content.end());
+
+      // Add the zip data to the database
+      priv->scanDatabase->addZipData(scanId, groupId, projectId, versionId, scanId, fileData);
+
+      ok(res, {{"status", "uploaded"}, {"filename", file.filename}, {"size", fileData.size()}});
+    }
+    catch (const std::exception& e)
+    {
+      bad_request(res, std::string("Error processing file: ") + e.what());
+    }
+  });
 
   priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/start)", [&](const httplib::Request& req, httplib::Response& res)
   {
@@ -256,7 +286,7 @@ void ScanServer::init()
 
     if (scanData != nullptr)
     {
-      std::vector<TreeSearchResult> searchResults = scanData->getResult();
+      std::vector<TreeSearchResult> searchResults = scanData->getDeepResult();
 
       // TODO: move inside of scandata
       const std::lock_guard<std::recursive_mutex> lock(scanData->mutex);
@@ -265,7 +295,6 @@ void ScanServer::init()
       ret["status"] = scanData->status;
       ret["id"] = scanData->id;
       ret["name"] = scanData->name;
-      ret["id"] = scanData->id;
 
       json results;
       for (const TreeSearchResult& searchResult : searchResults)
@@ -302,6 +331,10 @@ void ScanServer::init()
     bad_request(res, "Scan not found");
   });
 
+  // Mount /public to ./www directory
+  bool ret = priv->server.set_mount_point("/www", priv->env.webFolder.string());
+
+  // Update Scans in timed thread
   using namespace std::chrono_literals;
   priv->timerScanThread = std::jthread([this](std::stop_token st)
   {
@@ -349,7 +382,7 @@ void ScanServer::updateScans()
           checkoutSvnRevision(path, revision, outPath);
           break;
         case ScanDataTypeE::Archive:
-          extractArchive(priv->env.scanFolder / "data.zip", outPath);
+          extractArchive(nextData->dataPath, outPath);
           break;
         }
 
@@ -365,7 +398,6 @@ void ScanServer::updateScans()
 
         // Deep scan on first level results
         treeSearch.searchDeep(outPath, priv->env, nextData);
-
 
         if (nextData->isAborted())
           return;
@@ -411,45 +443,115 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
     std::filesystem::create_directories(outputPath);
 
   struct archive* a = archive_read_new();
-  struct archive* ext = archive_write_disk_new();
-  struct archive_entry* entry;
+  struct archive_entry* entry = nullptr;
 
-  archive_read_support_format_all(a);
-  archive_read_support_filter_all(a);
+  if (!a)
+    throw std::runtime_error("Failed to allocate archive structure");
 
-  archive_write_disk_set_options(ext, ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_ACL | ARCHIVE_EXTRACT_FFLAGS);
-
-  if (archive_read_open_filename(a, archivePath.string().c_str(), 10240) != ARCHIVE_OK)
-    throw std::runtime_error(archive_error_string(a));
-
-  while (archive_read_next_header(a, &entry) == ARCHIVE_OK)
+  try
   {
-    std::filesystem::path fullPath = outputPath / archive_entry_pathname(entry);
-    archive_entry_set_pathname(entry, fullPath.string().c_str());
+    archive_read_support_format_all(a);
+    archive_read_support_filter_all(a);
 
-    if (archive_write_header(ext, entry) != ARCHIVE_OK)
-      throw std::runtime_error(archive_error_string(ext));
-
-    const void* buff;
-    size_t size;
-    la_int64_t offset;
-
-    while (true)
+    std::string archivePathStr = archivePath.string();
+    if (archive_read_open_filename(a, archivePathStr.c_str(), 10240) != ARCHIVE_OK)
     {
-      int r = archive_read_data_block(a, &buff, &size, &offset);
-      if (r == ARCHIVE_EOF)
-        break;
-      if (r != ARCHIVE_OK)
-        throw std::runtime_error(archive_error_string(a));
-
-      archive_write_data_block(ext, buff, size, offset);
+      throw std::runtime_error(std::string("Failed to open archive: ") + archive_error_string(a));
     }
-  }
 
-  archive_read_close(a);
-  archive_read_free(a);
-  archive_write_close(ext);
-  archive_write_free(ext);
+    int r;
+    while ((r = archive_read_next_header(a, &entry)) == ARCHIVE_OK || r == ARCHIVE_WARN)
+    {
+      if (r != ARCHIVE_OK && r != ARCHIVE_WARN)
+        break;
+
+      const char* entryPath = archive_entry_pathname(entry);
+      if (!entryPath)
+        continue;
+
+      std::filesystem::path fullPath = outputPath / entryPath;
+      fullPath = fullPath.lexically_normal();
+
+      // Skip entries that try to escape the output directory
+      if (!std::filesystem::path(entryPath).is_relative())
+        continue;
+
+      // Check if path tries to escape output directory
+      try
+      {
+        if (std::filesystem::relative(fullPath, outputPath).string().find("..") != std::string::npos)
+          continue;
+      }
+      catch (...)
+      {
+        continue;
+      }
+
+      // Handle directories
+      if (archive_entry_filetype(entry) == AE_IFDIR)
+      {
+        std::error_code ec;
+        std::filesystem::create_directories(fullPath, ec);
+        continue;
+      }
+
+      // Create parent directories
+      std::filesystem::path parentPath = fullPath.parent_path();
+      if (!parentPath.empty() && parentPath != outputPath)
+      {
+        std::error_code ec;
+        std::filesystem::create_directories(parentPath, ec);
+        if (ec && !std::filesystem::exists(parentPath))
+          throw std::runtime_error("Failed to create directory: " + parentPath.string());
+      }
+
+      // Manually extract file data
+      std::ofstream outFile(fullPath, std::ios::binary);
+      if (!outFile)
+        throw std::runtime_error("Failed to open file for writing: " + fullPath.string());
+
+      const void* buff;
+      size_t size;
+      la_int64_t offset;
+
+      while (true)
+      {
+        int r_data = archive_read_data_block(a, &buff, &size, &offset);
+        if (r_data == ARCHIVE_EOF)
+          break;
+        if (r_data != ARCHIVE_OK && r_data != ARCHIVE_WARN)
+          throw std::runtime_error(std::string("Failed to read archive data: ") + archive_error_string(a));
+
+        if (size > 0)
+        {
+          outFile.write(static_cast<const char*>(buff), size);
+          if (!outFile)
+            throw std::runtime_error("Failed to write file data: " + fullPath.string());
+        }
+      }
+
+      outFile.close();
+
+      // Set file permissions if available (platform-specific)
+#ifndef _WIN32
+      mode_t mode = archive_entry_perm(entry);
+      if (mode != 0)
+      {
+        std::error_code ec;
+        std::filesystem::permissions(fullPath, static_cast<std::filesystem::perms>(mode), std::filesystem::perm_options::replace, ec);
+      }
+#endif
+    }
+
+    archive_read_close(a);
+    archive_read_free(a);
+  }
+  catch (const std::exception&)
+  {
+    archive_read_close(a);
+    archive_read_free(a);
+    throw;
+  }
 }
 
 void ScanServer::start(const std::string& addr, int port)

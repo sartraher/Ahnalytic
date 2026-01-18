@@ -1,10 +1,13 @@
 #include "TreeSearch.hpp"
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
-#include "AhnalyticBase/tree/SourceScanner.hpp"
+#include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
 #include "AhnalyticBase/helper/SSE2ASC2memcmp.hpp"
+#include "AhnalyticBase/tree/SourceScanner.hpp"
 
 #include "BS_thread_pool.hpp"
+
+#include <fstream>
 
 #define WINDOW_SIZE 64
 
@@ -176,7 +179,7 @@ TreeSearchResult TreeSearch::searchTree(const SearchNodes& baseNodes, const Sear
   return ret;
 }
 
-TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize)
+TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize, bool fast)
 {
   TreeSearchResult ret;
 
@@ -208,20 +211,30 @@ TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const Sear
 
           if (memcmp_equal(&baseNodes.nodeData[baseIndex], &searchNodes.nodeData[searchIndex], windowSize * sizeof(uint32_t)))
           {
-            TreeSearchResultSet resultSet;
-            resultSet.baseStart = baseNodes.lineNrs.at(baseIndex);
-            resultSet.baseEnd = baseNodes.lineNrs.at(baseIndex + windowSize);
-            resultSet.searchStart = searchNodes.lineNrs.at(searchIndex);
-            resultSet.searchEnd = searchNodes.lineNrs.at(searchIndex + windowSize);
+            if (fast)
+            {
+              // We will do a deep search either way
+              TreeSearchResultSet resultSet;
+              ret.push_back(resultSet);
+              return ret;
+            }
+            else
+            {
+              TreeSearchResultSet resultSet;
+              resultSet.baseStart = baseNodes.lineNrs.at(baseIndex);
+              resultSet.baseEnd = baseNodes.lineNrs.at(baseIndex + windowSize);
+              resultSet.searchStart = searchNodes.lineNrs.at(searchIndex);
+              resultSet.searchEnd = searchNodes.lineNrs.at(searchIndex + windowSize);
 
-            for (uint32_t index = resultSet.baseStart; index <= resultSet.baseEnd; index++)
-              doneBaseLines.insert(index);
+              for (uint32_t index = resultSet.baseStart; index <= resultSet.baseEnd; index++)
+                doneBaseLines.insert(index);
 
-            for (uint32_t index = resultSet.searchStart; index <= resultSet.searchEnd; index++)
-              doneSearchLines.insert(index);
+              for (uint32_t index = resultSet.searchStart; index <= resultSet.searchEnd; index++)
+                doneSearchLines.insert(index);
 
-            ret.push_back(resultSet);
-            break;
+              ret.push_back(resultSet);
+              break;
+            }
           }
         }
       }
@@ -261,7 +274,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   {
     SnippedDatabase db(DBType::SQLite, dbPath.string());
 
-    db.iterateSnippeds([this, &nodes, resultInter](uint32_t internalId, const std::string& licence, SourceStructureTree* tree)
+    db.iterateSnippeds([this, &nodes, dbPath, resultInter](uint32_t internalId, const std::string& licence, SourceStructureTree* tree)
     {
       if (resultInter->isAborted())
         return;
@@ -273,9 +286,16 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         if (resultInter->isAborted())
           return;
 
-        TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE);
+        TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE, true);
         if (result)
+        {
+          result.type = TreeSearchResult::Stackexchange;
+          result.sourceDb = dbPath.string();
+          result.sourceInternalId = internalId;
+          result.searchFile = searchNodes.filePath.string();
+
           resultInter->addResult(result);
+        }
       }
     });
   };
@@ -284,7 +304,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   {
     FileDatabase db(DBType::SQLite, dbPath.string());
 
-    db.iterateFiles([this, &nodes, resultInter](uint32_t fileId, const std::string& sha, const std::string& licence, SourceStructureTree* tree)
+    db.iterateFiles([this, &nodes, resultInter, dbPath](uint32_t fileId, const std::string& sha, const std::string& licence, SourceStructureTree* tree)
     {
       if (resultInter->isAborted())
         return;
@@ -296,9 +316,17 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         if (resultInter->isAborted())
           return;
 
-        TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE);
+        TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE, true);
         if (result)
+        {
+          result.type = TreeSearchResult::Github;
+          result.sourceDb = dbPath.string();
+          result.sourceRevision = sha;
+          result.sourceInternalId = fileId;
+          result.searchFile = searchNodes.filePath.string();
+
           resultInter->addResult(result);
+        }
       }
     });
   };
@@ -307,7 +335,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   {
     FileDatabase db(DBType::SQLite, dbPath.string());
 
-    db.iterateFiles([this, &nodes, resultInter](uint32_t fileId, const std::string& revision, const std::string& licence, SourceStructureTree* tree)
+    db.iterateFiles([this, &nodes, resultInter, dbPath](uint32_t fileId, const std::string& revision, const std::string& licence, SourceStructureTree* tree)
     {
       if (resultInter->isAborted())
         return;
@@ -319,9 +347,17 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         if (resultInter->isAborted())
           return;
 
-        TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE);
+        TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE, true);
         if (result)
+        {
+          result.type = TreeSearchResult::SourceForge;
+          result.sourceDb = dbPath.string();
+          result.sourceRevision = revision;
+          result.sourceInternalId = fileId;
+          result.searchFile = searchNodes.filePath.string();
+
           resultInter->addResult(result);
+        }
       }
     });
   };
@@ -348,34 +384,40 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
     }
 
     // github
-    std::filesystem::path dbGithubExchnage = dbByFormatPath / "github";
-    for (auto& filePath : std::filesystem::recursive_directory_iterator(dbGithubExchnage))
+    std::filesystem::path dbGithub = dbByFormatPath / "github";
+    if (std::filesystem::exists(dbGithub))
     {
-      if (resultInter->isAborted())
-        return;
-
-      std::filesystem::path dbPath = filePath.path();
-      if (dbPath.extension() == ".db")
+      for (auto& filePath : std::filesystem::recursive_directory_iterator(dbGithub))
       {
-        std::vector<SearchNodes> nodes = iter->second;
-        std::future<void> result = pool.submit_task([&scanGitHubDb, dbPath, nodes]() { return scanGitHubDb(dbPath, nodes); });
-        currentTasks.push_back(std::move(result));
+        if (resultInter->isAborted())
+          return;
+
+        std::filesystem::path dbPath = filePath.path();
+        if (dbPath.extension() == ".db")
+        {
+          std::vector<SearchNodes> nodes = iter->second;
+          std::future<void> result = pool.submit_task([&scanGitHubDb, dbPath, nodes]() { return scanGitHubDb(dbPath, nodes); });
+          currentTasks.push_back(std::move(result));
+        }
       }
     }
 
     // sourceforge
-    std::filesystem::path dbSourceForgeExchnage = dbByFormatPath / "sourceforge";
-    for (auto& filePath : std::filesystem::recursive_directory_iterator(dbSourceForgeExchnage))
+    std::filesystem::path dbSourceForge = dbByFormatPath / "sourceforge";
+    if (std::filesystem::exists(dbSourceForge))
     {
-      if (resultInter->isAborted())
-        return;
-
-      std::filesystem::path dbPath = filePath.path();
-      if (dbPath.extension() == ".db")
+      for (auto& filePath : std::filesystem::recursive_directory_iterator(dbSourceForge))
       {
-        std::vector<SearchNodes> nodes = iter->second;
-        std::future<void> result = pool.submit_task([&scanSourceforgeDb, dbPath, nodes]() { return scanSourceforgeDb(dbPath, nodes); });
-        currentTasks.push_back(std::move(result));
+        if (resultInter->isAborted())
+          return;
+
+        std::filesystem::path dbPath = filePath.path();
+        if (dbPath.extension() == ".db")
+        {
+          std::vector<SearchNodes> nodes = iter->second;
+          std::future<void> result = pool.submit_task([&scanSourceforgeDb, dbPath, nodes]() { return scanSourceforgeDb(dbPath, nodes); });
+          currentTasks.push_back(std::move(result));
+        }
       }
     }
   }
@@ -394,4 +436,113 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
 void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env, TreeResultInterface* resultInter)
 {
+  std::vector<TreeSearchResult> fastResults = resultInter->getResult();
+
+  struct DeepScanData
+  {
+    std::string content;
+    SourceStructureTree* tree;
+  };
+
+  SourceScanner scanner;
+  std::unordered_map<std::string, DeepScanData> trees;
+
+  for (const TreeSearchResult& result : fastResults)
+  {
+    auto iter = trees.find(result.searchFile);
+    if (iter == trees.end())
+    {
+      uint32_t resSize;
+      std::string sourceType;
+
+      std::ifstream in(result.searchFile, std::ios::binary);
+      if (!in.is_open())
+        continue;
+
+      std::ostringstream ss;
+      ss << in.rdbuf();
+      std::string content = ss.str();
+
+      std::filesystem::path path = result.searchFile;
+      SourceStructureTree* tree = scanner.scan(path, resSize, sourceType);
+      trees[result.searchFile] = {content, tree};
+    }
+
+    std::string cmpFile;
+    switch (result.type)
+    {
+    case TreeSearchResult::Github:
+      cmpFile = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision);
+      break;
+    case TreeSearchResult::SourceForge:
+      cmpFile = getSourceForgeFile(result.sourceDb, result.sourceInternalId, result.sourceRevision);
+      break;
+    case TreeSearchResult::Stackexchange:
+      cmpFile = getStackexchangeFile(result.sourceDb, result.sourceInternalId);
+      break;
+    }
+
+    uint32_t resSize;
+    std::string sourceType;
+    SourceStructureTree* dbTree = scanner.scan(cmpFile, resSize, sourceType);
+
+    if (dbTree == nullptr)
+    {
+      // TODO: add error, should not happen
+      continue;
+    }
+
+    SearchNodes dbNodes = initNodes(dbTree, WINDOW_SIZE);
+    SearchNodes searchNodes = initNodes(trees[result.searchFile].tree, WINDOW_SIZE);
+
+    TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE, false);
+    if (result)
+    {
+      result.sourceContent = trees[result.searchFile].content;
+      result.searchContent = cmpFile;
+
+      resultInter->addDeepResult(result);
+    }
+  }
+}
+
+std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha)
+{
+  std::string ret;
+  // TODO
+  return ret;
+}
+
+std::string TreeSearch::getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision)
+{
+  std::string ret;
+  // TODO
+  return ret;
+}
+
+std::string TreeSearch::getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId)
+{
+  std::string ret;
+
+  auto replace = [](std::string& str, const std::string& from, const std::string& to)
+  {
+    size_t start_pos = str.find(from);
+    if (start_pos == std::string::npos)
+      return str;
+
+    str.replace(start_pos, from.length(), to);
+    return str;
+  };
+
+  // Hack for now
+  std::string dataDb = sourceDb;
+  dataDb = replace(dataDb, "_CPP.db", ".db");
+  dataDb = replace(dataDb, "CPP", "base");
+
+  std::string date;
+  std::string licence;
+  StackExchangeExtractDatabase extractDb(DBType::SQLite, dataDb);
+  extractDb.getSnipped(std::to_string(sourceInternalId), date, licence, ret);
+
+  return ret;
 }

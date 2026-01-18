@@ -77,6 +77,18 @@ public:
     return results;
   }
 
+  virtual void addDeepResult(const TreeSearchResult& result)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    deepResults.push_back(result);
+  }
+
+  virtual std::vector<TreeSearchResult> getDeepResult()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    return deepResults;
+  }
+
   std::recursive_mutex mutex;
 
   ScanDataTypeE type;
@@ -86,6 +98,7 @@ public:
   ScanDataStatusE status;
 
   std::vector<TreeSearchResult> results;
+  std::vector<TreeSearchResult> deepResults;
 
 private:
 protected:
@@ -118,10 +131,10 @@ private:
 protected:
 };
 
-class DLLEXPORT ScanDatabase// : public Database
+class DLLEXPORT ScanDatabase // : public Database
 {
 public:
-  ScanDatabase(/*DBType type, std::string connectionString, */const std::filesystem::path& scanFolder);
+  ScanDatabase(/*DBType type, std::string connectionString, */ const std::filesystem::path& scanFolder);
 
   // Groups
   size_t createGroup(const std::string& name);
@@ -161,7 +174,7 @@ private:
   ScanDatabasePrivate* priv;
 
 protected:
-  //void initTables();
+  // void initTables();
 };
 
 #endif

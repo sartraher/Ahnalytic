@@ -3,6 +3,8 @@ project "archive_static"
     language "C++"
     cppdialect "C++20"
 
+	dependson { "zlib" }
+
     -- Output directories
     targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
@@ -185,8 +187,19 @@ project "archive_static"
     includedirs {
 	    ".",
         "./libarchive",
-        "./libarchive/."
+        "./libarchive/.",
+		"../zlib",
+		"../zlib/build"
     }
+	
+	libdirs {
+		"../../out/lib/%{cfg.platform}/%{cfg.buildcfg}",
+		"../../out/bin/%{cfg.platform}/%{cfg.buildcfg}"
+	}
+
+    links {
+		"zlibstatic"
+    }   
 	
 	defines { "LIBARCHIVE_STATIC", "HAVE_CONFIG_H" }
 
@@ -195,8 +208,6 @@ project "archive_static"
 			"./project"
 		}
 
-    
-			
     filter "system:windows"
         systemversion "latest"
         characterset "MBCS"

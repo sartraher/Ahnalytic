@@ -3571,10 +3571,11 @@ xmllite_read_toc(struct archive_read *a)
 		goto out;
 	}
 
-	if (FAILED(CreateXmlReader(&IID_IXmlReader, (void **)&reader, NULL))) {
-		r = ARCHIVE_FATAL;
-		goto out;
-	}
+	// TODO: find windows lib an revert
+	//if (FAILED(CreateXmlReader(&IID_IXmlReader, (void **)&reader, NULL))) {
+	//	r = ARCHIVE_FATAL;
+	//	goto out;
+	//}
 
 	if (FAILED(reader->lpVtbl->SetInput(reader, (IUnknown *)asa))) {
 		archive_set_error(&(a->archive), ARCHIVE_ERRNO_MISC,

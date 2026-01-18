@@ -373,7 +373,7 @@ std::string GitHubHandler::extractOwnerRepo(const std::string& url) const
   return match[1].str() + "/" + match[2].str();
 }
 
-std::string GitHubHandler::cleanFileName(const std::string& name) const
+std::string GitHubHandler::cleanFileName(const std::string& name)
 {
   static const std::string illegal = "\\/:*?\"<>|";
   std::string out;
@@ -500,7 +500,7 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
     return false;
   };
 
-  for (auto it = std::filesystem::recursive_directory_iterator(workPath, std::filesystem::directory_options::skip_permission_denied);
+  for (auto it = std::filesystem::recursive_directory_iterator(workPath.native(), std::filesystem::directory_options::skip_permission_denied);
        it != std::filesystem::recursive_directory_iterator(); ++it)
   {
     const auto& entry = *it;
@@ -514,7 +514,8 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
     std::filesystem::path relPath;
     try
     {
-      relPath = std::filesystem::relative(entry.path(), workPath);
+      //relPath = std::filesystem::relative(entry.path(), workPath);
+      relPath = entry.path().lexically_relative(workPath);
     }
     catch (...)
     {

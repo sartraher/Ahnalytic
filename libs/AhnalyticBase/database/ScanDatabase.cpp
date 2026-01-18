@@ -5,8 +5,8 @@
 // #include "soci/mysql/soci-mysql.h"
 // #include "soci/postgresql/soci-postgresql.h"
 
-#include <fstream>
 #include <atomic>
+#include <fstream>
 
 // #include "BS_thread_pool.hpp"
 
@@ -16,7 +16,7 @@ public:
   std::unordered_map<size_t, GroupData> groups;
   std::filesystem::path scanFolder;
   // BS::thread_pool<BS::tp::none> pool;
-  //std::string connectionString;
+  // std::string connectionString;
   std::recursive_mutex mutex;
 
   std::atomic<int> groupId = 0;
@@ -32,12 +32,12 @@ ScanDatabase::ScanDatabase(/*DBType type, std::string connectionString,*/ const 
     /*Database(type, connectionString),*/ priv(new ScanDatabasePrivate())
 {
   priv->scanFolder = scanFolder;
-  //priv->connectionString = connectionString;
+  // priv->connectionString = connectionString;
 
-  //if (sql != nullptr && sql->is_connected())
+  // if (sql != nullptr && sql->is_connected())
   //{
-  //  initTables();
-  //}
+  //   initTables();
+  // }
 }
 /*
 void ScanDatabase::initTables()
@@ -78,10 +78,10 @@ size_t ScanDatabase::createGroup(const std::string& name)
 {
   const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
 
-  //int id;
+  // int id;
   //*sql << "INSERT INTO \"Group\" (Name) VALUES (:name) RETURNING ID", soci::use(name), soci::into(id);
 
-  //size_t id = *rs.begin();
+  // size_t id = *rs.begin();
   GroupData group;
   group.id = priv->groupId.fetch_add(1);
   group.name = name;
@@ -99,7 +99,7 @@ void ScanDatabase::editGroup(size_t id, const std::string& name)
 
   if (priv->groups.contains(id))
   {
-    //soci::rowset<int> rs = (sql->prepare << "UPDATE Group SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
+    // soci::rowset<int> rs = (sql->prepare << "UPDATE Group SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
 
     priv->groups[id].name = name;
   }
@@ -110,9 +110,11 @@ void ScanDatabase::removeGroup(size_t id)
   auto groupIter = priv->groups.find(id);
   if (groupIter != priv->groups.end())
   {
-    //soci::rowset<int> rs = (sql->prepare << "DELETE FROM Group WHERE ID=:id", soci::use(id, "id"));
+    // soci::rowset<int> rs = (sql->prepare << "DELETE FROM Group WHERE ID=:id", soci::use(id, "id"));
 
-    for (auto projectIter = groupIter->second.projects.begin(); projectIter != groupIter->second.projects.end(); projectIter++)
+    std::unordered_map<size_t, ProjectData> projects = groupIter->second.projects;
+
+    for (auto projectIter = projects.begin(); projectIter != projects.end(); projectIter++)
       removeProject(projectIter->first, id);
 
     std::filesystem::remove_all(priv->scanFolder / std::to_string(id));
@@ -139,9 +141,10 @@ size_t ScanDatabase::createProject(const std::string& name, size_t groupId)
 
   if (groupIter != priv->groups.end())
   {
-    //soci::rowset<int> rs = (sql->prepare << "INSERT INTO Project (Name, GroupID) VALUES (:name,:groupId) RETURNING ID", soci::use(name, "name"), soci::use(groupId, "groupId"));
+    // soci::rowset<int> rs = (sql->prepare << "INSERT INTO Project (Name, GroupID) VALUES (:name,:groupId) RETURNING ID", soci::use(name, "name"),
+    // soci::use(groupId, "groupId"));
 
-    //size_t id = *rs.begin();
+    // size_t id = *rs.begin();
 
     ProjectData project;
     project.id = priv->projectId.fetch_add(1);
@@ -167,7 +170,7 @@ void ScanDatabase::editProject(size_t id, size_t groupId, const std::string& nam
   {
     if (groupIter->second.projects.contains(groupId))
     {
-      //soci::rowset<int> rs = (sql->prepare << "UPDATE Project SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
+      // soci::rowset<int> rs = (sql->prepare << "UPDATE Project SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
 
       groupIter->second.projects[id].name = name;
     }
@@ -185,9 +188,11 @@ void ScanDatabase::removeProject(size_t id, size_t groupId)
     auto projectIter = groupIter->second.projects.find(groupId);
     if (projectIter != groupIter->second.projects.end())
     {
-      //soci::rowset<int> rs = (sql->prepare << "DELETE FROM Project WHERE ID=:id", soci::use(id, "id"));
+      // soci::rowset<int> rs = (sql->prepare << "DELETE FROM Project WHERE ID=:id", soci::use(id, "id"));
 
-      for (auto versionIter = projectIter->second.versions.begin(); versionIter != projectIter->second.versions.end(); versionIter++)
+      std::unordered_map<size_t, VersionData> versions = projectIter->second.versions;
+
+      for (auto versionIter = versions.begin(); versionIter != versions.end(); versionIter++)
         removeVersion(versionIter->first, groupId, id);
 
       groupIter->second.projects.erase(id);
@@ -206,10 +211,10 @@ std::unordered_map<size_t, std::string> ScanDatabase::getProjects(size_t groupId
 
   if (groupIter != priv->groups.end())
   {
-    //if (groupIter->second.projects.contains(groupId))
+    // if (groupIter->second.projects.contains(groupId))
     //{
-      for (auto iter = groupIter->second.projects.begin(); iter != groupIter->second.projects.end(); iter++)
-        ret[iter->first] = iter->second.name;
+    for (auto iter = groupIter->second.projects.begin(); iter != groupIter->second.projects.end(); iter++)
+      ret[iter->first] = iter->second.name;
     //}
   }
 
@@ -227,9 +232,10 @@ size_t ScanDatabase::createVersion(const std::string& name, size_t groupId, size
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      //soci::rowset<int> rs = (sql->prepare << "INSERT INTO Version (Name, GroupID, ProjectID) VALUES (:name,:groupId,:projectId) RETURNING ID", soci::use(name, "name"), soci::use(groupId, "groupId"), soci::use(projectId, "projectId"));
+      // soci::rowset<int> rs = (sql->prepare << "INSERT INTO Version (Name, GroupID, ProjectID) VALUES (:name,:groupId,:projectId) RETURNING ID",
+      // soci::use(name, "name"), soci::use(groupId, "groupId"), soci::use(projectId, "projectId"));
 
-      //size_t id = *rs.begin();
+      // size_t id = *rs.begin();
 
       VersionData version;
       version.id = priv->versionId.fetch_add(1);
@@ -257,7 +263,7 @@ void ScanDatabase::editVersion(size_t id, size_t groupId, size_t projectId, cons
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      //soci::rowset<int> rs = (sql->prepare << "UPDATE Version SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
+      // soci::rowset<int> rs = (sql->prepare << "UPDATE Version SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
 
       projectIter->second.versions[id].name = name;
     }
@@ -278,9 +284,11 @@ void ScanDatabase::removeVersion(size_t id, size_t groupId, size_t projectId)
       auto versionIter = projectIter->second.versions.find(id);
       if (versionIter != projectIter->second.versions.end())
       {
-        //soci::rowset<int> rs = (sql->prepare << "DELETE FROM Version WHERE ID=:id", soci::use(id, "id"));
+        // soci::rowset<int> rs = (sql->prepare << "DELETE FROM Version WHERE ID=:id", soci::use(id, "id"));
 
-        for (auto scanIter = versionIter->second.scans.begin(); scanIter != versionIter->second.scans.end(); scanIter++)
+        std::unordered_map<size_t, ScanData*> scans = versionIter->second.scans;
+
+        for (auto scanIter = scans.begin(); scanIter != scans.end(); scanIter++)
           removeScan(scanIter->first, groupId, projectId, id);
 
         projectIter->second.versions.erase(id);
@@ -325,9 +333,10 @@ size_t ScanDatabase::createScan(const std::string& name, size_t groupId, size_t 
       auto versionIter = projectIter->second.versions.find(projectId);
       if (versionIter != projectIter->second.versions.end())
       {
-        //soci::rowset<int> rs = (sql->prepare << "INSERT INTO Scan (Name, GroupID, ProjectID, VersionID) VALUES (:name,:groupId,:projectId,:versionId) RETURNING ID", soci::use(name, "name"), soci::use(groupId, "groupId"), soci::use(projectId, "projectId"), soci::use(versionId, "versionId"));
+        // soci::rowset<int> rs = (sql->prepare << "INSERT INTO Scan (Name, GroupID, ProjectID, VersionID) VALUES (:name,:groupId,:projectId,:versionId)
+        // RETURNING ID", soci::use(name, "name"), soci::use(groupId, "groupId"), soci::use(projectId, "projectId"), soci::use(versionId, "versionId"));
 
-        //size_t id = *rs.begin();
+        // size_t id = *rs.begin();
 
         ScanData* scanData = new ScanData();
         scanData->id = priv->scanId.fetch_add(1);
@@ -360,7 +369,7 @@ void ScanDatabase::editScan(size_t id, size_t groupId, size_t projectId, size_t 
       auto versionIter = projectIter->second.versions.find(projectId);
       if (versionIter != projectIter->second.versions.end())
       {
-        //soci::rowset<int> rs = (sql->prepare << "UPDATE Scan SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
+        // soci::rowset<int> rs = (sql->prepare << "UPDATE Scan SET Name=:name WHERE ID=:id", soci::use(name, "name"), soci::use(id, "id"));
 
         versionIter->second.scans[id]->name = name;
       }
@@ -382,7 +391,7 @@ void ScanDatabase::removeScan(size_t id, size_t groupId, size_t projectId, size_
       auto versionIter = projectIter->second.versions.find(projectId);
       if (versionIter != projectIter->second.versions.end())
       {
-        //soci::rowset<int> rs = (sql->prepare << "DELETE FROM Scan WHERE ID=:id", soci::use(id, "id"));
+        // soci::rowset<int> rs = (sql->prepare << "DELETE FROM Scan WHERE ID=:id", soci::use(id, "id"));
 
         if (versionIter->second.scans.contains(id))
           delete versionIter->second.scans[id];

@@ -49,11 +49,13 @@ EnviromentC::EnviromentC()
     workFolder = searchPath / reader.getValue("workPath", "pathes", "");
     dataFolder = searchPath / reader.getValue("dataPath", "pathes", "");
     scanFolder = searchPath / reader.getValue("scanPath", "pathes", "");
+    webFolder = searchPath / reader.getValue("webPath", "pathes", "");
 
     dbFolder = dbFolder.lexically_normal().native();
     workFolder = workFolder.lexically_normal().native();
     dataFolder = dataFolder.lexically_normal().native();
     scanFolder = scanFolder.lexically_normal().native();
+    webFolder = webFolder.lexically_normal().native();
   }
 }
 

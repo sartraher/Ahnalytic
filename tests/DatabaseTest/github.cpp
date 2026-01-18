@@ -10,7 +10,7 @@
 TEST(TestCaseGitHub, CrawlGitHub)
 {
   GitHubCrawler crawler;
-  crawler.crawlIncremental("D:/source/Ahnalytic/db/github.db");
+  crawler.crawlIncremental("D:/source/git/Ahnalytic/db/github.db");
 
   EXPECT_EQ(1, 1);
   EXPECT_TRUE(true);
