@@ -1,10 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useScanner } from '../context/ScannerContext';
+import { DiffViewer } from './DiffViewer';
 import '../styles/components.css';
 
+// Helper function to convert numeric status codes to status names
+const getStatusName = (status) => {
+  if (typeof status === 'string') return status;
+  const statusMap = {
+    0: 'pending',
+    1: 'started',
+    2: 'running',
+    3: 'completed',
+    4: 'aborted',
+    5: 'failed',
+  };
+  return statusMap[status] || 'unknown';
+};
+
 export const ScanResults = () => {
-  const { currentGroup, currentProject, currentVersion, currentScan, scanInfo, loading, error } = useScanner();
+  const { currentGroup, currentProject, currentVersion, currentScan, scanInfo, loading, error, loadScanInfo } = useScanner();
   const [expandedResultId, setExpandedResultId] = useState(null);
+
+  // Load scan info automatically when a scan is selected
+  useEffect(() => {
+    if (currentGroup != null && currentProject != null && currentVersion != null && currentScan != null) {
+      loadScanInfo(currentGroup, currentProject, currentVersion, currentScan);
+    }
+  }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
+
+  // Poll scan info every 10 seconds
+  useEffect(() => {
+    if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      loadScanInfo(currentGroup, currentProject, currentVersion, currentScan);
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
 
   if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
     return (
@@ -26,7 +61,8 @@ export const ScanResults = () => {
     return <div className="loading">Loading scan results...</div>;
   }
 
-  const { results = [], status } = scanInfo;
+  const { results = [], status, finishedCount, maxCount } = scanInfo;
+  const progress = maxCount > 0 ? (finishedCount / maxCount) * 100 : 0;
 
   const toggleExpanded = (id) => {
     setExpandedResultId(expandedResultId === id ? null : id);
@@ -46,8 +82,22 @@ export const ScanResults = () => {
 
       {status && (
         <div className="scan-header">
-          <span className={`status-badge status-${status}`}>{status.toUpperCase()}</span>
+          <span className={`status-badge status-${getStatusName(status)}`}>{getStatusName(status).toUpperCase()}</span>
           <span className="result-count">{results.length} matches found</span>
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      {maxCount > 0 && (
+        <div className="progress-container">
+          <div className="progress-bar-wrapper">
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+            </div>
+          </div>
+          <span className="progress-text">
+            {finishedCount} / {maxCount}
+          </span>
         </div>
       )}
 
@@ -117,6 +167,19 @@ export const ScanResults = () => {
                   {result.resultSets && result.resultSets.length > 0 && (
                     <div className="detail-section">
                       <h5>Match Locations ({result.resultSets.length})</h5>
+                      
+                      {/* Show Diff Viewer if content is available */}
+                      {result.searchContent && result.sourceContent && (
+                        <div className="detail-subsection">
+                          <DiffViewer
+                            searchContent={result.searchContent}
+                            sourceContent={result.sourceContent}
+                            resultSets={result.resultSets}
+                          />
+                        </div>
+                      )}
+
+                      {/* Show match locations list */}
                       <div className="matches-list">
                         {result.resultSets.map((match, matchIdx) => (
                           <div key={matchIdx} className="match-item">

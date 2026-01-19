@@ -296,6 +296,9 @@ void ScanServer::init()
       ret["id"] = scanData->id;
       ret["name"] = scanData->name;
 
+      ret["maxCount"] = scanData->getMaxCount();
+      ret["finishedCount"] = scanData->getFinishedCount();
+
       json results;
       for (const TreeSearchResult& searchResult : searchResults)
       {
@@ -308,6 +311,10 @@ void ScanServer::init()
           result["sourceRevision"] = searchResult.sourceRevision;
           result["sourceInternalId"] = searchResult.sourceInternalId;
           result["searchFile"] = searchResult.searchFile;
+
+          result["searchContent"] = searchResult.searchContent;
+          result["sourceContent"] = searchResult.sourceContent;
+          result["licence"] = searchResult.licence;          
 
           for (const TreeSearchResultSet& searchResultSet : searchResult)
           {
@@ -324,8 +331,10 @@ void ScanServer::init()
           results.push_back(result);
         }
       }
+      ret["results"] = results;
 
       ok(res, ret);
+      return;
     }
 
     bad_request(res, "Scan not found");

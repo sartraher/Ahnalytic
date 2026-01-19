@@ -298,6 +298,8 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         }
       }
     });
+
+    resultInter->incFinishedCount(1);
   };
 
   auto scanGitHubDb = [this, resultInter](const std::filesystem::path& dbPath, const std::vector<SearchNodes>& nodes)
@@ -329,6 +331,8 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         }
       }
     });
+
+    resultInter->incFinishedCount(1);
   };
 
   auto scanSourceforgeDb = [this, resultInter](const std::filesystem::path& dbPath, const std::vector<SearchNodes>& nodes)
@@ -360,7 +364,11 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         }
       }
     });
+
+    resultInter->incFinishedCount(1);
   };
+
+  int maxCount = 0;
 
   BS::thread_pool pool;
   for (auto iter = searchNodes.begin(); iter != searchNodes.end(); iter++)
@@ -369,17 +377,21 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
     // stackexchange
     std::filesystem::path dbStackExchnage = dbByFormatPath / "stackexchange";
-    for (auto& filePath : std::filesystem::recursive_directory_iterator(dbStackExchnage))
+    if (std::filesystem::exists(dbStackExchnage))
     {
-      if (resultInter->isAborted())
-        return;
-
-      std::filesystem::path dbPath = filePath.path();
-      if (dbPath.extension() == ".db")
+      for (auto& filePath : std::filesystem::recursive_directory_iterator(dbStackExchnage))
       {
-        std::vector<SearchNodes> nodes = iter->second;
-        std::future<void> result = pool.submit_task([&scanSnippedDb, dbPath, nodes]() { return scanSnippedDb(dbPath, nodes); });
-        currentTasks.push_back(std::move(result));
+        if (resultInter->isAborted())
+          return;
+
+        std::filesystem::path dbPath = filePath.path();
+        if (dbPath.extension() == ".db")
+        {
+          std::vector<SearchNodes> nodes = iter->second;
+          std::future<void> result = pool.submit_task([&scanSnippedDb, dbPath, nodes]() { return scanSnippedDb(dbPath, nodes); });
+          currentTasks.push_back(std::move(result));
+          maxCount++;
+        }
       }
     }
 
@@ -398,6 +410,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
           std::vector<SearchNodes> nodes = iter->second;
           std::future<void> result = pool.submit_task([&scanGitHubDb, dbPath, nodes]() { return scanGitHubDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
+          maxCount++;
         }
       }
     }
@@ -417,6 +430,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
           std::vector<SearchNodes> nodes = iter->second;
           std::future<void> result = pool.submit_task([&scanSourceforgeDb, dbPath, nodes]() { return scanSourceforgeDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
+          maxCount++;
         }
       }
     }
@@ -424,6 +438,8 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
   if (resultInter->isAborted())
     return;
+
+  resultInter->setMaxCount(maxCount+1);
 
   for (std::future<void>& task : currentTasks)
   {
@@ -468,17 +484,18 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
       trees[result.searchFile] = {content, tree};
     }
 
+    std::string licence;
     std::string cmpFile;
     switch (result.type)
     {
     case TreeSearchResult::Github:
-      cmpFile = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision);
+      cmpFile = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence);
       break;
     case TreeSearchResult::SourceForge:
-      cmpFile = getSourceForgeFile(result.sourceDb, result.sourceInternalId, result.sourceRevision);
+      cmpFile = getSourceForgeFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence);
       break;
     case TreeSearchResult::Stackexchange:
-      cmpFile = getStackexchangeFile(result.sourceDb, result.sourceInternalId);
+      cmpFile = getStackexchangeFile(result.sourceDb, result.sourceInternalId, licence);
       break;
     }
 
@@ -500,27 +517,30 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     {
       result.sourceContent = trees[result.searchFile].content;
       result.searchContent = cmpFile;
+      result.licence = licence;
 
       resultInter->addDeepResult(result);
     }
   }
+
+  resultInter->incFinishedCount(1);
 }
 
-std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha)
+std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence)
 {
   std::string ret;
   // TODO
   return ret;
 }
 
-std::string TreeSearch::getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision)
+std::string TreeSearch::getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision, std::string& licence)
 {
   std::string ret;
   // TODO
   return ret;
 }
 
-std::string TreeSearch::getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId)
+std::string TreeSearch::getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId, std::string& licence)
 {
   std::string ret;
 
@@ -540,7 +560,6 @@ std::string TreeSearch::getStackexchangeFile(const std::string& sourceDb, const 
   dataDb = replace(dataDb, "CPP", "base");
 
   std::string date;
-  std::string licence;
   StackExchangeExtractDatabase extractDb(DBType::SQLite, dataDb);
   extractDb.getSnipped(std::to_string(sourceInternalId), date, licence, ret);
 

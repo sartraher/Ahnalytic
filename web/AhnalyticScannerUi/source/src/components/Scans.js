@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useScanner } from '../context/ScannerContext';
 import '../styles/components.css';
 
+// Helper function to convert numeric status codes to status names
+const getStatusName = (status) => {
+  if (typeof status === 'string') return status;
+  const statusMap = {
+    0: 'pending',
+    1: 'started',
+    2: 'running',
+    3: 'completed',
+    4: 'aborted',
+    5: 'failed',
+  };
+  return statusMap[status] || 'unknown';
+};
+
 export const ScansList = () => {
   const {
     currentGroup,
@@ -223,7 +237,8 @@ export const ScanControls = () => {
 
   // Stop polling if scan is complete
   useEffect(() => {
-    if (scanInfo?.status === 'completed' || scanInfo?.status === 'aborted' || scanInfo?.status === 'failed') {
+    const statusName = getStatusName(scanInfo?.status);
+    if (statusName === 'completed' || statusName === 'aborted' || statusName === 'failed') {
       setPolling(false);
     }
   }, [scanInfo?.status]);
@@ -252,7 +267,8 @@ export const ScanControls = () => {
     }
   };
 
-  const isRunning = scanInfo?.status === 'running' || scanInfo?.status === 'started';
+  const statusName = getStatusName(scanInfo?.status);
+  const isRunning = statusName === 'running' || statusName === 'started';
 
   return (
     <div className="form-container">
@@ -262,8 +278,8 @@ export const ScanControls = () => {
           <div className="scan-info">
             <div className="info-row">
               <strong>Status:</strong>
-              <span className={`status-badge status-${scanInfo.status}`}>
-                {scanInfo.status?.toUpperCase()}
+              <span className={`status-badge status-${getStatusName(scanInfo.status)}`}>
+                {getStatusName(scanInfo.status).toUpperCase()}
               </span>
             </div>
             {scanInfo.results && (

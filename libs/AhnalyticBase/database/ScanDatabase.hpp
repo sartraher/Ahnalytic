@@ -89,6 +89,30 @@ public:
     return deepResults;
   }
 
+  virtual void setMaxCount(int count)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    maxCount = count;
+  }
+
+  virtual void incFinishedCount(int count)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    finishedCount += count;
+  }
+
+  virtual int getMaxCount()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    return maxCount;
+  }
+
+  virtual int getFinishedCount()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    return finishedCount;
+  }
+
   std::recursive_mutex mutex;
 
   ScanDataTypeE type;
@@ -99,6 +123,9 @@ public:
 
   std::vector<TreeSearchResult> results;
   std::vector<TreeSearchResult> deepResults;
+
+  int maxCount = 0;
+  int finishedCount = 0;
 
 private:
 protected:

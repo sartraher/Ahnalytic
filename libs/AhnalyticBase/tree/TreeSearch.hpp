@@ -58,6 +58,7 @@ public:
 
   std::string sourceContent;
   std::string searchContent;
+  std::string licence;
 
   operator bool() const
   {
@@ -75,6 +76,9 @@ public:
 
   virtual void addDeepResult(const TreeSearchResult& result) = 0;
   virtual std::vector<TreeSearchResult> getDeepResult() = 0;
+
+  virtual void setMaxCount(int count) = 0;
+  virtual void incFinishedCount(int count) = 0;
 };
 
 struct SearchNodes
@@ -106,9 +110,9 @@ public:
 
 private:
 protected:
-  std::string getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha);
-  std::string getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision);
-  std::string getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId);
+  std::string getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence);
+  std::string getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision, std::string& licence);
+  std::string getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId, std::string& licence);
 };
 
 #endif
