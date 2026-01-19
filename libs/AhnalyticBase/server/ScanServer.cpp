@@ -299,7 +299,7 @@ void ScanServer::init()
       ret["maxCount"] = scanData->getMaxCount();
       ret["finishedCount"] = scanData->getFinishedCount();
 
-      json results;
+      json results = json::array();
       for (const TreeSearchResult& searchResult : searchResults)
       {
         if (searchResult)
@@ -325,7 +325,7 @@ void ScanServer::init()
             resultSet["searchStart"] = searchResultSet.searchStart;
             resultSet["searchEnd"] = searchResultSet.searchEnd;
 
-            result["resultSets"].push_back(result);
+            result["resultSets"].push_back(resultSet);
           }
 
           results.push_back(result);

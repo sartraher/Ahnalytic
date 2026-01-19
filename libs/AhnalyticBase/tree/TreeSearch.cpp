@@ -512,14 +512,14 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     SearchNodes dbNodes = initNodes(dbTree, WINDOW_SIZE);
     SearchNodes searchNodes = initNodes(trees[result.searchFile].tree, WINDOW_SIZE);
 
-    TreeSearchResult result = searchHash(dbNodes, searchNodes, WINDOW_SIZE, false);
+    TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, WINDOW_SIZE, false);
     if (result)
     {
-      result.sourceContent = trees[result.searchFile].content;
-      result.searchContent = cmpFile;
-      result.licence = licence;
+      deepResult.sourceContent = cmpFile;
+      deepResult.searchContent = trees[result.searchFile].content;      
+      deepResult.licence = licence;
 
-      resultInter->addDeepResult(result);
+      resultInter->addDeepResult(deepResult);
     }
   }
 

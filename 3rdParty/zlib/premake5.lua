@@ -53,9 +53,6 @@ project "zlibstatic"
         systemversion "latest"
         architecture "x86_64"
 
-    -- =========================
-    -- Debug
-    -- =========================
     filter "configurations:Debug"
         runtime "Debug"
         symbols "On"
@@ -65,9 +62,6 @@ project "zlibstatic"
             'CMAKE_INTDIR=\\"Debug\\"'
         }
 
-    -- =========================
-    -- Release
-    -- =========================
     filter "configurations:Release"
         runtime "Release"
         optimize "Speed"
@@ -76,9 +70,6 @@ project "zlibstatic"
             'CMAKE_INTDIR=\\"Release\\"'
         }
 
-    -- =========================
-    -- MinSizeRel
-    -- =========================
     filter "configurations:MinSizeRel"
         runtime "Release"
         optimize "Size"
@@ -87,9 +78,6 @@ project "zlibstatic"
             'CMAKE_INTDIR=\\"MinSizeRel\\"'
         }
 
-    -- =========================
-    -- RelWithDebInfo
-    -- =========================
     filter "configurations:RelWithDebInfo"
         runtime "Release"
         optimize "Speed"
@@ -98,5 +86,8 @@ project "zlibstatic"
             "NDEBUG",
             'CMAKE_INTDIR=\\"RelWithDebInfo\\"'
         }
+		
+	filter "system:linux"
+		defines { "_POSIX_C_SOURCE=200809L" }
 
     filter {}

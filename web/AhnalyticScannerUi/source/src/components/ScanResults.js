@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useScanner } from '../context/ScannerContext';
 import { DiffViewer } from './DiffViewer';
 import '../styles/components.css';
@@ -20,6 +20,8 @@ const getStatusName = (status) => {
 export const ScanResults = () => {
   const { currentGroup, currentProject, currentVersion, currentScan, scanInfo, loading, error, loadScanInfo } = useScanner();
   const [expandedResultId, setExpandedResultId] = useState(null);
+  const scrollContainerRef = useRef(null);
+  const scrollPositionRef = useRef(0);
 
   // Load scan info automatically when a scan is selected
   useEffect(() => {
@@ -28,18 +30,27 @@ export const ScanResults = () => {
     }
   }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
 
-  // Poll scan info every 10 seconds
+  // Save scroll position before polling updates
   useEffect(() => {
-    if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
-      return;
+    if (!scrollContainerRef.current) return;
+
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        scrollPositionRef.current = scrollContainerRef.current.scrollTop;
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Restore scroll position after updates using useLayoutEffect for synchronous restoration
+  useLayoutEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollPositionRef.current;
     }
-
-    const interval = setInterval(() => {
-      loadScanInfo(currentGroup, currentProject, currentVersion, currentScan);
-    }, 10000); // Poll every 10 seconds
-
-    return () => clearInterval(interval);
-  }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
+  }, [scanInfo?.results]);
 
   if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
     return (
@@ -104,7 +115,7 @@ export const ScanResults = () => {
       {results.length === 0 ? (
         <p className="empty-message">No matches found in this scan</p>
       ) : (
-        <div className="results-container">
+        <div className="results-container" ref={scrollContainerRef}>
           {results.map((result, idx) => (
             <div
               key={idx}

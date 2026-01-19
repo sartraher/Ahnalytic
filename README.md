@@ -116,7 +116,7 @@ If you generate the data yourself, you may license it however you want.
 
 # Downloads
 
-- SourceForge — TODO (upload pending)
+- Stackoverflow — [DB Based von Datadump Q3 2025](https://drive.google.com/file/d/1FJyAbPaxcRbhrXDaRzQXsL5R1ennf5td/view?usp=sharing)
 - GitHub — currently scanning, check back in a few months
 - SourceForge — scanner (not written yet)
 
