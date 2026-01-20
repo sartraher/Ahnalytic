@@ -43,6 +43,10 @@ public:
   SourceStructureTree* scan(const std::filesystem::path& path, const std::string& content, uint32_t& resSize, std::string& sourceType) const;
   void traverse(TSTreeCursor& cursor, SourceStructureTree* parent, SourceHandlerI* handler, size_t depth = 0) const;
 
+  SourceStructureTreeDeep* scanDeep(const std::filesystem::path& path, uint32_t& resSize, std::string& sourceType) const;
+  SourceStructureTreeDeep* scanDeep(const std::string& content, uint32_t& resSize, std::string& sourceType) const;
+  void traverseDeep(TSTreeCursor& cursor, SourceStructureTreeDeep* parent, SourceHandlerI* handler, const std::string& content, size_t depth = 0) const;
+
   int countErrorNodes(const TSTree* tree) const;
   void printTree(SourceStructureTree* node, const std::string& prefix = "");
   // std::list<std::vector<char>> scanFolder(const std::filesystem::path& path);

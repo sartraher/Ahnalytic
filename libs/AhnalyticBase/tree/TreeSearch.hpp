@@ -13,7 +13,7 @@
 
 struct TreeSearchOptions
 {
-  uint32_t windowSize;
+  //uint32_t windowSize;
 
   /*
   uint32_t minComplexitiyBase;
@@ -83,10 +83,10 @@ public:
 
 struct SearchNodes
 {
-  // std::unordered_map<uint32_t, std::vector<uint32_t>> hashData;
   ankerl::unordered_dense::map<uint32_t, std::vector<uint32_t>> hashData;
 
   std::vector<uint32_t> nodeData;
+  std::vector<std::string> nameData;
   std::vector<uint32_t> lineNrs;
 
   std::filesystem::path filePath;
@@ -99,9 +99,7 @@ public:
   ~TreeSearch();
 
   SearchNodes initNodes(SourceStructureTree* tree, uint32_t windowSize) const;
-
-  TreeSearchResult searchTree(SourceStructureTree* base, SourceStructureTree* search, const TreeSearchOptions& options);
-  TreeSearchResult searchTree(const SearchNodes& baseNodes, const SearchNodes& searchNodes, const TreeSearchOptions& options);
+  SearchNodes initNodesDeep(SourceStructureTreeDeep* tree, uint32_t windowSize) const;
 
   TreeSearchResult searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize, bool fast);
 

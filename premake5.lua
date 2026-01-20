@@ -1,4 +1,4 @@
-workspace "Ahnalytics"
+workspace "Ahnalytic"
     configurations { "Debug", "Release" }
     platforms { "x64" }
 

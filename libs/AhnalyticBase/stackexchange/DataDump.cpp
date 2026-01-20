@@ -127,7 +127,7 @@ void DataDump::startElement(const XML_Char* name, const XML_Char** atts)
       }
       else if (strcmp(atts[index], "Id") == 0)
       {
-        data.id = atts[index + 1];
+        data.id = std::stoi(atts[index + 1]);
       }
       else if (strcmp(atts[index], "ContentLicense") == 0)
       {

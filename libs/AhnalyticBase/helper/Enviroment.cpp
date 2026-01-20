@@ -56,6 +56,8 @@ EnviromentC::EnviromentC()
     dataFolder = dataFolder.lexically_normal().native();
     scanFolder = scanFolder.lexically_normal().native();
     webFolder = webFolder.lexically_normal().native();
+
+    windowSize = std::stoi(reader.getValue("windowSize", "search", "64"));
   }
 }
 

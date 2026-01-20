@@ -10,7 +10,7 @@ typedef char XML_Char;
 
 struct SnippedData
 {
-  std::string id;
+  int id;
   std::string code;
   std::string licence;
   std::string date;

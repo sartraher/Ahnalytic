@@ -17,6 +17,8 @@ public:
   std::filesystem::path scanFolder;
   std::filesystem::path webFolder;
 
+  int windowSize = 64;
+
 private:
 protected:
 };

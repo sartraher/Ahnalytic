@@ -82,13 +82,20 @@ This software is intended to run **inside a trusted environment**.
 
 ---
 
+## Hardware Requirements
+
+- Little endian(for now)
+- AVX2 support(for now)
+
+---
+
 ## Build Instructions
 
 ### Windows
 
 ```bash
 premake5 vs2022
-Open Ahnalytics.sln in the repository root and build using Visual Studio.
+Open Ahnalytic.sln in the repository root and build using Visual Studio.
 ```
 
 ### Linux

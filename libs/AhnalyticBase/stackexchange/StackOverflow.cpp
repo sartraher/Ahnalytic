@@ -98,7 +98,7 @@ void StackOverflowHandler::importData(const std::string& stackDb, const std::str
         licId = licIter->second;
       mutex.unlock();
 
-      db->createSnipped(std::stoi(treeData.snipped.id), licId, dataId, index);
+      db->createSnipped(treeData.snipped.id, licId, dataId, index);
       index++;
     }
 

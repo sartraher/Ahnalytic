@@ -280,7 +280,12 @@ Tree<T>* rebuildTree(const std::vector<FlatNodeDeDup<T>>& dedupedNodes, const st
     return nullptr;
   };
 
-  return dubTree(0);
+  Tree<T>* ret = dubTree(0);
+
+  for (FlatNode<T>* flatNode : flatList)
+    delete flatNode;
+
+  return ret;
 }
 
 template <typename T>

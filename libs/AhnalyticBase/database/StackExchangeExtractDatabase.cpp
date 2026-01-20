@@ -19,7 +19,7 @@ void StackExchangeExtractDatabase::initTables()
 
   (*sql) << "CREATE TABLE IF NOT EXISTS \"StackExSnipped\" ("
             "\"ID\" INTEGER,"
-            "\"StackExId\" TEXT,"
+            "\"StackExId\" INTEGER,"
             "\"Date\" TEXT,"
             "\"Licence\" TEXT,"
             "\"Code\" TEXT,"
@@ -27,10 +27,10 @@ void StackExchangeExtractDatabase::initTables()
             ")";
 }
 
-uint32_t StackExchangeExtractDatabase::addSnipped(const std::string& stackExId, const std::string& date, const std::string& licence, const std::string& code)
+uint32_t StackExchangeExtractDatabase::addSnipped(int stackExId, const std::string& date, const std::string& licence, const std::string& code)
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
-
+    
   soci::rowset<int> rs = (sql->prepare << "INSERT INTO StackExSnipped (StackExId,Date,Licence,Code) VALUES (:stackExId,:date,:licence,:code) RETURNING ID",
                           soci::use(stackExId, "stackExId"), soci::use(date, "date"), soci::use(licence, "licence"), soci::use(code, "code"));
   return *rs.begin();
@@ -42,7 +42,7 @@ void StackExchangeExtractDatabase::processSnippeds(std::function<void(const Snip
 
   std::unordered_map<std::string, uint32_t> ret;
   for (const soci::row& r : rowSet)
-    callback({r.get<std::string>("StackExId"), r.get<std::string>("Code"), r.get<std::string>("Licence"), r.get<std::string>("Date")});
+    callback({r.get<int>("StackExId"), r.get<std::string>("Code"), r.get<std::string>("Licence"), r.get<std::string>("Date")});
 }
 
 void StackExchangeExtractDatabase::getSnipped(const std::string& stackExId, std::string& date, std::string& licence, std::string& code)
