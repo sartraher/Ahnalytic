@@ -61,7 +61,11 @@ project "AhnalyticUpdateRunner"
 
     filter "system:linux or system:macosx"
         pic "On"
-        links { "pthread" }
+        links { 
+			"ssl",
+			"crypto",
+			"pthread" 
+		}
 
     filter "configurations:Debug"
         runtime "Debug"
