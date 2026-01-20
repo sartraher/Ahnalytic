@@ -40,5 +40,3 @@ project "expat"
             "-std=c++17", 
             "-I/usr/include/x86_64-linux-gnu/c++/13" 
         }
-		
-	filters {}

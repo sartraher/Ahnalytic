@@ -40,6 +40,11 @@ dofile("apps/AhnalyticScannerServer/premake5.lua")
 dofile("apps/AhnalyticUpdateServer/premake5.lua")
 dofile("apps/AhnalyticUpdateRunner/premake5.lua")
 
+-- web
+group "web"
+dofile("web/AhnalyticScannerUi/source/premake5.lua")
+
+-- install
 group "install"
 project "Install"
     kind "Utility"

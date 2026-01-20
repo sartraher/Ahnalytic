@@ -94,6 +94,7 @@ This software is intended to run **inside a trusted environment**.
 ### Windows
 
 ```bash
+npm install --save-dev cross-env
 premake5 vs2022
 Open Ahnalytic.sln in the repository root and build using Visual Studio.
 ```
@@ -101,6 +102,7 @@ Open Ahnalytic.sln in the repository root and build using Visual Studio.
 ### Linux
 
 ```bash
+npm install --save-dev cross-env
 premake5 gmake2
 make config=release_x64
 ```
