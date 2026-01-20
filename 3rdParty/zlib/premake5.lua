@@ -87,7 +87,10 @@ project "zlibstatic"
             'CMAKE_INTDIR=\\"RelWithDebInfo\\"'
         }
 		
-	filter "system:linux"
-		defines { "_POSIX_C_SOURCE=200809L" }
+	filter "system:linux or system:macosx"
+		prebuildcommands {
+			"chmod +x %{wks.location}/3rdParty/zlib/configure",
+			"%{wks.location}/3rdParty/zlib/configure"
+		}
 
     filter {}

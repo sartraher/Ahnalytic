@@ -256,11 +256,11 @@ project "archive_static"
 			"**/archive_read_disk_posix.c",
 			"**/archive_write_disk_posix.c"
 		}
-
-	filter {}
 	
 	filter "system:linux or system:macosx"
-    prebuildcommands {
-        "chmod +x %{wks.location}/3rdParty/libarchive/configure",
-        "%{wks.location}/3rdParty/libarchive/configure"
-    }
+		prebuildcommands {
+			"chmod +x %{wks.location}/3rdParty/libarchive/configure",
+			"%{wks.location}/3rdParty/libarchive/configure"
+		}
+	
+	filter {}
