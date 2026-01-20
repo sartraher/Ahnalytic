@@ -125,9 +125,36 @@ If you generate the data yourself, you may license it however you want.
 
 # Downloads
 
-- Stackoverflow — [DB Based von Datadump Q3 2025](https://drive.google.com/file/d/1FJyAbPaxcRbhrXDaRzQXsL5R1ennf5td/view?usp=sharing)
+Databases:
+- Stackoverflow — [DB Based von Datadump Q3 2025](https://drive.google.com/file/d/17swDsXb57s9IVkeRSDesefxS29xgUt06/view?usp=sharing)
 - GitHub — currently scanning, check back in a few months
 - SourceForge — scanner (not written yet)
+
+Unstable buils:
+- Windows - [Pre Alpha unstable](https://drive.google.com/file/d/1Ixtm6R0r2zUz5fU_MMmmUo3q5nOXbBXj/view?usp=sharing)
+- Linux - [Pre Alpha unstable](https://drive.google.com/file/d/1CXvmjZt6hHIufaUhttvnS5t8Y9JgW9KZ/view?usp=sharing)
+
+# Setup
+
+Place the database content into the `db` folder.
+
+Your project structure should look like this:
+Ahnalytic
+├─ db
+│ ├─ base
+│ └─ CPP
+
+If you want to have subfolders in different locations, edit the paths in `ahnalytic.cfg`.
+
+### Optional
+
+- Change the address and port in the `ScanServer` section of `ahnalytic.cfg`.
+- Start the Scan Server from the `bin` folder with:
+
+AhnalyticScannerServer -f
+
+- Open a web browser and navigate to the configured address, e.g.:
+http://127.0.0.1:9080/www/index.html
 
 # Supported Languages
 
