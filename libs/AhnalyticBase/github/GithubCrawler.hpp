@@ -14,7 +14,7 @@
 
 #include <string>
 
-#define DEFAULT_TOKEN_ENV "
+#define DEFAULT_TOKEN_ENV ""
 
 using json = nlohmann::json;
 
