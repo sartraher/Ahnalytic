@@ -14,7 +14,7 @@
 
 #include <string>
 
-#define DEFAULT_TOKEN_ENV "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"
+#define DEFAULT_TOKEN_ENV "
 
 using json = nlohmann::json;
 
