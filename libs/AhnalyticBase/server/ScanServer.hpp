@@ -15,7 +15,7 @@ public:
   ~ScanServer();
 
   void init();
-  void start(const std::string& addr, int port);
+  void start();
   void stop();
 
   void updateScans();

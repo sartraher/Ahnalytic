@@ -75,9 +75,9 @@ void UpdateServer::init()
   });
 }
 
-void UpdateServer::start(const std::string& addr, int port)
+void UpdateServer::start()
 {
-  priv->server.listen(addr, port);
+  priv->server.listen(priv->env.updateServerAddr, priv->env.updateServerPort);
 }
 
 void UpdateServer::stop()

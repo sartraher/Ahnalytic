@@ -11,21 +11,6 @@
 
 #include <ankerl/unordered_dense.h>
 
-struct TreeSearchOptions
-{
-  //uint32_t windowSize;
-
-  /*
-  uint32_t minComplexitiyBase;
-  uint32_t maxComplexitiyBase;
-
-  uint32_t minComplexitiySearch;
-  uint32_t maxComplexitiySearch;
-
-  double searchEpsilon;
-  */
-};
-
 struct TreeSearchResultSet
 {
   uint32_t baseStart = 0;

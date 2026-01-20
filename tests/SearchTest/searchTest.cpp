@@ -11,7 +11,7 @@
     search(#nameBase, #nameSearch, options);                                                                                                                   \
   }
 
-void search(const std::string& baseName, const std::string searchName, TreeSearchOptions options)
+void search(const std::string& baseName, const std::string searchName)
 {
   SourceScanner scanner;
   std::string sourceType;

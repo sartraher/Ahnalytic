@@ -28,7 +28,7 @@ struct SourceStructureData
     uint32_t cmpData = 0;
   } id;
 
-  uint32_t lineNr = 0;
+  //uint32_t lineNr = 0;
 
   bool operator==(const SourceStructureData& other) const
   {

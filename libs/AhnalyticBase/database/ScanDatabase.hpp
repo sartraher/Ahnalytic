@@ -113,7 +113,7 @@ public:
     return finishedCount;
   }
 
-  std::recursive_mutex mutex;
+  mutable std::recursive_mutex mutex;
 
   ScanDataTypeE type;
   std::string dataPath;
@@ -134,7 +134,7 @@ protected:
 class DLLEXPORT VersionData : public BaseData
 {
 public:
-  std::unordered_map<size_t, ScanData*> scans;
+  std::unordered_map<size_t, std::shared_ptr<ScanData>> scans;
 
 private:
 protected:
@@ -158,10 +158,15 @@ private:
 protected:
 };
 
-class DLLEXPORT ScanDatabase // : public Database
+// Not Really a database by now but i don't rename it for now
+class DLLEXPORT ScanDatabase
 {
 public:
-  ScanDatabase(/*DBType type, std::string connectionString, */ const std::filesystem::path& scanFolder);
+  ScanDatabase(const std::filesystem::path& scanFolder);
+  ~ScanDatabase();
+
+  void load();
+  void save();
 
   // Groups
   size_t createGroup(const std::string& name);
@@ -193,15 +198,14 @@ public:
 
   void startScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
   void abortScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
-  ScanData* getScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
+  std::shared_ptr<ScanData> getScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
 
-  ScanData* getNextScan();
+  std::shared_ptr<ScanData> getNextScan();
 
 private:
   ScanDatabasePrivate* priv;
 
 protected:
-  // void initTables();
 };
 
 #endif

@@ -58,6 +58,12 @@ EnviromentC::EnviromentC()
     webFolder = webFolder.lexically_normal().native();
 
     windowSize = std::stoi(reader.getValue("windowSize", "search", "64"));
+
+    std::string scanServerAddr = reader.getValue("addr", "ScanServer", "127.0.0.1");
+    int scanServerPort = std::stoi(reader.getValue("port", "ScanServer", "9080"));
+
+    std::string updateServerAddr = reader.getValue("addr", "UpdateServer", "127.0.0.1");
+    int updateServerPort = std::stoi(reader.getValue("port", "UpdateServer", "9081"));
   }
 }
 

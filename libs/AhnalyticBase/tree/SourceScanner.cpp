@@ -85,7 +85,7 @@ void SourceScanner::traverse(TSTreeCursor& cursor, SourceStructureTree* parent, 
   child->data.id.data.symboldId = symbolId;
   child->data.id.data.fieldId = fieldId;
   child->parent = parent;
-  child->data.lineNr = lineNr;
+  //child->data.lineNr = lineNr;
   parent->children.push_back(child);
 
   if (ts_tree_cursor_goto_first_child(&cursor))

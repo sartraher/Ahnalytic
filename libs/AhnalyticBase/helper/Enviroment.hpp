@@ -19,6 +19,12 @@ public:
 
   int windowSize = 64;
 
+  std::string scanServerAddr = "127.0.0.1";
+  int scanServerPort = 9080;
+
+  std::string updateServerAddr = "127.0.0.1";
+  int updateServerPort = 9081;
+
 private:
 protected:
 };

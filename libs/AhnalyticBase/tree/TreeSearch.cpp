@@ -45,7 +45,7 @@ SearchNodes TreeSearch::initNodes(SourceStructureTree* tree, uint32_t windowSize
     {
       const Tree<SourceStructureData>* first = nodeVec[index + pos];
       ret.nodeData.push_back(first->data.id.cmpData);
-      ret.lineNrs.push_back(first->data.lineNr);
+      //ret.lineNrs.push_back(first->data.lineNr);
     }
   };
 
@@ -488,7 +488,7 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
       break;
     case TreeSearchResult::Stackexchange:
       cmpFile = getStackexchangeFile(result.sourceDb, result.sourceInternalId, licence);
-      sourceFile = "https://stackoverflow.com/posts/comments/" + std::to_string(result.sourceInternalId);
+      sourceFile = "https://stackoverflow.com/questions/" + std::to_string(result.sourceInternalId);
       break;
     }
 

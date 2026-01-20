@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
   UpdateServer server;
   svParam.fnStartCallBack = [&server]()
   {
-    server.start("127.0.0.1", 80);
+    server.start();
   };
   svParam.fnStopCallBack = [&server]()
   {

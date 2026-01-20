@@ -282,7 +282,7 @@ void ScanServer::init()
     const size_t versionId = std::stoull(req.matches[3]);
     const size_t scanId = std::stoull(req.matches[4]);
 
-    ScanData* scanData = priv->scanDatabase->getScan(scanId, groupId, projectId, versionId, scanId);
+    auto scanData = priv->scanDatabase->getScan(scanId, groupId, projectId, versionId, scanId);
 
     if (scanData != nullptr)
     {
@@ -314,7 +314,7 @@ void ScanServer::init()
 
           result["searchContent"] = searchResult.searchContent;
           result["sourceContent"] = searchResult.sourceContent;
-          result["licence"] = searchResult.licence;          
+          result["licence"] = searchResult.licence;
 
           for (const TreeSearchResultSet& searchResultSet : searchResult)
           {
@@ -361,9 +361,11 @@ void ScanServer::updateScans()
 {
   priv->inUpdate = true;
 
+  priv->scanDatabase->save();
+
   if (priv->pool.get_tasks_total() == 0)
   {
-    ScanData* nextData = priv->scanDatabase->getNextScan();
+    auto nextData = priv->scanDatabase->getNextScan();
     if (nextData != nullptr)
     {
       priv->pool.detach_task([this, nextData]()
@@ -379,7 +381,7 @@ void ScanServer::updateScans()
         if (nextData->isAborted())
           return;
 
-        std::filesystem::path outPath = priv->env.scanFolder / "data";
+        std::filesystem::path outPath = std::filesystem::path(nextData->dataPath).parent_path() / "data";
 
         // Start Scan
         switch (type)
@@ -400,13 +402,13 @@ void ScanServer::updateScans()
 
         // First level scan
         TreeSearch treeSearch;
-        treeSearch.search(outPath, priv->env, nextData);
+        treeSearch.search(outPath, priv->env, nextData.operator->());
 
         if (nextData->isAborted())
           return;
 
         // Deep scan on first level results
-        treeSearch.searchDeep(outPath, priv->env, nextData);
+        treeSearch.searchDeep(outPath, priv->env, nextData.operator->());
 
         if (nextData->isAborted())
           return;
@@ -563,9 +565,9 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
   }
 }
 
-void ScanServer::start(const std::string& addr, int port)
+void ScanServer::start()
 {
-  priv->server.listen(addr, port);
+  priv->server.listen(priv->env.scanServerAddr, priv->env.scanServerPort);
 }
 
 void ScanServer::stop()
