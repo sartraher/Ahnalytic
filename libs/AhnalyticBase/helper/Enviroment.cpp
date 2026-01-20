@@ -45,17 +45,19 @@ EnviromentC::EnviromentC()
   {
     IniReader reader(configPath.string());
 
-    dbFolder = searchPath / reader.getValue("dbPath", "pathes", "");
-    workFolder = searchPath / reader.getValue("workPath", "pathes", "");
-    dataFolder = searchPath / reader.getValue("dataPath", "pathes", "");
-    scanFolder = searchPath / reader.getValue("scanPath", "pathes", "");
-    webFolder = searchPath / reader.getValue("webPath", "pathes", "");
+    auto readFolder = [&reader, searchPath](const std::string& name)
+    {
+      std::filesystem::path folder = reader.getValue(name, "pathes", "");
+      if (folder.is_relative())
+        folder = searchPath / folder;
+      return folder.lexically_normal().native();
+    };
 
-    dbFolder = dbFolder.lexically_normal().native();
-    workFolder = workFolder.lexically_normal().native();
-    dataFolder = dataFolder.lexically_normal().native();
-    scanFolder = scanFolder.lexically_normal().native();
-    webFolder = webFolder.lexically_normal().native();
+    dbFolder = readFolder("dbPath");
+    workFolder = readFolder("workPath");
+    dataFolder = readFolder("dataPath");
+    scanFolder = readFolder("scanPath");
+    webFolder = readFolder("webPath");
 
     windowSize = std::stoi(reader.getValue("windowSize", "search", "64"));
 
