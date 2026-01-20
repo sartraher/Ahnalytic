@@ -1,0 +1,32 @@
+3rdParty
+	|-args: MIT
+		|-LICENSE
+	|-cpp-httplib: MIT
+		|-LICENSE
+	|-expat: MIT
+		|-COPYING
+	|-json: MIT
+		|-LICENSE.MIT
+	|-libarchive: BSD-style license
+		|-COPYING
+	|-libbsc: Apache 2.0
+		|-LICENSE
+	|-lzma: Public Domain
+		|- https://7-zip.org/sdk.html
+	|-openssl-3.5.4: Apache 2.0
+		|-LICENSE.txt
+	|-soci: BSL-1.0
+		|-LICENSE_1_0.txt
+	|-SrvLib: MIT
+		|-LICENSE
+	|-thread-pool: MIT
+		|-LICENSE.txt
+	|-tree-sitter: MIT
+		|-LICENSE
+	|-tree-sitter-cpp: MIT
+		|-LICENSE
+	|-unordered_dense: MIT
+		|-LICENSE
+	|-zlib: zlib License
+		|-LICENSE
+	
