@@ -34,7 +34,7 @@ project "soci_core"
 
     filter "system:windows"
         characterset "MBCS"
-        systemversion "10.0.26100.0"
+        systemversion "latest"
 
         defines {
             "SOCI_DLL",
