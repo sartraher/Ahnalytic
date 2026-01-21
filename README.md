@@ -130,10 +130,6 @@ Databases:
 - GitHub — currently scanning, check back in a few months
 - SourceForge — scanner (not written yet)
 
-Unstable buils:
-- Windows - [Pre Alpha unstable](https://drive.google.com/file/d/1Ixtm6R0r2zUz5fU_MMmmUo3q5nOXbBXj/view?usp=sharing)
-- Linux - [Pre Alpha unstable](https://drive.google.com/file/d/1CXvmjZt6hHIufaUhttvnS5t8Y9JgW9KZ/view?usp=sharing)
-
 # Setup
 
 Place the database content into the `db` folder.
