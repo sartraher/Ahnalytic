@@ -22,6 +22,7 @@ export const ScanResults = () => {
   const [expandedResultId, setExpandedResultId] = useState(null);
   const scrollContainerRef = useRef(null);
   const scrollPositionRef = useRef(0);
+  const previousResultLengthRef = useRef(0);
 
   // Load scan info automatically when a scan is selected
   useEffect(() => {
@@ -47,10 +48,16 @@ export const ScanResults = () => {
 
   // Restore scroll position after updates using useLayoutEffect for synchronous restoration
   useLayoutEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+    if (scrollContainerRef.current && scanInfo?.results) {
+      // Only reset scroll if results actually changed (new items added), not during ongoing updates
+      const currentResultLength = scanInfo.results.length;
+      if (currentResultLength !== previousResultLengthRef.current) {
+        previousResultLengthRef.current = currentResultLength;
+        // If new results were added, restore the previous scroll position
+        scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+      }
     }
-  }, [scanInfo?.results]);
+  }, [scanInfo]);
 
   if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
     return (
@@ -143,6 +150,16 @@ export const ScanResults = () => {
 
               {expandedResultId === idx && (
                 <div className="result-details">
+                  {result.licence && (
+                    <div className="detail-section">
+                      <h5>License</h5>
+                      <div className="detail-row">
+                        <span className="label">Type:</span>
+                        <span className="value">{result.licence}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="detail-section">
                     <h5>Source Information</h5>
                     <div className="detail-row">
@@ -165,12 +182,6 @@ export const ScanResults = () => {
                         <span className="value code">{result.sourceInternalId}</span>
                       </div>
                     )}
-                    {result.sourceLicense && (
-                      <div className="detail-row">
-                        <span className="label">License:</span>
-                        <span className="value">{result.sourceLicense}</span>
-                      </div>
-                    )}
                   </div>
 
                   <div className="detail-section">
@@ -179,12 +190,6 @@ export const ScanResults = () => {
                       <span className="label">File:</span>
                       <span className="value code">{result.searchFile}</span>
                     </div>
-                    {result.searchLicense && (
-                      <div className="detail-row">
-                        <span className="label">License:</span>
-                        <span className="value">{result.searchLicense}</span>
-                      </div>
-                    )}
                   </div>
 
                   {result.resultSets && result.resultSets.length > 0 && (
