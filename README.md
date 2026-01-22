@@ -137,11 +137,11 @@ Your project structure should look like this:
 
 Ahnalytic
 
+```
 ├─ db
-
-│ ├─ base
-
-│ └─ CPP
+  │ ├─ base
+  │ └─ CPP
+```
 
 If you want to have subfolders in different locations, edit the paths in `ahnalytic.cfg`.
 
@@ -163,25 +163,30 @@ To provide the scanner with additional information, you can add a <ANYFILENAME>.
 
 The file uses a standard config-style format:
 
+```ini
 [ANYBLOCKNAME]
 type=Content|3rdParty|CVE|Ignore
 ...
+```
 
 ### Content
 
 Allows you to add filters to your scan results.
 
+```ini
 [ANYBLOCKNAME]
 type=Content
 dbFile=Database file shown in scan results
 searchFile=Search file shown in scan results
 reason=FalsePositive|NoCreativeValue|AllowedByAuthor|Other
 comment=Optional comment, mostly used for the "Other" reason
+```
 
 ### 3rdParty
 
 Reserved for later use; currently behaves the same as Ignore.
 
+```ini
 [ANYBLOCKNAME]
 type=3rdParty
 vendor=
@@ -192,23 +197,28 @@ displayName=
 displayVersion=
 url=
 date=
+```
 
 ## CVE
 
 Reserved for later use. Allows closing CVEs with a reason.
 
+```ini
 [ANYBLOCKNAME]
 type=CVE
 id=
 status=Open|Closed
 comment=
+```
 
 ## Ignore
 
 Prevents the contents of this folder and all its subfolders from being scanned.
 
+```ini
 [ANYBLOCKNAME]
 type=Ignore
+```
 
 # Supported Languages
 
