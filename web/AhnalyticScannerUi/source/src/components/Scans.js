@@ -25,6 +25,7 @@ export const ScansList = () => {
     currentScan,
     setCurrentScan,
     loadScans,
+    deleteExistingScan,
     loading,
     error,
   } = useScanner();
@@ -42,6 +43,16 @@ export const ScansList = () => {
 
   const toggleExpanded = (id) => {
     setExpandedScanId(expandedScanId === id ? null : id);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this scan?')) {
+      try {
+        await deleteExistingScan(currentGroup, currentProject, currentVersion, id);
+      } catch (err) {
+        console.error('Failed to delete scan:', err);
+      }
+    }
   };
 
   if (loading && Object.keys(scans).length === 0) {
@@ -80,7 +91,15 @@ export const ScansList = () => {
               </div>
               {expandedScanId === id && (
                 <div className="list-item-menu">
-                  <button className="btn-info">View Details</button>
+                  <button
+                    className="btn-danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(id);
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               )}
             </div>

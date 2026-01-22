@@ -200,6 +200,43 @@ void ScanDatabase::load()
     for (const auto& [key, val] : j.items())
       priv->groups.emplace(std::stoull(key), val.get<GroupData>());
   }
+
+  const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
+
+  priv->groupId = 0;
+  priv->projectId = 0;
+  priv->versionId = 0;
+  priv->scanId = 0;
+
+  auto updateMaximum = [](std::atomic<int>& curVal, int const& value)
+  {
+    int prevVal = curVal;
+    while (prevVal < value && !curVal.compare_exchange_weak(prevVal, value))
+    {
+    }
+  };
+
+  for (auto groupIter = priv->groups.begin(); groupIter != priv->groups.end(); groupIter++)
+  {
+    updateMaximum(priv->groupId, groupIter->first);
+    for (auto prjIter = groupIter->second.projects.begin(); prjIter != groupIter->second.projects.end(); prjIter++)
+    {
+      updateMaximum(priv->projectId, prjIter->first);
+      for (auto versionIter = prjIter->second.versions.begin(); versionIter != prjIter->second.versions.end(); versionIter++)
+      {
+        updateMaximum(priv->versionId, versionIter->first);
+        for (auto scanIter = versionIter->second.scans.begin(); scanIter != versionIter->second.scans.end(); scanIter++)
+        {
+          updateMaximum(priv->scanId, scanIter->first);
+        }
+      }
+    }
+  }
+
+  priv->groupId.fetch_add(1);
+  priv->projectId.fetch_add(1);
+  priv->versionId.fetch_add(1);
+  priv->scanId.fetch_add(1);
 }
 
 void ScanDatabase::save()

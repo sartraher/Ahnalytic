@@ -104,6 +104,10 @@ class ApiService {
     return this.request('GET', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/info`);
   }
 
+  deleteScan(groupId, projectId, versionId, scanId) {
+    return this.request('DELETE', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}`);
+  }
+
   // File upload for scan
   // Note: This assumes the backend has a file upload endpoint
   // If not, you may need to adjust this based on your backend implementation

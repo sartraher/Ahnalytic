@@ -220,6 +220,18 @@ void ScanServer::init()
     ok(res, result);
   });
 
+  priv->server.Delete(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+))", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    const size_t groupId = std::stoull(req.matches[1]);
+    const size_t projectId = std::stoull(req.matches[2]);
+    const size_t versionId = std::stoull(req.matches[3]);
+    const size_t scanId = std::stoull(req.matches[4]);
+
+    priv->scanDatabase->removeScan(groupId, projectId, versionId, scanId);
+
+    ok(res, {{"status", "deleted"}});
+  });
+
   priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/upload)", [&](const httplib::Request& req, httplib::Response& res)
   {
     const size_t groupId = std::stoull(req.matches[1]);

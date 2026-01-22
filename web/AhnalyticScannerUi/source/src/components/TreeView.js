@@ -23,6 +23,7 @@ export const TreeView = () => {
     deleteExistingGroup,
     deleteExistingProject,
     deleteExistingVersion,
+    deleteExistingScan,
     loadGroups,
     loadProjects,
     loadVersions,
@@ -138,9 +139,11 @@ export const TreeView = () => {
     e.preventDefault();
     if (!newGroupName.trim()) return;
     try {
-      await createNewGroup(newGroupName);
+      const result = await createNewGroup(newGroupName);
       setNewGroupName('');
       setShowGroupForm(false);
+      // Ensure the new group is visible by reloading groups
+      await loadGroups();
     } catch (err) {
       console.error('Failed to create group:', err);
     }
@@ -153,6 +156,8 @@ export const TreeView = () => {
       await createNewProject(currentGroup, newProjectName);
       setNewProjectName('');
       setShowProjectForm(false);
+      // Ensure the new project is visible by reloading projects for this group
+      await loadProjects(currentGroup);
     } catch (err) {
       console.error('Failed to create project:', err);
     }
@@ -165,6 +170,8 @@ export const TreeView = () => {
       await createNewVersion(currentGroup, currentProject, newVersionName);
       setNewVersionName('');
       setShowVersionForm(false);
+      // Ensure the new version is visible by reloading versions for this project
+      await loadVersions(currentGroup, currentProject);
     } catch (err) {
       console.error('Failed to create version:', err);
     }
@@ -177,6 +184,8 @@ export const TreeView = () => {
       await createNewScan(currentGroup, currentProject, currentVersion, newScanName);
       setNewScanName('');
       setShowScanForm(false);
+      // Ensure the new scan is visible by reloading scans for this version
+      await loadScans(currentGroup, currentProject, currentVersion);
     } catch (err) {
       console.error('Failed to create scan:', err);
     }
@@ -211,6 +220,17 @@ export const TreeView = () => {
         if (currentVersion === versionId) setCurrentVersion(null);
       } catch (err) {
         console.error('Failed to delete version:', err);
+      }
+    }
+  };
+
+  const handleDeleteScan = async (scanId) => {
+    if (window.confirm('Are you sure you want to delete this scan?')) {
+      try {
+        await deleteExistingScan(currentGroup, currentProject, currentVersion, scanId);
+        if (currentScan === scanId) setCurrentScan(null);
+      } catch (err) {
+        console.error('Failed to delete scan:', err);
       }
     }
   };
@@ -362,6 +382,16 @@ export const TreeView = () => {
                                               >
                                                 <span className="tree-expander">•</span>
                                                 <span className="tree-label">{scanName}</span>
+                                                <button
+                                                  className="btn-delete-node"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteScan(scanId);
+                                                  }}
+                                                  title="Delete"
+                                                >
+                                                  ✕
+                                                </button>
                                               </div>
                                             </div>
                                           ))

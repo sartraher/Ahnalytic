@@ -243,35 +243,20 @@ export const ScannerProvider = ({ children }) => {
     }
   }, [loadScans]);
 
-  const startExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
+  const deleteExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.startScan(groupId, projectId, versionId, scanId);
-      await loadScanInfo(groupId, projectId, versionId, scanId);
-      return data;
+      await api.deleteScan(groupId, projectId, versionId, scanId);
+      if (currentScan === scanId) setCurrentScan(null);
+      await loadScans(groupId, projectId, versionId);
     } catch (err) {
       setErrorWithTimeout(err.message);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  const abortExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await api.abortScan(groupId, projectId, versionId, scanId);
-      await loadScanInfo(groupId, projectId, versionId, scanId);
-      return data;
-    } catch (err) {
-      setErrorWithTimeout(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  }, [currentScan, loadScans]);
 
   const loadScanInfo = useCallback(async (groupId, projectId, versionId, scanId) => {
     if (groupId == null || projectId == null || versionId == null || scanId == null) return;
@@ -288,6 +273,36 @@ export const ScannerProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  const startExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.startScan(groupId, projectId, versionId, scanId);
+      await loadScanInfo(groupId, projectId, versionId, scanId);
+      return data;
+    } catch (err) {
+      setErrorWithTimeout(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadScanInfo]);
+
+  const abortExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.abortScan(groupId, projectId, versionId, scanId);
+      await loadScanInfo(groupId, projectId, versionId, scanId);
+      return data;
+    } catch (err) {
+      setErrorWithTimeout(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadScanInfo]);
 
   const uploadFile = useCallback(async (groupId, projectId, versionId, scanId, file) => {
     try {
@@ -346,6 +361,7 @@ export const ScannerProvider = ({ children }) => {
     // Scan Actions
     loadScans,
     createNewScan,
+    deleteExistingScan,
     startExistingScan,
     abortExistingScan,
     loadScanInfo,

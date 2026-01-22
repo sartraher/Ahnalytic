@@ -165,6 +165,12 @@ export const ScanResults = () => {
                         <span className="value code">{result.sourceInternalId}</span>
                       </div>
                     )}
+                    {result.sourceLicense && (
+                      <div className="detail-row">
+                        <span className="label">License:</span>
+                        <span className="value">{result.sourceLicense}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="detail-section">
@@ -173,6 +179,12 @@ export const ScanResults = () => {
                       <span className="label">File:</span>
                       <span className="value code">{result.searchFile}</span>
                     </div>
+                    {result.searchLicense && (
+                      <div className="detail-row">
+                        <span className="label">License:</span>
+                        <span className="value">{result.searchLicense}</span>
+                      </div>
+                    )}
                   </div>
 
                   {result.resultSets && result.resultSets.length > 0 && (
