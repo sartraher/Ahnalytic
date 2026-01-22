@@ -36,7 +36,8 @@ project "AhnalyticBase"
         "../../3rdParty/cpp-httplib",
         "../../3rdParty/json/include",
         "../../3rdParty/openssl-3.5.4/include",
-        "../../3rdParty/libarchive/libarchive"
+        "../../3rdParty/libarchive/libarchive",
+		"../../3rdParty/magic_enum/include"
     }
 	
 	defines {

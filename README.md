@@ -75,6 +75,7 @@ This software is intended to run **inside a trusted environment**.
   - Visual Studio 2022+
 - **Linux**
   - GCC / G++
+  - make
 
 ### Future use
 - SVN CLI
@@ -94,7 +95,6 @@ This software is intended to run **inside a trusted environment**.
 ### Windows
 
 ```bash
-npm install --save-dev cross-env
 premake5 vs2022
 Open Ahnalytic.sln in the repository root and build using Visual Studio.
 ```
@@ -102,7 +102,6 @@ Open Ahnalytic.sln in the repository root and build using Visual Studio.
 ### Linux
 
 ```bash
-npm install --save-dev cross-env
 premake5 gmake2
 make config=release_x64
 ```
@@ -135,22 +134,81 @@ Databases:
 Place the database content into the `db` folder.
 
 Your project structure should look like this:
+
 Ahnalytic
+
 ├─ db
+
 │ ├─ base
+
 │ └─ CPP
 
 If you want to have subfolders in different locations, edit the paths in `ahnalytic.cfg`.
 
-### Optional
+## Optional
 
 - Change the address and port in the `ScanServer` section of `ahnalytic.cfg`.
 - Start the Scan Server from the `bin` folder with:
+
+## Start
 
 AhnalyticScannerServer -f
 
 - Open a web browser and navigate to the configured address, e.g.:
 http://127.0.0.1:9080/www/index.html
+
+## <ANYFILENAME>.analytic
+
+To provide the scanner with additional information, you can add a <ANYFILENAME>.analytic file into a subfolder inside the ZIP archive you upload for scanning.
+
+The file uses a standard config-style format:
+
+[ANYBLOCKNAME]
+type=Content|3rdParty|CVE|Ignore
+...
+
+### Content
+
+Allows you to add filters to your scan results.
+
+[ANYBLOCKNAME]
+type=Content
+dbFile=Database file shown in scan results
+searchFile=Search file shown in scan results
+reason=FalsePositive|NoCreativeValue|AllowedByAuthor|Other
+comment=Optional comment, mostly used for the "Other" reason
+
+### 3rdParty
+
+Reserved for later use; currently behaves the same as Ignore.
+
+[ANYBLOCKNAME]
+type=3rdParty
+vendor=
+product=
+copyright=
+version=
+displayName=
+displayVersion=
+url=
+date=
+
+## CVE
+
+Reserved for later use. Allows closing CVEs with a reason.
+
+[ANYBLOCKNAME]
+type=CVE
+id=
+status=Open|Closed
+comment=
+
+## Ignore
+
+Prevents the contents of this folder and all its subfolders from being scanned.
+
+[ANYBLOCKNAME]
+type=Ignore
 
 # Supported Languages
 

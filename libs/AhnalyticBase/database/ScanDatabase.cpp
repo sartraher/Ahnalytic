@@ -694,6 +694,8 @@ void ScanDatabase::startScan(size_t id, size_t groupId, size_t projectId, size_t
         if (scanIter != versionIter->second.scans.end())
         {
           const std::lock_guard<std::recursive_mutex> lock(scanIter->second->mutex);
+          scanIter->second->results.clear();
+          scanIter->second->deepResults.clear();
           scanIter->second->status = ScanDataStatusE::Started;
 
           save();

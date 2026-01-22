@@ -1,6 +1,7 @@
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 #include "AhnalyticBase/compression/CompressionManager.hpp"
 #include "AhnalyticBase/database/FileDatabase.hpp"
+#include "AhnalyticBase/file/AhnalyticFile.hpp"
 #include "AhnalyticBase/helper/Diagnostic.hpp"
 
 #include <fstream>
@@ -85,7 +86,7 @@ void SourceScanner::traverse(TSTreeCursor& cursor, SourceStructureTree* parent, 
   child->data.id.data.symboldId = symbolId;
   child->data.id.data.fieldId = fieldId;
   child->parent = parent;
-  //child->data.lineNr = lineNr;
+  // child->data.lineNr = lineNr;
   parent->children.push_back(child);
 
   if (ts_tree_cursor_goto_first_child(&cursor))
@@ -451,13 +452,62 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPa
 {
   std::unordered_map<std::string, std::vector<ScanTreeData>> ret;
 
-  for (auto& filePath : std::filesystem::recursive_directory_iterator(path))
+  std::vector<std::filesystem::path> scanPathes;
+  // std::vector<std::filesystem::path> ignorePathes;
+  scanPathes.push_back(path);
+
+  // for (auto& filePath : std::filesystem::recursive_directory_iterator(path))
+
+  for (int index = 0; index < scanPathes.size(); index++)
   {
-    uint32_t resSize;
-    std::string sourceType;
-    SourceStructureTree* tree = scan(filePath, resSize, sourceType);
-    if (tree != nullptr)
-      ret[sourceType].push_back({filePath, tree, resSize});
+    std::filesystem::path curPath = scanPathes.at(index);
+    // if (std::find(ignorePathes.begin(), ignorePathes.end(), curPath) != ignorePathes.end())
+    // continue;
+
+    bool ignore = false;
+    for (auto& filePath : std::filesystem::directory_iterator(curPath))
+    {
+      if (std::filesystem::is_directory(filePath))
+        continue;
+
+      std::filesystem::path resPath = filePath;
+      if (resPath.extension().string() == ".ahnalytic")
+      {
+        AhnalyticFile analyticFile(resPath.string());
+
+        switch (analyticFile.getType())
+        {
+        case AhnalyticFileTypeE::Ignore:
+        case AhnalyticFileTypeE::ThirdParty:
+          ignore = true;
+          break;
+        };
+      }
+    }
+
+    if (!ignore)
+    {
+      for (auto& filePath : std::filesystem::directory_iterator(curPath))
+      {
+        if (std::filesystem::is_directory(filePath))
+        {
+          scanPathes.push_back(filePath.path());
+          continue;
+        }
+
+        std::filesystem::path resPath = filePath;
+        if (resPath.extension().string() == ".ahnalytic")
+        {
+          continue;
+        }
+
+        uint32_t resSize;
+        std::string sourceType;
+        SourceStructureTree* tree = scan(filePath, resSize, sourceType);
+        if (tree != nullptr)
+          ret[sourceType].push_back({filePath, tree, resSize});
+      }
+    }
   }
 
   return ret;
