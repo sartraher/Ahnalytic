@@ -370,9 +370,9 @@ TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const Sear
           if (memcmp_equal(&baseNodes.nodeData[baseIndex], &searchNodes.nodeData[searchIndex], windowSize * sizeof(uint32_t)))
           {
             bool nameNEQ = false;
-            //for (int index = 0; index < windowSize && !nameNEQ; index++)
-              //if (baseNodes.nameData[baseIndex + index] != searchNodes.nameData[searchIndex + index])
-                //nameNEQ = true;
+            for (int index = 0; index < windowSize && !nameNEQ; index++)
+              if (baseNodes.nameData[baseIndex + index] != searchNodes.nameData[searchIndex + index])
+                nameNEQ = true;
 
             if (!nameNEQ)
             {
