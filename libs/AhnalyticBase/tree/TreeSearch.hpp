@@ -69,6 +69,7 @@ public:
 struct SearchNodes
 {
   ankerl::unordered_dense::map<uint32_t, std::vector<uint32_t>> hashData;
+  
 
   std::vector<uint32_t> nodeData;
   std::vector<std::string> nameData;
@@ -77,16 +78,31 @@ struct SearchNodes
   std::filesystem::path filePath;
 };
 
+struct SearchNodeData
+{
+  std::vector<uint32_t> nodeData;
+  //std::vector<uint32_t> lineNrs;
+
+  ankerl::unordered_dense::map<uint32_t, ankerl::unordered_dense::map<std::filesystem::path, std::vector<uint32_t>>> searchData;
+  //ankerl::unordered_dense::set<uint32_t> searchLookup;
+};
+
 class DLLEXPORT TreeSearch
 {
 public:
   TreeSearch();
   ~TreeSearch();
 
+  void initNodeData(SearchNodeData& searchData, SourceStructureTree* tree, const std::filesystem::path& path,
+                    uint32_t windowSize);
+
+  std::set<std::filesystem::path> searchRawHash(const SearchNodeData& dbNodes, SourceStructureTree* tree, const std::filesystem::path& path, uint32_t windowSize);
+
   SearchNodes initNodes(SourceStructureTree* tree, uint32_t windowSize) const;
   SearchNodes initNodesDeep(SourceStructureTreeDeep* tree, uint32_t windowSize) const;
 
-  TreeSearchResult searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize, bool fast);
+  TreeSearchResult searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize);
+  //TreeSearchResult searchHashDeep(const SearchNodeData& baseNodes, const SearchNodeData& searchNodes, int windowSize);
 
   void search(std::filesystem::path& path, const EnviromentC& env, TreeResultInterface* resultInter);
   void searchDeep(std::filesystem::path& path, const EnviromentC& env, TreeResultInterface* resultInter);

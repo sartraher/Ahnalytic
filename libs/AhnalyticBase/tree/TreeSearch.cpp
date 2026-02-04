@@ -11,6 +11,14 @@
 
 // #define WINDOW_SIZE 64
 
+struct IdentityHash
+{
+  size_t operator()(uint32_t x) const noexcept
+  {
+    return x;
+  }
+};
+
 TreeSearch::TreeSearch()
 {
 }
@@ -19,18 +27,17 @@ TreeSearch::~TreeSearch()
 {
 }
 
-SearchNodes TreeSearch::initNodes(SourceStructureTree* tree, uint32_t windowSize) const
+void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* tree, const std::filesystem::path& path, uint32_t windowSize)
 {
-  SearchNodes ret;
+  size_t nodeCount = 0;
+  nodeCount = tree->getNodeCount();
 
-  size_t nodecount = 0;
-  nodecount = tree->getNodeCount();
+  size_t origSize = searchData.nodeData.size();
 
-  ret.lineNrs.reserve(nodecount);
-  ret.nodeData.reserve(nodecount);
+  searchData.nodeData.reserve(searchData.nodeData.size() + nodeCount);
 
   std::vector<const Tree<SourceStructureData>*> nodeVec;
-  nodeVec.reserve(nodecount);
+  nodeVec.reserve(nodeCount);
 
   tree->getNodes(nodeVec);
 
@@ -39,13 +46,12 @@ SearchNodes TreeSearch::initNodes(SourceStructureTree* tree, uint32_t windowSize
   for (int index = 0; index < nodeVec.size(); index++)
     nodeId.push_back(nodeVec[index]->data.id.cmpData);
 
-  auto write = [&nodeVec, &ret](size_t pos, size_t size)
+  auto write = [&nodeVec, &searchData](size_t pos, size_t size)
   {
     for (int index = 0; index < size; index++)
     {
       const Tree<SourceStructureData>* first = nodeVec[index + pos];
-      ret.nodeData.push_back(first->data.id.cmpData);
-      //ret.lineNrs.push_back(first->data.lineNr);
+      searchData.nodeData.push_back(first->data.id.cmpData);
     }
   };
 
@@ -95,19 +101,159 @@ SearchNodes TreeSearch::initNodes(SourceStructureTree* tree, uint32_t windowSize
       write(index, 1);
   }
 
-  ret.hashData.reserve(ret.nodeData.size());
-  if (ret.nodeData.size() >= windowSize)
+  constexpr uint32_t base = 0x9E3779B1u;
+
+  static thread_local std::vector<uint32_t> powB;
+  if (powB.size() < windowSize + 1)
   {
-    for (int index = 0; index < ret.nodeData.size() - windowSize; index++)
+    powB.resize(windowSize + 1);
+    powB[0] = 1;
+    for (size_t i = 1; i <= windowSize; ++i)
+      powB[i] = powB[i - 1] * base;
+  }
+
+  if (searchData.nodeData.size() >= windowSize)
+  {
+    uint32_t hash = 0;
+    for (size_t i = 0; i < windowSize; ++i)
+      hash = hash * base + searchData.nodeData[i];
+
+    searchData.searchData[hash][path].push_back(0);
+
+    for (size_t index = 1; index <= searchData.nodeData.size() - windowSize; ++index)
     {
-      uint32_t hashValue = 2166136261u; // FNV offset
-      for (uint32_t j = 0; j < windowSize; j++)
+      uint32_t outgoing = searchData.nodeData[index - 1];
+      uint32_t incoming = searchData.nodeData[index + windowSize - 1];
+
+      hash = (hash - outgoing * powB[windowSize - 1]) * base + incoming;
+
+      searchData.searchData[hash][path].push_back(index);
+    }
+  }
+}
+
+std::set<std::filesystem::path> TreeSearch::searchRawHash(const SearchNodeData& dbNodes, SourceStructureTree* tree, const std::filesystem::path& path,
+                                                           uint32_t windowSize)
+{
+  std::set<std::filesystem::path> ret;
+
+  size_t nodeCount = 0;
+  nodeCount = tree->getNodeCount();
+
+  std::vector<uint32_t> nodeData;
+  nodeData.reserve(nodeCount);
+
+  std::vector<const Tree<SourceStructureData>*> nodeVec;
+  nodeVec.reserve(nodeCount);
+
+  tree->getNodes(nodeVec);
+
+  std::vector<uint32_t> nodeId;
+  nodeId.reserve(nodeVec.size());
+  for (int index = 0; index < nodeVec.size(); index++)
+    nodeId.push_back(nodeVec[index]->data.id.cmpData);
+
+  auto write = [&nodeVec, &nodeData](size_t pos, size_t size)
+  {
+    for (int index = 0; index < size; index++)
+    {
+      const Tree<SourceStructureData>* first = nodeVec[index + pos];
+      nodeData.push_back(first->data.id.cmpData);
+    }
+  };
+
+  for (int index = 0; index < nodeVec.size(); index++)
+  {
+    bool foundDup = false;
+
+    int nextIndex = index;
+    int rest = (int)(nodeVec.size() - (nextIndex + 1));
+    for (int dupIndex = 16; dupIndex > 1; dupIndex--)
+    {
+      bool hasMatch = false;
+
+      if (nodeVec.size() <= nextIndex + dupIndex)
+        continue;
+
+      while (1)
       {
-        hashValue ^= (ret.nodeData[index + j] >> 16) & 0xFFFF;
-        hashValue *= 16777619u; // FNV prime
+        if (nodeVec.size() <= nextIndex + dupIndex * 2)
+          break;
+
+        const uint32_t* base = &nodeId[nextIndex];
+        const uint32_t* next = &nodeId[nextIndex + dupIndex];
+
+        bool found = memcmp_equal(base, next, dupIndex * sizeof(uint32_t));
+
+        if (found)
+        {
+          nextIndex += dupIndex;
+          hasMatch = true;
+        }
+        else
+          break;
       }
 
-      ret.hashData[hashValue].push_back(index);
+      if (hasMatch)
+      {
+        // Write dupIndex
+        write(index, dupIndex);
+        index = nextIndex;
+        foundDup = true;
+        break;
+      }
+    }
+
+    if (!foundDup)
+      write(index, 1);
+  }
+
+  // Tuned odd constant with good avalanche under mod 2^32
+  constexpr uint32_t base = 0x9E3779B1u; // 2^32 / golden ratio
+
+  static thread_local std::vector<uint32_t> powB;
+  if (powB.size() < windowSize + 1)
+  {
+    powB.resize(windowSize + 1);
+    powB[0] = 1;
+    for (size_t i = 1; i <= windowSize; ++i)
+      powB[i] = powB[i - 1] * base;
+  }
+
+  auto searchFunc = [&dbNodes, &nodeData, &ret, windowSize](uint32_t hash, int index)
+  {
+    auto searchIter = dbNodes.searchData.find(hash);
+
+    if (searchIter != dbNodes.searchData.end())
+    {
+      for (auto searchFileIter = searchIter->second.begin(); searchFileIter != searchIter->second.end(); searchFileIter++)
+      {
+        for (const uint32_t& searchIndex : searchFileIter->second)
+        {
+          if (memcmp_equal(&nodeData[index], &dbNodes.nodeData[searchIndex], windowSize * sizeof(uint32_t)))
+          {
+            ret.insert(searchFileIter->first);
+          }
+        }
+      }
+    }
+  };
+
+  if (nodeData.size() >= windowSize)
+  {
+    uint32_t hash = 0;
+    for (size_t i = 0; i < windowSize; ++i)
+      hash = hash * base + nodeData[i];
+
+    searchFunc(hash, 0);
+
+    for (size_t index = 1; index <= nodeData.size() - windowSize; ++index)
+    {
+      uint32_t outgoing = nodeData[index - 1];
+      uint32_t incoming = nodeData[index + windowSize - 1];
+
+      hash = (hash - outgoing * powB[windowSize - 1]) * base + incoming;
+      searchFunc(hash, index);
     }
   }
 
@@ -145,23 +291,41 @@ SearchNodes TreeSearch::initNodesDeep(SourceStructureTreeDeep* tree, uint32_t wi
   ret.hashData.reserve(ret.nodeData.size());
   if (ret.nodeData.size() >= windowSize)
   {
-    for (int index = 0; index < ret.nodeData.size() - windowSize; index++)
-    {
-      uint32_t hashValue = 2166136261u; // FNV offset
-      for (uint32_t j = 0; j < windowSize; j++)
-      {
-        hashValue ^= (ret.nodeData[index + j] >> 16) & 0xFFFF;
-        hashValue *= 16777619u; // FNV prime
-      }
+    constexpr uint32_t base = 0x9E3779B1u;
 
-      ret.hashData[hashValue].push_back(index);
+    static thread_local std::vector<uint32_t> powB;
+    if (powB.size() < windowSize + 1)
+    {
+      powB.resize(windowSize + 1);
+      powB[0] = 1;
+      for (size_t i = 1; i <= windowSize; ++i)
+        powB[i] = powB[i - 1] * base;
+    }
+
+    if (ret.nodeData.size() >= windowSize)
+    {
+      uint32_t hash = 0;
+      for (size_t i = 0; i < windowSize; ++i)
+        hash = hash * base + ret.nodeData[i];
+
+      ret.hashData[hash].push_back(0);
+
+      for (size_t index = 1; index <= ret.nodeData.size() - windowSize; ++index)
+      {
+        uint32_t outgoing = ret.nodeData[index - 1];
+        uint32_t incoming = ret.nodeData[index + windowSize - 1];
+
+        hash = (hash - outgoing * powB[windowSize - 1]) * base + incoming;
+
+        ret.hashData[hash].push_back(index);
+      }
     }
   }
 
   return ret;
 }
 
-TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize, bool fast)
+TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize)
 {
   TreeSearchResult ret;
 
@@ -174,6 +338,7 @@ TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const Sear
 
     if (searchIter != searchNodes.hashData.end())
     {
+
       for (const uint32_t& baseIndex : baseIter->second)
       {
         if (doneBaseLines.size() > 0)
@@ -193,37 +358,27 @@ TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const Sear
 
           if (memcmp_equal(&baseNodes.nodeData[baseIndex], &searchNodes.nodeData[searchIndex], windowSize * sizeof(uint32_t)))
           {
-            if (fast)
+            bool nameNEQ = false;
+            for (int index = 0; index < windowSize && !nameNEQ; index++)
+              if (baseNodes.nameData[baseIndex + index] != searchNodes.nameData[searchIndex + index])
+                nameNEQ = true;
+
+            if (!nameNEQ)
             {
-              // We will do a deep search either way
               TreeSearchResultSet resultSet;
+              resultSet.baseStart = baseNodes.lineNrs.at(baseIndex);
+              resultSet.baseEnd = baseNodes.lineNrs.at(baseIndex + windowSize);
+              resultSet.searchStart = searchNodes.lineNrs.at(searchIndex);
+              resultSet.searchEnd = searchNodes.lineNrs.at(searchIndex + windowSize);
+
+              for (uint32_t index = resultSet.baseStart; index <= resultSet.baseEnd; index++)
+                doneBaseLines.insert(index);
+
+              for (uint32_t index = resultSet.searchStart; index <= resultSet.searchEnd; index++)
+                doneSearchLines.insert(index);
+
               ret.push_back(resultSet);
-              return ret;
-            }
-            else
-            {
-              bool nameNEQ = false;
-              for (int index = 0; index < windowSize && !nameNEQ; index++)
-                if (baseNodes.nameData[baseIndex + index] != searchNodes.nameData[searchIndex + index])
-                  nameNEQ = true;
-
-              if (!nameNEQ)
-              {
-                TreeSearchResultSet resultSet;
-                resultSet.baseStart = baseNodes.lineNrs.at(baseIndex);
-                resultSet.baseEnd = baseNodes.lineNrs.at(baseIndex + windowSize);
-                resultSet.searchStart = searchNodes.lineNrs.at(searchIndex);
-                resultSet.searchEnd = searchNodes.lineNrs.at(searchIndex + windowSize);
-
-                for (uint32_t index = resultSet.baseStart; index <= resultSet.baseEnd; index++)
-                  doneBaseLines.insert(index);
-
-                for (uint32_t index = resultSet.searchStart; index <= resultSet.searchEnd; index++)
-                  doneSearchLines.insert(index);
-
-                ret.push_back(resultSet);
-                break;
-              }
+              break;
             }
           }
         }
@@ -243,24 +398,21 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
   std::unordered_map<std::string, std::vector<ScanTreeData>> trees = scanner.scanPath(path);
 
-  std::unordered_map<std::string, std::vector<SearchNodes>> searchNodes;
+  ankerl::unordered_dense::map<std::string, SearchNodeData> searchData;
 
   for (auto iter = trees.begin(); iter != trees.end(); iter++)
   {
-    std::vector<SearchNodes>& nodes = searchNodes[iter->first];
-    nodes.resize(iter->second.size());
-
+    SearchNodeData& searchDataByLang = searchData[iter->first];
     for (int index = 0; index < iter->second.size(); index++)
     {
       ScanTreeData& data = iter->second[index];
-      nodes[index] = initNodes(data.tree, env.windowSize);
-      nodes[index].filePath = data.path;
+      initNodeData(searchDataByLang, data.tree, data.path, env.windowSize);
       delete data.tree;
     }
   }
   trees.clear();
 
-  auto scanSnippedDb = [this, resultInter, env](const std::filesystem::path& dbPath, const std::vector<SearchNodes>& nodes)
+  auto scanSnippedDb = [this, resultInter, env](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
     SnippedDatabase db(DBType::SQLite, dbPath.string());
 
@@ -269,29 +421,24 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       if (resultInter->isAborted())
         return;
 
-      SearchNodes dbNodes = initNodes(tree, env.windowSize);
-
-      for (const SearchNodes& searchNodes : nodes)
+      std::set<std::filesystem::path> files = searchRawHash(nodes, tree, std::to_string(internalId), env.windowSize);
+      for (const std::filesystem::path& path : files)
       {
-        if (resultInter->isAborted())
-          return;
+        TreeSearchResult result;
+        result.type = TreeSearchResult::Stackexchange;
+        result.sourceDb = dbPath.string();
+        result.sourceInternalId = internalId;
+        result.searchFile = path.string();
 
-        TreeSearchResult result = searchHash(dbNodes, searchNodes, env.windowSize, true);
-        if (result)
-        {
-          result.type = TreeSearchResult::Stackexchange;
-          result.sourceDb = dbPath.string();
-          result.sourceInternalId = internalId;
-          result.searchFile = searchNodes.filePath.string();
-
-          resultInter->addResult(result);
-        }
+        resultInter->addResult(result);
       }
     });
 
     resultInter->incFinishedCount(1);
   };
 
+  // TODO: re-enable these databases later
+  /*
   auto scanGitHubDb = [this, resultInter, env](const std::filesystem::path& dbPath, const std::vector<SearchNodes>& nodes)
   {
     FileDatabase db(DBType::SQLite, dbPath.string());
@@ -358,11 +505,12 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
     resultInter->incFinishedCount(1);
   };
+  */
 
   int maxCount = 0;
 
   BS::thread_pool pool;
-  for (auto iter = searchNodes.begin(); iter != searchNodes.end(); iter++)
+  for (auto iter = searchData.begin(); iter != searchData.end(); iter++)
   {
     std::filesystem::path dbByFormatPath = env.dbFolder / iter->first;
 
@@ -378,7 +526,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         std::filesystem::path dbPath = filePath.path();
         if (dbPath.extension() == ".db")
         {
-          std::vector<SearchNodes> nodes = iter->second;
+          const SearchNodeData& nodes = iter->second;
           std::future<void> result = pool.submit_task([&scanSnippedDb, dbPath, nodes]() { return scanSnippedDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
           maxCount++;
@@ -386,6 +534,8 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       }
     }
 
+    // TODO: re-enable these databases later
+    /*
     // github
     std::filesystem::path dbGithub = dbByFormatPath / "github";
     if (std::filesystem::exists(dbGithub))
@@ -425,6 +575,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         }
       }
     }
+    */
   }
 
   if (resultInter->isAborted())
@@ -505,7 +656,7 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     SearchNodes dbNodes = initNodesDeep(dbTree, env.windowSize);
     SearchNodes searchNodes = initNodesDeep(trees[result.searchFile].tree, env.windowSize);
 
-    TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize, false);
+    TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
     if (deepResult)
     {
       deepResult.searchFile = std::filesystem::relative(result.searchFile, path).string();

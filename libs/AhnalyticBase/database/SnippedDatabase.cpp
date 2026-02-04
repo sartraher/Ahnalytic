@@ -3,7 +3,7 @@
 #include "soci/soci.h"
 #include "soci/sqlite3/soci-sqlite3.h"
 // #include "soci/mysql/soci-mysql.h"
-//#include "soci/postgresql/soci-postgresql.h"
+// #include "soci/postgresql/soci-postgresql.h"
 
 #include "AhnalyticBase/tree/SourceStructureTree.hpp"
 
@@ -132,7 +132,11 @@ void SnippedDatabase::iterateSnippeds(std::function<void(uint32_t, const std::st
     }
 
     if (root != nullptr && root->children.size() > sourceTreeDataIndex)
+    {
+
       callback(internalId, licence, (SourceStructureTree*)root->children.at(sourceTreeDataIndex));
+      //callback(internalId, licence, (SourceStructureTree*)root);
+    }
   }
 
   delete root;
