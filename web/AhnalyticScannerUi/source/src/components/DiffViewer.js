@@ -1,14 +1,29 @@
 import React, { useState } from 'react';
 import '../styles/diffviewer.css';
 
+// Utility function to decode base64 content
+const decodeBase64 = (encoded) => {
+  if (!encoded) return '';
+  try {
+    return atob(encoded);
+  } catch (e) {
+    console.error('Failed to decode base64:', e);
+    return encoded; // Return original if decoding fails
+  }
+};
+
 export const DiffViewer = ({ searchContent, sourceContent, resultSets }) => {
   const [selectedMatch, setSelectedMatch] = useState(0);
+
+  // Decode base64 content
+  const decodedSearchContent = decodeBase64(searchContent);
+  const decodedSourceContent = decodeBase64(sourceContent);
 
   if (!resultSets || resultSets.length === 0) {
     return <div className="diff-viewer-empty">No matches to display</div>;
   }
 
-  if (!searchContent || !sourceContent) {
+  if (!decodedSearchContent || !decodedSourceContent) {
     return <div className="diff-viewer-empty">Content not available</div>;
   }
 
@@ -21,8 +36,8 @@ export const DiffViewer = ({ searchContent, sourceContent, resultSets }) => {
   };
 
   const match = resultSets[selectedMatch];
-  const sourceLines = splitContent(sourceContent, match.baseStart, match.baseEnd);
-  const searchLines = splitContent(searchContent, match.searchStart, match.searchEnd);
+  const sourceLines = splitContent(decodedSourceContent, match.baseStart, match.baseEnd);
+  const searchLines = splitContent(decodedSearchContent, match.searchStart, match.searchEnd);
 
   return (
     <div className="diff-viewer">

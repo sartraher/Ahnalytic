@@ -29,6 +29,17 @@ TreeSearch::~TreeSearch()
 
 void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* tree, const std::filesystem::path& path, uint32_t windowSize)
 {
+  size_t pathId = 0;
+  auto pathIter = searchData.pathLookup.find(path);
+  if (pathIter == searchData.pathLookup.end())
+  {
+    pathId = searchData.pathLookup.size();
+    searchData.pathLookup[path] = pathId;
+    searchData.pathLookupReverse[pathId] = path;
+  }
+  else
+    pathId = pathIter->second;
+
   size_t nodeCount = 0;
   nodeCount = tree->getNodeCount();
 
@@ -112,28 +123,28 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
       powB[i] = powB[i - 1] * base;
   }
 
-  if (searchData.nodeData.size() >= windowSize)
+  if (searchData.nodeData.size() >= origSize + windowSize)
   {
     uint32_t hash = 0;
-    for (size_t i = 0; i < windowSize; ++i)
+    for (size_t i = origSize; i < origSize + windowSize; ++i)
       hash = hash * base + searchData.nodeData[i];
 
-    searchData.searchData[hash][path].push_back(0);
+    searchData.searchData[hash][pathId].push_back(0);
 
-    for (size_t index = 1; index <= searchData.nodeData.size() - windowSize; ++index)
+    for (size_t index = origSize + 1; index <= searchData.nodeData.size() - windowSize; ++index)
     {
       uint32_t outgoing = searchData.nodeData[index - 1];
       uint32_t incoming = searchData.nodeData[index + windowSize - 1];
 
       hash = (hash - outgoing * powB[windowSize - 1]) * base + incoming;
 
-      searchData.searchData[hash][path].push_back(index);
+      searchData.searchData[hash][pathId].push_back(index);
     }
   }
 }
 
 std::set<std::filesystem::path> TreeSearch::searchRawHash(const SearchNodeData& dbNodes, SourceStructureTree* tree, const std::filesystem::path& path,
-                                                           uint32_t windowSize)
+                                                          uint32_t windowSize)
 {
   std::set<std::filesystem::path> ret;
 
@@ -232,7 +243,7 @@ std::set<std::filesystem::path> TreeSearch::searchRawHash(const SearchNodeData& 
         {
           if (memcmp_equal(&nodeData[index], &dbNodes.nodeData[searchIndex], windowSize * sizeof(uint32_t)))
           {
-            ret.insert(searchFileIter->first);
+            ret.insert(dbNodes.pathLookupReverse.find(searchFileIter->first)->second);
           }
         }
       }
@@ -359,9 +370,9 @@ TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const Sear
           if (memcmp_equal(&baseNodes.nodeData[baseIndex], &searchNodes.nodeData[searchIndex], windowSize * sizeof(uint32_t)))
           {
             bool nameNEQ = false;
-            for (int index = 0; index < windowSize && !nameNEQ; index++)
-              if (baseNodes.nameData[baseIndex + index] != searchNodes.nameData[searchIndex + index])
-                nameNEQ = true;
+            //for (int index = 0; index < windowSize && !nameNEQ; index++)
+              //if (baseNodes.nameData[baseIndex + index] != searchNodes.nameData[searchIndex + index])
+                //nameNEQ = true;
 
             if (!nameNEQ)
             {

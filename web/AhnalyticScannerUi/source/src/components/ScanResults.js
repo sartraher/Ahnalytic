@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useScanner } from '../context/ScannerContext';
 import { DiffViewer } from './DiffViewer';
 import '../styles/components.css';
@@ -21,8 +21,6 @@ export const ScanResults = () => {
   const { currentGroup, currentProject, currentVersion, currentScan, scanInfo, loading, error, loadScanInfo } = useScanner();
   const [expandedResultId, setExpandedResultId] = useState(null);
   const scrollContainerRef = useRef(null);
-  const scrollPositionRef = useRef(0);
-  const previousResultLengthRef = useRef(0);
 
   // Load scan info automatically when a scan is selected
   useEffect(() => {
@@ -31,33 +29,7 @@ export const ScanResults = () => {
     }
   }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
 
-  // Save scroll position before polling updates
-  useEffect(() => {
-    if (!scrollContainerRef.current) return;
 
-    const handleScroll = () => {
-      if (scrollContainerRef.current) {
-        scrollPositionRef.current = scrollContainerRef.current.scrollTop;
-      }
-    };
-
-    const container = scrollContainerRef.current;
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Restore scroll position after updates using useLayoutEffect for synchronous restoration
-  useLayoutEffect(() => {
-    if (scrollContainerRef.current && scanInfo?.results) {
-      // Only reset scroll if results actually changed (new items added), not during ongoing updates
-      const currentResultLength = scanInfo.results.length;
-      if (currentResultLength !== previousResultLengthRef.current) {
-        previousResultLengthRef.current = currentResultLength;
-        // If new results were added, restore the previous scroll position
-        scrollContainerRef.current.scrollTop = scrollPositionRef.current;
-      }
-    }
-  }, [scanInfo]);
 
   if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
     return (
