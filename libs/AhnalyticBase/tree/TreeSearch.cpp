@@ -448,9 +448,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
     resultInter->incFinishedCount(1);
   };
 
-  // TODO: re-enable these databases later
-  /*
-  auto scanGitHubDb = [this, resultInter, env](const std::filesystem::path& dbPath, const std::vector<SearchNodes>& nodes)
+  auto scanGitHubDb = [this, resultInter, env](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
     FileDatabase db(DBType::SQLite, dbPath.string());
 
@@ -459,31 +457,24 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       if (resultInter->isAborted())
         return;
 
-      SearchNodes dbNodes = initNodes(tree, env.windowSize);
-
-      for (const SearchNodes& searchNodes : nodes)
+      std::set<std::filesystem::path> files = searchRawHash(nodes, tree, std::to_string(fileId), env.windowSize);
+      for (const std::filesystem::path& path : files)
       {
-        if (resultInter->isAborted())
-          return;
+        TreeSearchResult result;
+        result.type = TreeSearchResult::Stackexchange;
+        result.sourceDb = dbPath.string();
+        result.sourceRevision = sha;
+        result.sourceInternalId = fileId;
+        result.searchFile = path.string();
 
-        TreeSearchResult result = searchHash(dbNodes, searchNodes, env.windowSize, true);
-        if (result)
-        {
-          result.type = TreeSearchResult::Github;
-          result.sourceDb = dbPath.string();
-          result.sourceRevision = sha;
-          result.sourceInternalId = fileId;
-          result.searchFile = searchNodes.filePath.string();
-
-          resultInter->addResult(result);
-        }
+        resultInter->addResult(result);
       }
     });
 
     resultInter->incFinishedCount(1);
   };
 
-  auto scanSourceforgeDb = [this, resultInter, env](const std::filesystem::path& dbPath, const std::vector<SearchNodes>& nodes)
+  auto scanSourceforgeDb = [this, resultInter, env](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
     FileDatabase db(DBType::SQLite, dbPath.string());
 
@@ -493,30 +484,22 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       if (resultInter->isAborted())
         return;
 
-      SearchNodes dbNodes = initNodes(tree, env.windowSize);
-
-      for (const SearchNodes& searchNodes : nodes)
+      std::set<std::filesystem::path> files = searchRawHash(nodes, tree, std::to_string(fileId), env.windowSize);
+      for (const std::filesystem::path& path : files)
       {
-        if (resultInter->isAborted())
-          return;
+        TreeSearchResult result;
+        result.type = TreeSearchResult::Stackexchange;
+        result.sourceDb = dbPath.string();
+        result.sourceRevision = revision;
+        result.sourceInternalId = fileId;
+        result.searchFile = path.string();
 
-        TreeSearchResult result = searchHash(dbNodes, searchNodes, env.windowSize, true);
-        if (result)
-        {
-          result.type = TreeSearchResult::SourceForge;
-          result.sourceDb = dbPath.string();
-          result.sourceRevision = revision;
-          result.sourceInternalId = fileId;
-          result.searchFile = searchNodes.filePath.string();
-
-          resultInter->addResult(result);
-        }
+        resultInter->addResult(result);
       }
     });
 
     resultInter->incFinishedCount(1);
   };
-  */
 
   int maxCount = 0;
 
@@ -545,8 +528,6 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       }
     }
 
-    // TODO: re-enable these databases later
-    /*
     // github
     std::filesystem::path dbGithub = dbByFormatPath / "github";
     if (std::filesystem::exists(dbGithub))
@@ -559,7 +540,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         std::filesystem::path dbPath = filePath.path();
         if (dbPath.extension() == ".db")
         {
-          std::vector<SearchNodes> nodes = iter->second;
+          const SearchNodeData& nodes = iter->second;
           std::future<void> result = pool.submit_task([&scanGitHubDb, dbPath, nodes]() { return scanGitHubDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
           maxCount++;
@@ -579,14 +560,13 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         std::filesystem::path dbPath = filePath.path();
         if (dbPath.extension() == ".db")
         {
-          std::vector<SearchNodes> nodes = iter->second;
+          const SearchNodeData& nodes = iter->second;
           std::future<void> result = pool.submit_task([&scanSourceforgeDb, dbPath, nodes]() { return scanSourceforgeDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
           maxCount++;
         }
       }
     }
-    */
   }
 
   if (resultInter->isAborted())
