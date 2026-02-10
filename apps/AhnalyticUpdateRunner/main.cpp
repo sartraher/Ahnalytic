@@ -42,7 +42,8 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  std::string workPath = "R:/";
+  std::string workPathBig = "R:/";
+  std::string workPathSmall = "S:/work";
   std::string dbPath = "D:/source/git/Ahnalytic/db";
 
   if (input)
@@ -54,62 +55,80 @@ int main(int argc, char* argv[])
 
     std::string cleanName = GitHubHandler::cleanFileName(info.fullName);
 
-    std::filesystem::path workResPath = workPath;
-    workResPath = workResPath.concat(cleanName);
+    if (info.tags.size() >= 5)
+    {
+      std::filesystem::path workResPathBig = workPathBig;
+      workResPathBig = workResPathBig.concat(cleanName);
 
-    GitHubHandler handler(dbPath, workResPath.string());
-    handler.scanRepo(info);
+      GitHubHandler handler(dbPath, workResPathBig.string());
+      handler.scanRepo(info);
+    }
+    else
+    {
+      std::filesystem::path workResPathSmall = workPathSmall;
+      workResPathSmall = workResPathSmall.concat(cleanName);
+
+      GitHubHandler handler(dbPath, workResPathSmall.string());
+      handler.scanRepo(info);
+    }
   }
   else
   {
     // GitHubHandler handler("D:/source/Ahnalytic/db", "D:/work");
 
-    BS::thread_pool pool(4);
+    BS::thread_pool poolBig(4);
+    BS::thread_pool poolSmall(4);
 
     std::vector<std::string> langFilter{"C", "C++"};
 
     GitHubRepoDatabase db(DBType::SQLite, dbPath + "/base/github/github.db");
-    db.processRepos(langFilter, true, false, [workPath, &pool, &argv, dbPath](RepoInfo info)
+    db.processRepos(langFilter, true, false, [workPathBig, workPathSmall, &poolBig, &poolSmall, &argv, dbPath](RepoInfo info)
     {
       if (stopGracefully)
         return;
 
-      // if (info.language == "C" || info.language == "C++")
+      std::string cleanName = GitHubHandler::cleanFileName(info.fullName);
+
+      if (cleanName.find("linux") != std::string::npos || cleanName.find("kernel") != std::string::npos)
+        return;
+
+      std::filesystem::path resPath = dbPath;
+      resPath = resPath.concat("/CPP").concat("/github/").concat(cleanName + "_CPP.db");
+
+      std::filesystem::path lastPath = dbPath;
+      lastPath = lastPath.concat("/CPP").concat("/github_last/").concat(cleanName + "_CPP.db");
+
+      if (!std::filesystem::exists(resPath) && std::filesystem::exists(lastPath))
+        std::filesystem::copy(lastPath, resPath);
+
+      if (std::filesystem::exists(resPath))
       {
-        std::string cleanName = GitHubHandler::cleanFileName(info.fullName);
+        FileDatabase* db = new FileDatabase(DBType::SQLite, resPath.string());
 
-        std::filesystem::path resPath = dbPath;
-        resPath = resPath.concat("/CPP").concat("/github/").concat(cleanName + "_CPP.db");
+        std::unordered_map<std::string, std::string> tags = db->getTags();
 
-        std::filesystem::path lastPath = dbPath;
-        lastPath = lastPath.concat("/CPP").concat("/github_last/").concat(cleanName + "_CPP.db");
+        std::vector<TagInfo> resTags;
+        info.tags.reserve(info.tags.size());
+        for (const TagInfo& tag : info.tags)
+          if (!tags.contains(tag.name))
+            resTags.push_back(tag);
+        info.tags = resTags;
 
-        if (!std::filesystem::exists(resPath) && std::filesystem::exists(lastPath))
-          std::filesystem::copy(lastPath, resPath);
-
-        if (std::filesystem::exists(resPath))
-        {
-          FileDatabase* db = new FileDatabase(DBType::SQLite, resPath.string());
-
-          std::unordered_map<std::string, std::string> tags = db->getTags();
-
-          std::vector<TagInfo> resTags;
-          info.tags.reserve(info.tags.size());
-          for (const TagInfo& tag : info.tags)
-            if (!tags.contains(tag.name))
-              resTags.push_back(tag);
-          info.tags = resTags;
-
-          if (info.tags.size() == 0)
-            return;
-        }
-
-        resPath = dbPath;
-        resPath = resPath.concat("/CPP").concat("/github/").concat(cleanName + "_CPP.empty");
-
-        if (std::filesystem::exists(resPath))
+        if (info.tags.size() == 0)
           return;
+      }
 
+      resPath = dbPath;
+      resPath = resPath.concat("/CPP").concat("/github/").concat(cleanName + "_CPP.empty");
+
+      if (std::filesystem::exists(resPath))
+        return;
+
+      // std::string workPath;
+      // BS::thread_pool *pool;
+
+      auto startJob = [cleanName, info, &argv](auto& pool, std::string workPath)
+      {
         pool.detach_task([workPath, cleanName, info, &argv]()
         {
           std::filesystem::path workResPath = workPath;
@@ -127,14 +146,20 @@ int main(int argc, char* argv[])
           std::error_code ec; // non-throwing
           std::filesystem::remove_all(workResPath.string(), ec);
         });
+      };
 
-        //  pool.detach_task([&handler, info]() { handler.scanRepo(info); });
+      if (info.tags.size() > 5)
+        startJob(poolBig, workPathBig);
+      else
+        startJob(poolSmall, workPathSmall);
 
-        while (pool.get_tasks_total() > 1000)
-          pool.wait_for(std::chrono::minutes(5));
-      }
+      //  pool.detach_task([&handler, info]() { handler.scanRepo(info); });
+
+      while ((poolSmall.get_tasks_total() + poolBig.get_tasks_total()) > 100000)
+        poolSmall.wait_for(std::chrono::minutes(5));
     });
 
-    pool.wait();
+    poolSmall.wait();
+    poolBig.wait();
   }
 }

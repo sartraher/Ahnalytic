@@ -66,6 +66,8 @@ EnviromentC::EnviromentC()
 
     updateServerAddr = reader.getValue("addr", "UpdateServer", "127.0.0.1");
     updateServerPort = std::stoi(reader.getValue("port", "UpdateServer", "9081"));
+
+    gitHubPAT = reader.getValue("gitHubPAT", "UpdateServer", "");
   }
 }
 

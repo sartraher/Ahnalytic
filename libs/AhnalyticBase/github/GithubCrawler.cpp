@@ -11,9 +11,9 @@
 #include <sstream>
 #include <thread>
 
-using namespace std;
+#include "AhnalyticBase/helper/Enviroment.hpp"
 
-#define DEFAULT_TOKEN_LITERAL ""
+using namespace std;
 
 // -----------------------------------------------------------------------------
 // Constructor
@@ -27,7 +27,8 @@ GitHubCrawler::GitHubCrawler(const std::string& token) : client("api.github.com"
   }
   else
   {
-    personalAccessToken = DEFAULT_TOKEN_ENV;
+    EnviromentC env;
+    personalAccessToken = env.gitHubPAT;
   }
 
   // SECURITY: enable certificate verification (was false)
@@ -246,6 +247,9 @@ void GitHubCrawler::crawlUpdatedRepos(GitHubRepoDatabase* db)
       std::string pushedAt;
       if (repoJson.contains("pushed_at") && !repoJson["pushed_at"].is_null())
         pushedAt = repoJson["pushed_at"].get<std::string>();
+
+      if (repoJson.contains("created_at") && !repoJson["created_at"].is_null())
+        std::cout << repoJson["created_at"].get<std::string>();
 
       std::optional<std::string> localPushed = db->getRepoPushedAt(fullName);
       if (localPushed.has_value() && !pushedAt.empty() && localPushed.value() == pushedAt)
@@ -543,6 +547,9 @@ void GitHubCrawler::fillBasicRepoInfo(const json& r, RepoInfo& info)
   else
     info.lastPushed.clear();
 
+  if (r.contains("created_at") && !r["created_at"].is_null())
+    std::cout << r["created_at"].get<std::string>();
+
   if (r.contains("license") && r["license"].is_object())
   {
     if (r["license"].contains("spdx_id") && !r["license"]["spdx_id"].is_null())
@@ -585,6 +592,9 @@ void GitHubCrawler::fillBasicRepoInfoMetadataOnly(const json& r, RepoInfo& info)
 
   if (r.contains("pushed_at") && !r["pushed_at"].is_null())
     info.lastPushed = r["pushed_at"].get<std::string>();
+
+  if (r.contains("created_at") && !r["created_at"].is_null())
+    std::cout << r["created_at"].get<std::string>();
 
   if (r.contains("license") && r["license"].is_object())
   {

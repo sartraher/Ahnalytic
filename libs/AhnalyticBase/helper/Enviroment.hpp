@@ -25,6 +25,8 @@ public:
   std::string updateServerAddr = "127.0.0.1";
   int updateServerPort = 9081;
 
+  std::string gitHubPAT;
+
 private:
 protected:
 };
