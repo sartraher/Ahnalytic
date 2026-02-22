@@ -3,7 +3,6 @@
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
 #include "AhnalyticBase/github/Github.hpp"
 #include "AhnalyticBase/github/GithubCrawler.hpp"
-#include "AhnalyticBase/helper/GitCliHelper.hpp"
 #include "AhnalyticBase/stackexchange/DataDump.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 
@@ -21,7 +20,7 @@ int main(int argc, char* argv[])
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
   args::Group arguments(parser, "arguments", args::Group::Validators::DontCare, args::Options::Global);
   args::ValueFlag<std::string> input(arguments, "input", "", {"input"});
-  args::Flag test(arguments, "test", "", {"test"});
+  args::ValueFlag<std::string> output(arguments, "output", "", {"output"});
 
   try
   {
@@ -44,66 +43,24 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  if (input && output)
+  {
+    std::string inPath = args::get(input);
+    std::filesystem::path outPath = args::get(output);
+
+    FileDatabase inDb(DBType::SQLite, inPath);
+
+    std::filesystem::create_directories(outPath);
+
+    inDb.exportData(outPath);
+  }
+
+  /*
   std::string workPathBig = "R:/";
-  std::string workPathSmall = "R:/";
+  std::string workPathSmall = "S:/work/";
   std::string dbPath = "D:/source/git/Ahnalytic/db";
 
-  if (test)
-  {
-    std::string testUri = "https://github.com/mongodb/mongo.git";
-
-    std::filesystem::path tempPath = std::filesystem::path(workPathBig) / "mongotest";
-    std::filesystem::path repoPath = tempPath / "mongotest";
-    std::filesystem::path workPath = repoPath / "work";
-
-    std::vector<GitTagData> tagData = GitCliHelperC::getGitTagData(testUri, tempPath.string());
-
-    std::string lastSha = tagData.at(0).sha;
-    std::string sha = tagData.at(1).sha;
-
-    GitCliHelperC::getGitClone(repoPath, testUri, tempPath.string());
-    GitCliHelperC::fetchTag(repoPath.string(), lastSha, tempPath.string());
-    GitCliHelperC::fetchTag(repoPath.string(), sha, tempPath.string());
-    std::vector<std::string> files = GitCliHelperC::getGitFiles("mongotest", testUri, sha, lastSha, tempPath.string());
-
-    static const std::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
-                                                      "externals",   "deps",     "dep",    "node_modules", ".git"};
-
-    auto hasSupportedExtension = [](const std::string& path, const std::list<std::string>& exts)
-    {
-      for (const auto& ext : exts)
-      {
-        if (path.size() >= ext.size() && path.compare(path.size() - ext.size(), ext.size(), ext) == 0)
-          return true;
-      }
-      return false;
-    };
-
-    std::list<std::string> supportedExt = {".cpp", ".c", ".cxx", ".hpp", ".h", ".hxx"};
-
-    std::vector<std::string> filesFilteres;
-    for (const std::string& file : files)
-    {
-      if (hasSupportedExtension(file, supportedExt))
-      {
-        bool skip = false;
-        for (const std::string& denyPath : denyDirs)
-        {
-          if (file.find(denyPath) != std::string_view::npos)
-          {
-            skip = true;
-            break;
-          }
-        }
-
-        if (!skip)
-          filesFilteres.push_back(file);
-      }
-    }
-
-    std::unordered_map<std::string, std::string> result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, filesFilteres);
-  }
-  else if (input)
+  if (input)
   {
     std::string path = args::get(input);
 
@@ -139,7 +96,7 @@ int main(int argc, char* argv[])
     std::vector<std::string> langFilter{"C", "C++"};
 
     GitHubRepoDatabase db(DBType::SQLite, dbPath + "/base/github/github.db");
-    db.processRepos(langFilter, false, false, [workPathBig, workPathSmall, &poolBig, &poolSmall, &argv, dbPath, &db](RepoInfo info)
+    db.processRepos(langFilter, true, false, [workPathBig, workPathSmall, &poolBig, &poolSmall, &argv, dbPath](RepoInfo info)
     {
       if (stopGracefully)
         return;
@@ -157,11 +114,6 @@ int main(int argc, char* argv[])
 
       if (!std::filesystem::exists(resPath) && std::filesystem::exists(lastPath))
         std::filesystem::copy(lastPath, resPath);
-
-      if (std::filesystem::exists(resPath))
-        return;
-
-      info.tags = db.loadTags(info.id);
 
       if (std::filesystem::exists(resPath))
       {
@@ -224,4 +176,5 @@ int main(int argc, char* argv[])
     poolSmall.wait();
     poolBig.wait();
   }
+  */
 }

@@ -360,6 +360,8 @@ void GitHubRepoDatabase::processRepos(std::vector<std::string> langFilter, bool 
     if (needBranches)
       repo.branches = loadBranches(id);
 
+    repo.id = id;
+
     callback(repo);
   }
 }

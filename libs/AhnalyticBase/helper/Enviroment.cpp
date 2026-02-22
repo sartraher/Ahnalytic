@@ -45,9 +45,9 @@ EnviromentC::EnviromentC()
   {
     IniReader reader(configPath.string());
 
-    auto readFolder = [&reader, searchPath](const std::string& name)
+    auto readFolder = [&reader, searchPath](const std::string& name, const std::string& block="pathes")
     {
-      std::filesystem::path folder = reader.getValue(name, "pathes", "");
+      std::filesystem::path folder = reader.getValue(name, block, "");
       if (folder.is_relative())
         folder = searchPath / folder;
       return folder.lexically_normal().native();
@@ -68,6 +68,9 @@ EnviromentC::EnviromentC()
     updateServerPort = std::stoi(reader.getValue("port", "UpdateServer", "9081"));
 
     gitHubPAT = reader.getValue("gitHubPAT", "UpdateServer", "");
+
+    privatePath = readFolder("privatePath", "Certs");
+    publicPath = readFolder("publicPath", "Certs");
   }
 }
 

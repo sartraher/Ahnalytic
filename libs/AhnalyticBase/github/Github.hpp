@@ -22,12 +22,13 @@ using json = nlohmann::json;
 struct RepoInfo;
 class FileDatabase;
 
+/*
 struct ExecResult
 {
   int exitCode = -1;
   std::string stdoutText;
   std::string stderrText;
-};
+};*/
 
 class DLLEXPORT GitHubHandler
 {
@@ -36,7 +37,8 @@ public:
 
   void scanRepo(const RepoInfo& info) const;
   bool scanTag(std::unordered_map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
-               std::unordered_map<std::string, ScanTreeData>& lastFiles, std::unordered_map<std::string, std::string>& lastFileData) const;
+               const std::string& lastSha,
+               std::unordered_map<std::string, ScanTreeData>& lastFiles/*, std::unordered_map<std::string, std::string>& lastFileData*/) const;
 
   static std::string cleanFileName(const std::string& name);
 
@@ -45,17 +47,14 @@ private:
   std::string tempPath;
 
 protected:
-  std::unordered_map<std::string, std::string> getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl,
-                                                           const std::string& sha) const;
+  std::unordered_map<std::string, std::string> getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl, const std::string& sha,
+                                                           const std::string& lastSha) const;
 
   static bool hasSupportedExtension(const std::string& path, const std::list<std::string>& exts);
   std::string extractOwnerRepo(const std::string& url) const;
 
-  static std::string threadIdString();
   static void safeDelete(const std::filesystem::path& p);
-  ExecResult execAndCapture(const std::string& cmdBase) const;
   static void replaceAll(std::string& s, const std::string& from, const std::string& to);
-  static std::string uniqueTempName(const std::string& prefix);
 };
 
 #endif

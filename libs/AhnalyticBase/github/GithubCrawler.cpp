@@ -594,7 +594,7 @@ void GitHubCrawler::fillBasicRepoInfoMetadataOnly(const json& r, RepoInfo& info)
     info.lastPushed = r["pushed_at"].get<std::string>();
 
   if (r.contains("created_at") && !r["created_at"].is_null())
-    std::cout << r["created_at"].get<std::string>();
+    std::cout << r["created_at"].get<std::string>() << std::endl;
 
   if (r.contains("license") && r["license"].is_object())
   {

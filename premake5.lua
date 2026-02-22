@@ -36,6 +36,8 @@ group "apps"
 dofile("apps/AhnalyticScannerServer/premake5.lua")
 dofile("apps/AhnalyticUpdateServer/premake5.lua")
 dofile("apps/AhnalyticUpdateRunner/premake5.lua")
+dofile("apps/AhnalyticDatabaseExporter/premake5.lua")
+dofile("apps/AhnalyticGitHubCrawler/premake5.lua")
 
 -- web
 group "web"

@@ -1286,7 +1286,7 @@ typedef uint64_t uintmax_t;
 /* #undef HAVE_WORKING_FS_IOC_GETFLAGS */
 
 /* Define to 1 if you have the Windows `xmllite' library (-lxmllite). */
-#define HAVE_XMLLITE_H 1
+//#define HAVE_XMLLITE_H 0
 
 /* Define to 1 if you have the <zlib.h> header file. */
 /* #undef HAVE_ZLIB_H */

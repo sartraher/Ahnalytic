@@ -4,6 +4,7 @@
 #include "AhnalyticBase/database/Database.hpp"
 
 #include <functional>
+#include <filesystem>
 
 struct SourceStructureTree;
 
@@ -20,6 +21,8 @@ public:
   std::unordered_map<std::string, std::string> getTags() const;
 
   void iterateFiles(std::function<void(uint32_t, const std::string&, const std::string&, SourceStructureTree*)> callback);
+
+  void exportData(std::filesystem::path& outPath);
 
 private:
 protected:

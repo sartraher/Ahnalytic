@@ -25,6 +25,8 @@ struct BranchInfo
 
 struct DLLEXPORT RepoInfo
 {
+  int id; // optional, for database use only
+
   std::string name;
   std::string fullName;
   std::string htmlUrl;
@@ -65,12 +67,12 @@ public:
   // iterate all repos (existing API)
   void processRepos(std::vector<std::string> langFilter, bool needTag, bool needBranches, std::function<void(RepoInfo info)> callback);
 
+  std::vector<TagInfo> loadTags(uint32_t repoId);
+  std::vector<BranchInfo> loadBranches(uint32_t repoId);
+
 private:
   void initTables();
 
   void insertTags(uint32_t repoId, const std::vector<TagInfo>& tags);
   void insertBranches(uint32_t repoId, const std::vector<BranchInfo>& branches);
-
-  std::vector<TagInfo> loadTags(uint32_t repoId);
-  std::vector<BranchInfo> loadBranches(uint32_t repoId);
 };

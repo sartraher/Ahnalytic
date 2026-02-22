@@ -1,10 +1,12 @@
 #ifndef enviroment_hpp__
 #define enviroment_hpp__
 
+#include "AhnalyticBase/Export.hpp"
+
 #include <filesystem>
 #include <string>
 
-class EnviromentC
+class DLLEXPORT EnviromentC
 {
 public:
   EnviromentC();
@@ -16,6 +18,9 @@ public:
   std::filesystem::path dataFolder;
   std::filesystem::path scanFolder;
   std::filesystem::path webFolder;
+
+  std::filesystem::path privatePath;
+  std::filesystem::path publicPath;
 
   int windowSize = 64;
 

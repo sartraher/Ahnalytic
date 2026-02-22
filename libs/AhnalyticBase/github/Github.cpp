@@ -2,6 +2,7 @@
 
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/github/GithubCrawler.hpp"
+#include "AhnalyticBase/helper/GitCliHelper.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -35,18 +36,24 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
 
   std::unordered_map<std::string, FileDatabase*> dbs;
 
-  std::unordered_map<std::string, std::string> lastFileData;
+  // std::unordered_map<std::string, std::string> lastFileData;
+  std::string lastSha;
   std::unordered_map<std::string, ScanTreeData> lastFiles;
 
   bool hasData = false;
   if (info.tags.size() > 0)
   {
     for (const TagInfo& tag : info.tags)
+    {
       if (!exitGracefull)
-        hasData |= scanTag(dbs, info, tag.name, tag.commitSha, lastFiles, lastFileData);
+      {
+        hasData |= scanTag(dbs, info, tag.name, tag.commitSha, lastSha, lastFiles /*, lastFileData*/);
+        lastSha = tag.commitSha;
+      }
+    }
   }
   else
-    hasData |= scanTag(dbs, info, "HEAD", info.headSha, lastFiles, lastFileData);
+    hasData |= scanTag(dbs, info, "HEAD", info.headSha, lastSha, lastFiles /*, lastFileData*/);
 
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / cleanFileName(extractOwnerRepo(info.htmlUrl));
 
@@ -78,7 +85,8 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
 }
 
 bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
-                            std::unordered_map<std::string, ScanTreeData>& lastFiles, std::unordered_map<std::string, std::string>& lastFileData) const
+                            const std::string& lastSha,
+                            std::unordered_map<std::string, ScanTreeData>& lastFiles /*, std::unordered_map<std::string, std::string>& lastFileData*/) const
 {
   bool ret = false;
   std::string url = info.htmlUrl;
@@ -117,14 +125,14 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
     tagIds[group] = tagId;
   }
 
-  std::unordered_map<std::string, std::string> fileData = getGitFiles(supportedExt, url, sha);
+  std::unordered_map<std::string, std::string> fileData = getGitFiles(supportedExt, url, sha, lastSha);
 
-  for (auto iter = lastFileData.begin(); iter != lastFileData.end(); iter++)
-  {
-    auto searchIter = fileData.find(iter->first);
-    if (searchIter != fileData.end() && iter->second == searchIter->second)
-      fileData.erase(iter->first);
-  }
+  // for (auto iter = lastFileData.begin(); iter != lastFileData.end(); iter++)
+  //{
+  //   auto searchIter = fileData.find(iter->first);
+  //   if (searchIter != fileData.end() && iter->second == searchIter->second)
+  //     fileData.erase(iter->first);
+  // }
 
   if (fileData.size() == 0)
     return ret;
@@ -226,40 +234,9 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
       delete iter->second.tree;
 
   lastFiles = resFiles;
-  lastFileData = fileData;
+  // lastFileData = fileData;
 
   return ret;
-}
-
-static std::string nowString()
-{
-  using namespace std::chrono;
-  auto t = system_clock::now();
-  auto tt = system_clock::to_time_t(t);
-  std::tm tm;
-#if defined(_WIN32)
-  localtime_s(&tm, &tt);
-#else
-  localtime_r(&tt, &tm);
-#endif
-  std::ostringstream oss;
-  oss << std::put_time(&tm, "%Y%m%d%H%M%S");
-  return oss.str();
-}
-
-// -----------------------------
-// Helpers
-// -----------------------------
-std::string GitHubHandler::threadIdString()
-{
-  std::ostringstream ss;
-  ss << std::this_thread::get_id();
-  std::string s = ss.str();
-  // sanitize non-alnum to '_'
-  for (char& c : s)
-    if (!std::isalnum(static_cast<unsigned char>(c)))
-      c = '_';
-  return s;
 }
 
 void GitHubHandler::replaceAll(std::string& s, const std::string& from, const std::string& to)
@@ -272,14 +249,6 @@ void GitHubHandler::replaceAll(std::string& s, const std::string& from, const st
     s.replace(pos, from.length(), to);
     pos += to.length();
   }
-}
-
-std::string GitHubHandler::uniqueTempName(const std::string& prefix)
-{
-  uint64_t id = g_exec_counter.fetch_add(1, std::memory_order_relaxed);
-  std::ostringstream ss;
-  ss << prefix << "_" << nowString() << "_" << id << "_" << threadIdString();
-  return ss.str();
 }
 
 void GitHubHandler::safeDelete(const std::filesystem::path& p)
@@ -295,60 +264,6 @@ void GitHubHandler::safeDelete(const std::filesystem::path& p)
     {
     }
   }
-}
-
-// -----------------------------
-// execAndCapture (tempPath-aware)
-// -----------------------------
-ExecResult GitHubHandler::execAndCapture(const std::string& cmdBase) const
-{
-  ExecResult res;
-
-  // ensure tempPath exists
-  std::error_code ec;
-  std::filesystem::create_directories(tempPath, ec);
-
-  // make a unique prefix under tempPath
-  std::string prefix = uniqueTempName("exec");
-  std::filesystem::path outFile = std::filesystem::path(tempPath) / (prefix + "_out.txt");
-  std::filesystem::path errFile = std::filesystem::path(tempPath) / (prefix + "_err.txt");
-
-  // Build full command with stdout + stderr redirection to our files
-  // We don't add shell-specific constructs beyond redirection because std::system uses the shell.
-  std::string fullCmd = cmdBase + " > \"" + outFile.string() + "\" 2> \"" + errFile.string() + "\"";
-
-  // Execute
-  int rc = std::system(fullCmd.c_str());
-  res.exitCode = rc;
-
-  // Read stdout
-  {
-    std::ifstream in(outFile, std::ios::binary);
-    if (in.good())
-    {
-      std::ostringstream ss;
-      ss << in.rdbuf();
-      res.stdoutText = ss.str();
-    }
-  }
-
-  // Read stderr
-  {
-    std::ifstream in(errFile, std::ios::binary);
-    if (in.good())
-    {
-      std::ostringstream ss;
-      ss << in.rdbuf();
-      res.stderrText = ss.str();
-    }
-  }
-
-  // cleanup files (best-effort)
-  std::error_code remove_ec;
-  std::filesystem::remove(outFile, remove_ec);
-  std::filesystem::remove(errFile, remove_ec);
-
-  return res;
 }
 
 // -----------------------------
@@ -418,7 +333,7 @@ std::string GitHubHandler::cleanFileName(const std::string& name)
 }
 
 std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl,
-                                                                        const std::string& sha) const
+                                                                        const std::string& sha, const std::string& lastSha) const
 {
   std::unordered_map<std::string, std::string> result;
 
@@ -427,35 +342,73 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
     return result;
 
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / repoKey;
-  std::filesystem::path workPath = repoPath / "_work";
+  std::filesystem::path workPath = repoPath / "work";
 
   if (!std::filesystem::exists(repoPath / ".git"))
   {
-    std::string cloneCmd = "git clone --no-tags --quiet \"" + repoUrl + "\" \"" + repoPath.string() + "\"";
-    ExecResult r = execAndCapture(cloneCmd);
-    if (r.exitCode != 0)
-      return result;
+    GitCliHelperC::getGitClone(repoPath, repoUrl, tempPath);
+
+    // std::string cloneCmd = "git clone --no-tags --quiet \"" + repoUrl + "\" \"" + repoPath.string() + "\"";
+    // ExecResult r = execAndCapture(cloneCmd);
+    // if (r.exitCode != 0)
+    // return result;
   }
+
+  if (lastSha != "")
+    GitCliHelperC::fetchTag(repoPath.string(), lastSha, tempPath);
+  GitCliHelperC::fetchTag(repoPath.string(), sha, tempPath);
 
   safeDelete(repoPath / ".git" / "index.lock");
-  execAndCapture("git -C \"" + repoPath.string() + "\" remote prune origin");
+  // execAndCapture("git -C \"" + repoPath.string() + "\" remote prune origin");
 
-  ExecResult fetch = execAndCapture("git -C \"" + repoPath.string() + "\" fetch origin --depth=1 " + sha);
-  if (fetch.exitCode != 0)
-  {
-    ExecResult full = execAndCapture("git -C \"" + repoPath.string() + "\" fetch origin " + sha);
-    if (full.exitCode != 0)
-      return result;
-  }
+  // ExecResult fetch = execAndCapture("git -C \"" + repoPath.string() + "\" fetch origin --depth=1 " + sha);
+  // if (fetch.exitCode != 0)
+  //{
+  //   ExecResult full = execAndCapture("git -C \"" + repoPath.string() + "\" fetch origin " + sha);
+  //   if (full.exitCode != 0)
+  //     return result;
+  // }
 
   safeDelete(workPath);
   std::error_code ec;
   std::filesystem::create_directories(workPath, ec);
 
-  ExecResult checkout = execAndCapture("git -C \"" + repoPath.string() + "\" --work-tree=\"" + workPath.string() + "\" checkout --force " + sha);
-  if (checkout.exitCode != 0)
-    return result;
+  std::vector<std::string> files;
+  if (lastSha.size() == 0)
+    files = GitCliHelperC::getGitFiles(repoKey, repoUrl, sha, tempPath);
+  else
+    files = GitCliHelperC::getGitFiles(repoKey, repoUrl, sha, lastSha, tempPath);
 
+  static const std::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
+                                                    "externals",   "deps",     "dep",    "node_modules", ".git"};
+
+  std::vector<std::string> filesFilteres;
+  for (const std::string& file : files)
+  {
+    if (hasSupportedExtension(file, supportedExt))
+    {
+      bool skip = false;
+      for (const std::string& denyPath : denyDirs)
+      {
+        if (file.find(denyPath) != std::string_view::npos)
+        {
+          skip = true;
+          break;
+        }
+      }
+
+      if (!skip)
+        filesFilteres.push_back(file);
+    }
+  }
+
+  result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, filesFilteres);
+
+  // ExecResult checkout = execAndCapture("git -C \"" + repoPath.string() + "\" --work-tree=\"" + workPath.string() + "\" checkout --force " + sha);
+  // if (checkout.exitCode != 0)
+  // return result;
+
+  /*
   std::unordered_set<std::string> submodules;
   {
     std::filesystem::path gm = repoPath / ".gitmodules";
@@ -536,6 +489,7 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
     ss << in.rdbuf();
     result[relPath.string()] = ss.str();
   }
+  */
 
   safeDelete(workPath);
 
