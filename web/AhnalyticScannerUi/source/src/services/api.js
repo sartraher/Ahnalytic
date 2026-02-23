@@ -1,7 +1,17 @@
 // API Service for AhnalyticScanner
 // Handles all backend communication with the ScanServer
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:9080';
+// Use the same host and port as the current page, fallback to environment variable or localhost
+const getAPIBaseURL = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  // Use current page's protocol, host, and port
+  const { protocol, hostname, port } = window.location;
+  return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+};
+
+const API_BASE_URL = getAPIBaseURL();
 
 class ApiService {
   // Helper method for API calls
