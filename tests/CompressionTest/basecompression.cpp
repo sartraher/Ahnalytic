@@ -9,8 +9,8 @@ template <typename T> void cmpData(T inData, ModAlgosE mod, CompressionAlgosE al
   CompressData cmpData = manager.compress(data, nullptr, std::vector<ModAlgosE>{mod}, std::vector<CompressionAlgosE>{algo}, true);
   CompressData outData = manager.decompress(cmpData);
 
-  std::vector<char> inCharData = data.getCharData();
-  std::vector<char> vecOutData = outData.getCharData();
+  std::vector<char> inCharData = data.getCharData(CompressData::Auto);
+  std::vector<char> vecOutData = outData.getCharData(CompressData::Auto);
 
   if (inCharData.size() == vecOutData.size())
     EXPECT_EQ(0, memcmp(inCharData.data(), vecOutData.data(), inCharData.size()));

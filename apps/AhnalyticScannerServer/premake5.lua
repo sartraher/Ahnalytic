@@ -72,5 +72,11 @@ project "AhnalyticScannerServer"
 
     filter "platforms:x64"
         vectorextensions "AVX2"
+		
+	filter "system:windows"
+		linkoptions { "/STACK:16777216" } -- 16 MB
+		
+	filter "system:linux"
+		linkoptions { "-Wl,-z,stack-size=16777216" }
 
     filter {}

@@ -34,6 +34,13 @@ struct DLLEXPORT CompressDataHeader
 class DLLEXPORT CompressData
 {
 public:
+  enum CompressDataHeaderMode
+  {
+    On = 1,
+    Off = 2,
+    Auto = 3
+  };
+
   CompressData(const std::vector<uint32_t>& inData, bool withHeader = false);
   CompressData(const std::vector<char>& inData, bool withHeader = false);
 
@@ -41,7 +48,7 @@ public:
   size_t getUint32Size() const;
 
   std::vector<uint32_t> getUint32Data() const;
-  std::vector<char> getCharData() const;
+  std::vector<char> getCharData(CompressDataHeaderMode headerMode) const;
 
   const CompressDataHeader& getHeader() const;
   void setHeader(const CompressDataHeader& header);

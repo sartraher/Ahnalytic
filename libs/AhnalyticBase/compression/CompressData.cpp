@@ -1,6 +1,6 @@
 #include "CompressData.hpp"
 
-#include <cstring> 
+#include <cstring>
 
 CompressData::CompressData(const std::vector<uint32_t>& inData, bool withHeader)
 {
@@ -70,11 +70,11 @@ std::vector<uint32_t> CompressData::getUint32Data() const
   return ret;
 }
 
-std::vector<char> CompressData::getCharData() const
+std::vector<char> CompressData::getCharData(CompressDataHeaderMode headerMode) const
 {
   std::vector<char> ret;
 
-  if (headers.algo == CompressionAlgosE::None)
+  if (headerMode == Off || (headerMode == Auto && headers.algo == CompressionAlgosE::None))
   {
     ret.resize(charSize);
     memcpy(ret.data(), data.data(), charSize);

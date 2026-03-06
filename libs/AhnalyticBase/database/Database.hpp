@@ -46,6 +46,7 @@ public:
   ~Database();
 
   uint32_t createSourceTreeData(const std::vector<char>& data);
+  uint32_t createSourceTreeData(uint32_t dataId, const std::vector<char>& data);
   void getSourceTreeData(uint32_t id, std::vector<char>& data);
 
   std::unordered_map<std::string, uint32_t> getNames();

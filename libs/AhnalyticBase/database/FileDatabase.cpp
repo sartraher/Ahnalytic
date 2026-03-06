@@ -10,6 +10,7 @@
 #include "AhnalyticBase/helper/Enviroment.hpp"
 #include "AhnalyticBase/helper/SignHelper.hpp"
 #include "AhnalyticBase/tree/SourceStructureTree.hpp"
+#include "AhnalyticBase/tree/TreeSearch.hpp"
 
 #include <archive.h>
 #include <archive_entry.h>
@@ -126,13 +127,20 @@ void FileDatabase::createFiles(uint32_t dataId, std::vector<uint32_t> indices, s
 
   statement.execute(true);
   sql->commit();
+}
 
-  /*
-  soci::rowset<int> rs = (sql->prepare << "INSERT INTO File (DataID,FileIndex,PathID,TagID) VALUES (:dataId,:fileIndex,:pathId,:tagId) RETURNING ID",
-                          soci::use(dataId, "dataId"), soci::use(index, "fileIndex"), soci::use(pathId, "pathId"), soci::use(tagId, "tagId"));
+void FileDatabase::createFiles(std::vector<uint32_t> ids, std::vector<uint32_t> dataIds, std::vector<uint32_t> indices, std::vector<uint32_t> pathIds,
+                               std::vector<uint32_t> tagIds)
+{
+  const std::lock_guard<std::recursive_mutex> lock(mutex);
 
-  return *rs.begin();
-  */
+  sql->begin();
+  soci::statement statement =
+      (sql->prepare << "INSERT INTO File (ID, DataID,FileIndex,PathID,TagID) VALUES (:id, :dataId,:fileIndex,:pathId,:tagId)", soci::use(ids, "id"),
+       soci::use(dataIds, "dataId"), soci::use(indices, "fileIndex"), soci::use(pathIds, "pathId"), soci::use(tagIds, "tagId"));
+
+  statement.execute(true);
+  sql->commit();
 }
 
 uint32_t FileDatabase::createRepoData(const std::string& name, const std::string& url, const std::string& license)
@@ -167,6 +175,35 @@ std::unordered_map<std::string, std::string> FileDatabase::getTags() const
   return ret;
 }
 
+void FileDatabase::iterateSourceTrees(std::function<void(SourceStructureTree*)> callback)
+{
+  soci::blob dataBlob(*sql);
+
+  soci::statement st = (sql->prepare << "SELECT Data FROM SourceTreeData", soci::into(dataBlob));
+
+  st.execute();
+
+  SourceStructureTree* root = nullptr;
+  while (st.fetch())
+  {
+    std::size_t size = dataBlob.get_len();
+
+    std::vector<char> sourceTreeData(size);
+    size_t readAmount = dataBlob.read_from_start(sourceTreeData.data(), size);
+    sourceTreeData.resize(readAmount);
+
+    std::vector<FlatNodeDeDupData> nodeListTestOut;
+    std::vector<uint32_t> indexListTestOut;
+    SourceStructureTree::deserialize(sourceTreeData, nodeListTestOut, indexListTestOut, nullptr);
+    root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
+
+    for (auto child : root->children)
+      callback((SourceStructureTree*)child);
+
+    delete root;
+  }
+}
+
 void FileDatabase::iterateFiles(std::function<void(uint32_t, const std::string&, const std::string&, SourceStructureTree*)> callback)
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT DataID,FileIndex,PathID,TagID FROM File");
@@ -187,6 +224,8 @@ void FileDatabase::iterateFiles(std::function<void(uint32_t, const std::string&,
 
     if (lastSourceTreeId != sourceTreeDataID)
     {
+      delete root;
+
       std::vector<char> sourceTreeData;
       lastSourceTreeId = sourceTreeDataID;
       getSourceTreeData(sourceTreeDataID, sourceTreeData);
@@ -235,7 +274,10 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
   for (std::pair<uint32_t, std::string>& tagData : tagIds)
   {
     std::filesystem::path shaPath = outPath;
-    shaPath = shaPath.concat("/").concat(tagData.second);    
+    shaPath = shaPath.concat("/").concat(tagData.second);
+
+    // if (tagData.second != "005d54fff1b4eaaf2850747071203045b76d8402")
+    //   continue;
 
     soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT ID, DataID, FileIndex, PathID FROM File WHERE TagID = :tagId", soci::use(tagData.first, "tagId"));
 
@@ -288,7 +330,7 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
 
     auto writeCompressedData = [&fileOut](const CompressData& data)
     {
-      std::vector<char> charData = data.getCharData();
+      std::vector<char> charData = data.getCharData(CompressData::On);
 
       uint32_t value = static_cast<uint32_t>(charData.size());
       fileOut.write(reinterpret_cast<const char*>(&value), sizeof(value));
@@ -308,8 +350,10 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
     dataPath = dataPath.concat("/").concat("data.dat");
     std::ofstream dataOut(dataPath.native(), std::ios::binary);
 
-    auto writeData = [&dataOut](const std::vector<char>& data)
+    auto writeData = [&dataOut](const uint32_t& dataId, const std::vector<char>& data)
     {
+      dataOut.write(reinterpret_cast<const char*>(&dataId), sizeof(dataId));
+
       uint32_t value = static_cast<uint32_t>(data.size());
       dataOut.write(reinterpret_cast<const char*>(&value), sizeof(value));
       dataOut.write(data.data(), static_cast<std::streamsize>(data.size()));
@@ -319,7 +363,7 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
     {
       std::vector<char> sourceTreeData;
       getSourceTreeData(dataId, sourceTreeData);
-      writeData(sourceTreeData);
+      writeData(dataId, sourceTreeData);
     }
 
     dataOut.close();
@@ -365,24 +409,177 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
   for (const soci::row& r : rows)
     vec.push_back(r.get<std::string>("Name"));
 
-  std::string joinedData = std::accumulate(std::next(vec.begin()), vec.end(), vec[0], [](const std::string& a, const std::string& b) { return a + "|" + b; });
+  if (vec.size() > 0)
+  {
+    std::string joinedData = std::accumulate(std::next(vec.begin()), vec.end(), vec[0], [](const std::string& a, const std::string& b) { return a + "|" + b; });
 
-  Diagnostic diagonstic(joinedData.size());
+    Diagnostic diagonstic(joinedData.size());
 
-  std::vector<char> data(joinedData.begin(), joinedData.end());
-  CompressData compressedFileIds = compressionManager.compress(data, &diagonstic, std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
-                                                               std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
+    std::vector<char> data(joinedData.begin(), joinedData.end());
+    CompressData compressedFileIds = compressionManager.compress(data, &diagonstic, std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
+                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
 
-  std::filesystem::path pathesPath = outPath;
-  pathesPath = pathesPath.concat("/").concat("pathes.dat");
-  std::ofstream pathOut(pathesPath.native(), std::ios::binary);
-  std::vector<char> charData = compressedFileIds.getCharData();
-  pathOut.write(charData.data(), static_cast<std::streamsize>(charData.size()));
-  pathOut.close();
+    std::filesystem::path pathesPath = outPath;
+    pathesPath = pathesPath.concat("/").concat("pathes.dat");
+    std::ofstream pathOut(pathesPath.native(), std::ios::binary);
+    std::vector<char> charData = compressedFileIds.getCharData(CompressData::On);
+    pathOut.write(charData.data(), static_cast<std::streamsize>(charData.size()));
+    pathOut.close();
+  }
 
   for (const std::filesystem::path& path : toDelete)
   {
-    while (!removeAll(path))
-      ;
+    try
+    {
+      while (!removeAll(path))
+        ;
+    }
+    catch (...)
+    {
+    }
+  }
+}
+
+void FileDatabase::importPathesData(std::filesystem::path& pathesPath)
+{
+  CompressionManager compressionManager;
+
+  // Pathes
+  std::ifstream file(pathesPath, std::ios::binary | std::ios::ate);
+
+  std::streamsize size = file.tellg();
+  std::vector<char> buffer(static_cast<size_t>(size));
+  file.seekg(0, std::ios::beg);
+  file.read(buffer.data(), size);
+
+  CompressData pathData = compressionManager.decompress(CompressData(buffer, true), nullptr);
+  std::vector<char> uncompressed = pathData.getCharData(CompressData::Auto);
+  std::string dataString(uncompressed.begin(), uncompressed.end());
+
+  std::vector<std::string> names;
+
+  size_t start = 0;
+  size_t end = 0;
+
+  while ((end = dataString.find('|', start)) != std::string::npos)
+  {
+    names.emplace_back(dataString.substr(start, end - start));
+    start = end + 1;
+  }
+
+  names.emplace_back(dataString.substr(start));
+  insertNames(names);
+}
+
+void FileDatabase::importData(const std::string& tagName, const std::string& sha, std::filesystem::path& tarPath, std::filesystem::path& pathesPath,
+                              bool tagOnly, const EnviromentC& env, ankerl::unordered_dense::set<uint32_t>& hashes)
+{
+  uint32_t tagId = createTag(tagName, sha);
+
+  if (!std::filesystem::exists(tarPath) || tagOnly)
+    return;
+
+  std::filesystem::path outPath = pathesPath.parent_path() / sha;
+  std::filesystem ::create_directories(outPath);
+  ArchiveHelper::extractTar(tarPath, outPath);
+
+  // Files
+  std::filesystem::path filePath = outPath;
+  filePath = filePath.concat("/").concat("file.dat");
+
+  std::ifstream fileIn(filePath.native(), std::ios::binary);
+  if (!fileIn)
+    throw std::runtime_error("Failed to open file.dat for reading");
+
+  auto readCompressedBlock = [](std::ifstream& fileIn)
+  {
+    uint32_t size = 0;
+
+    fileIn.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!fileIn)
+      throw std::runtime_error("Failed to read block size");
+
+    std::vector<char> buffer(size);
+
+    if (size > 0)
+    {
+      fileIn.read(buffer.data(), static_cast<std::streamsize>(size));
+      if (!fileIn)
+        throw std::runtime_error("Failed to read block data");
+    }
+
+    return CompressData(buffer, true);
+  };
+
+  auto compressedFileIds = readCompressedBlock(fileIn);
+  auto compressedDataIds = readCompressedBlock(fileIn);
+  auto compressedFileIndices = readCompressedBlock(fileIn);
+  auto compressedPathIds = readCompressedBlock(fileIn);
+
+  CompressData fileIds = compressionManager.decompress(compressedFileIds, nullptr);
+  CompressData dataIds = compressionManager.decompress(compressedDataIds, nullptr);
+  CompressData fileIndices = compressionManager.decompress(compressedFileIndices, nullptr);
+  CompressData pathIds = compressionManager.decompress(compressedPathIds, nullptr);
+
+  std::vector<uint32_t> tagIds(pathIds.getUint32Size());
+  std::fill(tagIds.begin(), tagIds.end(), tagId);
+
+  createFiles(fileIds.getUint32Data(), dataIds.getUint32Data(), fileIndices.getUint32Data(), pathIds.getUint32Data(), tagIds);
+
+  // Data
+  auto readDataBlock = [](std::ifstream& in, uint32_t& dataId, std::vector<char>& outBuffer)
+  {
+    uint32_t size = 0;
+
+    in.read(reinterpret_cast<char*>(&dataId), sizeof(dataId));
+
+    if (in.eof())
+      return false; // normal end
+
+    // Try reading size
+    in.read(reinterpret_cast<char*>(&size), sizeof(size));
+
+    if (in.eof())
+      return false; // normal end
+
+    if (!in)
+      throw std::runtime_error("Failed to read block size");
+
+    outBuffer.resize(size);
+
+    if (size > 0)
+    {
+      in.read(outBuffer.data(), static_cast<std::streamsize>(size));
+      if (!in)
+        throw std::runtime_error("Failed to read block data");
+    }
+
+    return true;
+  };
+
+  std::filesystem::path dataPath = outPath;
+  dataPath = dataPath.concat("/").concat("data.dat");
+
+  std::ifstream dataIn(dataPath.native(), std::ios::binary);
+  if (!dataIn)
+    throw std::runtime_error("Failed to open data.dat for reading");
+
+  std::vector<char> treeData;
+
+  TreeSearch treeSearch;
+  uint32_t dataId;
+  while (readDataBlock(dataIn, dataId, treeData))
+  {
+    createSourceTreeData(dataId, treeData);
+
+    std::vector<FlatNodeDeDupData> nodeListTestOut;
+    std::vector<uint32_t> indexListTestOut;
+    SourceStructureTree::deserialize(treeData, nodeListTestOut, indexListTestOut, nullptr);
+    SourceStructureTree* root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
+
+    for (auto child : root->children)
+      treeSearch.collectHashData(hashes, (SourceStructureTree*)child, env.windowSize);
+
+    delete root;
   }
 }

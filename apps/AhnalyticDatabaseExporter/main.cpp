@@ -1,8 +1,12 @@
 
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
+#include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
 #include "AhnalyticBase/github/Github.hpp"
 #include "AhnalyticBase/github/GithubCrawler.hpp"
+#include "AhnalyticBase/helper/ArchiveHelper.hpp"
+#include "AhnalyticBase/helper/Enviroment.hpp"
+#include "AhnalyticBase/helper/SignHelper.hpp"
 #include "AhnalyticBase/stackexchange/DataDump.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 
@@ -21,6 +25,7 @@ int main(int argc, char* argv[])
   args::Group arguments(parser, "arguments", args::Group::Validators::DontCare, args::Options::Global);
   args::ValueFlag<std::string> input(arguments, "input", "", {"input"});
   args::ValueFlag<std::string> output(arguments, "output", "", {"output"});
+  args::ValueFlag<std::string> type(arguments, "type", "", {"type"});
 
   try
   {
@@ -43,16 +48,95 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  if (input && output)
+  if (input && output && type)
   {
     std::string inPath = args::get(input);
     std::filesystem::path outPath = args::get(output);
+    std::string typeStr = args::get(type);
 
-    FileDatabase inDb(DBType::SQLite, inPath);
+    if (typeStr == "github")
+    {
+      nlohmann::json outJson;
 
-    std::filesystem::create_directories(outPath);
+      BS::thread_pool pool;
+      std::mutex mutex;
 
-    inDb.exportData(outPath);
+      for (const auto& entry : std::filesystem::directory_iterator(inPath))
+      {
+        if (entry.is_regular_file() && entry.path().extension() == ".db")
+        {
+          std::filesystem::path inPath = entry.path();
+          std::filesystem::path outPathSub = outPath / entry.path().stem();
+          pool.detach_task([outPathSub, inPath, &outJson, &mutex]()
+          {
+            if (!std::filesystem::exists(outPathSub))
+            {
+              FileDatabase inDb(DBType::SQLite, inPath.string());
+
+              std::filesystem::create_directories(outPathSub);
+
+              std::filesystem::path outPathSubCpy = outPathSub;
+              inDb.exportData(outPathSubCpy);
+              std::cout << inPath << '\n';
+            }
+
+            std::filesystem::path tagFile = outPathSub / "tags.json";
+
+            if (std::filesystem::exists(tagFile))
+            {
+              std::ifstream tagStream(tagFile.string());
+              nlohmann::json tagData;
+              tagStream >> tagData;
+
+              if (tagData.size() > 0)
+              {
+                std::string sha = tagData.at(tagData.size() - 1)["Sha"].get<std::string>();
+
+                nlohmann::json entryJson;
+                entryJson["name"] = inPath.stem().string();
+                entryJson["sha"] = sha;
+                entryJson["type"] = "github";
+                entryJson["language"] = "CPP";
+                entryJson["version"] = "1";
+
+                std::lock_guard<std::mutex> lock(mutex);
+                outJson.push_back(entryJson);
+              }
+            }
+          });
+        }
+      }
+
+      pool.wait();
+
+      std::filesystem::path statusPath = outPath / "status.json";
+      std::ofstream repoOut(statusPath.native());
+      repoOut << outJson.dump(2);
+      repoOut.close();
+    }
+    if (typeStr == "stackexchnage_base")
+    {
+      EnviromentC env;
+      StackExchangeExtractDatabase db(DBType::SQLite, inPath);
+      db.splitDatabase(outPath.string(), "stackoverflow");
+
+      for (const auto& entry : std::filesystem::directory_iterator(outPath))
+      {
+        if (entry.is_regular_file() && entry.path().extension() == ".db")
+        {
+          std::filesystem::path tarGzPath = entry.path();
+          tarGzPath = tarGzPath.concat(".tar.gz");
+          ArchiveHelper::createTarGz(entry.path(), tarGzPath);
+
+          std::filesystem::path signPath = tarGzPath;
+          signPath = signPath.concat(".sig");
+          SignHelper::signFile(entry.path().string(), env.privatePath.string(), signPath.string());
+
+          std::error_code ec;
+          std::filesystem::remove_all(entry.path(), ec);
+        }
+      }
+    }
   }
 
   /*

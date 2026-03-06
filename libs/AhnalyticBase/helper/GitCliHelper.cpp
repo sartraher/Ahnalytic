@@ -113,7 +113,7 @@ std::string GitCliHelperC::getGitClone(const std::string& name, const std::strin
 
 std::string GitCliHelperC::getGitClone(const std::filesystem::path& repoPath, const std::string& url, const std::string& tempPath)
 {
-  std::string cloneCmd = "git clone --filter=blob:none --no-checkout " + url + " \"" + repoPath.string() + "\"";
+  std::string cloneCmd = "git clone --no-checkout " + url + " \"" + repoPath.string() + "\"";
   ExecResult result = DataHelperC::execAndCapture(cloneCmd, tempPath);
 
   return repoPath.string();
@@ -202,8 +202,8 @@ std::unordered_map<std::string, std::string> GitCliHelperC::getFilesWithContent(
 
   //std::string getFilesCmd = "git -C \"" + repoPath + "\" --work-tree=work restore --source=" + sha + " --pathspec-from-file=" + filterPath.string() + " --worktree";
 
-  std::string getFilesCmd =
-      "git -C \"" + repoPath + "\" --work-tree=work restore --source=" + sha + " --pathspec-from-file=" + filterPath.string();
+  std::string getFilesCmd = "git -C \"" + repoPath + "\" --work-tree=work restore --source=" + sha + " --pathspec-from-file=" + filterPath.string();
+  //std::string getFilesCmd = "git -C \"" + repoPath + "\" archive " + sha + " --pathspec-from-file=" + filterPath.string() + " | tar -x -C work";
 
   ExecResult result2 = DataHelperC::execAndCapture(getFilesCmd, workPath.string());
   if (result2.exitCode != 0)

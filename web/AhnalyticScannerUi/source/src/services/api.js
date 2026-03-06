@@ -144,6 +144,19 @@ class ApiService {
       throw error;
     }
   }
+
+  // ===== UPDATES =====
+  checkUpdates() {
+    return this.request('GET', '/updates/check');
+  }
+
+  getUpdateStatus() {
+    return this.request('GET', '/updates/status');
+  }
+
+  startUpdate() {
+    return this.request('POST', '/updates/startupdate', { status: 'startupdate' });
+  }
 }
 
 export default new ApiService();

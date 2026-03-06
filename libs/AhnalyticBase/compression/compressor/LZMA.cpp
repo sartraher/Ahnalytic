@@ -70,14 +70,14 @@ LZMACompressor::LZMACompressor()
 CompressData LZMACompressor::compress(const CompressData& data)
 {
   std::vector<char> compressed;
-  compress_memory(data.getCharData(), compressed);
+  compress_memory(data.getCharData(CompressData::Auto), compressed);
   return compressed;
 }
 
 CompressData LZMACompressor::decompress(const CompressData& data)
 {
   std::vector<char> ret;
-  decompress_lzma(data.getCharData(), ret, data.getHeader().originalSize);
+  decompress_lzma(data.getCharData(CompressData::Auto), ret, data.getHeader().originalSize);
   return ret;
 }
 

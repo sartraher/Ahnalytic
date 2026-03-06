@@ -1,6 +1,7 @@
 #include "ScanServer.hpp"
 #include "AhnalyticBase/database/ScanDatabase.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
+#include "AhnalyticBase/server/UpdateManager.hpp"
 #include "AhnalyticBase/tree/TreeSearch.hpp"
 
 // Remove multipart restriction to enable file uploads
@@ -58,8 +59,10 @@ public:
   httplib::Server server;
   EnviromentC env;
   ScanDatabase* scanDatabase = nullptr;
+  UpdateManager* updateManager = nullptr;
 
   std::atomic<bool> inUpdate = false;
+  std::atomic<bool> updateDatabase = false;
   std::jthread timerScanThread;
 
   BS::thread_pool<BS::tp::none> pool;
@@ -90,12 +93,14 @@ static void ok(httplib::Response& res, const json& body)
 ScanServer::ScanServer() : priv(new ScanServerPrivate())
 {
   priv->scanDatabase = new ScanDatabase(/*DBType::SQLite, (priv->env.dataFolder / "scanData.db").string(),*/ priv->env.scanFolder);
+  priv->updateManager = new UpdateManager(&priv->env);
 
   init();
 }
 
 ScanServer::~ScanServer()
 {
+  delete priv->updateManager;
   delete priv;
 }
 
@@ -386,6 +391,42 @@ void ScanServer::init()
     bad_request(res, "Scan not found");
   });
 
+  priv->server.Get(R"(/updates/check)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    json ret;
+    std::vector<UpdateInfo> updates = priv->updateManager->checkUpdates();
+    for (const UpdateInfo& info : updates)
+    {
+      json element;
+
+      element["name"] = info.name;
+      element["sha"] = info.sha;
+      element["type"] = info.type;
+      element["language"] = info.language;
+
+      ret.push_back(element);
+    }
+
+    ok(res, ret);
+    return;
+  });
+
+  priv->server.Get(R"(/updates/status)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    json ret;
+
+    ret["inUpdate"] = (bool)priv->inUpdate;
+
+    ok(res, ret);
+    return;
+  });
+
+  priv->server.Post(R"(/updates/startupdate)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    priv->updateDatabase = true;
+    ok(res, {{"status", "startupdate"}});
+  });
+
   // Mount /public to ./www directory
   bool ret = priv->server.set_mount_point("/www", priv->env.webFolder.string());
 
@@ -411,6 +452,15 @@ void ScanServer::updateScans()
 
   if (priv->pool.get_tasks_total() == 0)
   {
+    if (priv->updateDatabase)
+    {
+      priv->pool.detach_task([this]()
+      {
+        priv->updateManager->startUpdates();
+        priv->updateDatabase = false;
+      });
+    }
+
     auto nextData = priv->scanDatabase->getNextScan();
     if (nextData != nullptr)
     {

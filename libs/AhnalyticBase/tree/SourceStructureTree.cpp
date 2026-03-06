@@ -69,7 +69,7 @@ void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeLi
   if (dia)
     dia->setResultSize(result.getCharSize());
 
-  data = result.getCharData();
+  data = result.getCharData(CompressData::Auto);
 }
 
 void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector<FlatNodeDeDupData>& nodeList, std::vector<uint32_t>& indexList,

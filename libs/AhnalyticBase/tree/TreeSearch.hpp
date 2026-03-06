@@ -95,12 +95,13 @@ public:
   TreeSearch();
   ~TreeSearch();
 
+  void collectHashData(ankerl::unordered_dense::set<uint32_t> &hashes, SourceStructureTree* tree, uint32_t windowSize);
   void initNodeData(SearchNodeData& searchData, SourceStructureTree* tree, const std::filesystem::path& path, uint32_t windowSize);
 
   std::set<std::filesystem::path> searchRawHash(const SearchNodeData& dbNodes, SourceStructureTree* tree, const std::filesystem::path& path,
                                                 uint32_t windowSize);
 
-  SearchNodes initNodes(SourceStructureTree* tree, uint32_t windowSize) const;
+  SearchNodes initNodes(SourceStructureTree* tree, uint32_t windowSize) const;  
   SearchNodes initNodesDeep(SourceStructureTreeDeep* tree, uint32_t windowSize) const;
 
   TreeSearchResult searchHash(const SearchNodes& baseNodes, const SearchNodes& searchNodes, int windowSize);

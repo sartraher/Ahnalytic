@@ -21,6 +21,11 @@ export const ScannerProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [scanInfo, setScanInfo] = useState(null);
 
+  // Update State
+  const [updates, setUpdates] = useState([]);
+  const [updateStatus, setUpdateStatus] = useState({ inUpdate: false });
+  const [updateQueuedWaiting, setUpdateQueuedWaiting] = useState(false);
+
   // Helper to clear error after timeout
   const setErrorWithTimeout = (err, timeout = 5000) => {
     setError(err);
@@ -318,6 +323,85 @@ export const ScannerProvider = ({ children }) => {
     }
   }, []);
 
+  // ===== UPDATES =====
+  const checkForUpdates = useCallback(async () => {
+    // Don't check if a scan is running
+    if (scanInfo && (scanInfo.status === 1 || scanInfo.status === 2 || 
+        getStatusName(scanInfo.status) === 'running' || 
+        getStatusName(scanInfo.status) === 'started')) {
+      setUpdateQueuedWaiting(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.checkUpdates();
+      setUpdates(Array.isArray(data) ? data : []);
+      setUpdateQueuedWaiting(false);
+      return data;
+    } catch (err) {
+      setErrorWithTimeout(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [scanInfo]);
+
+  const fetchUpdateStatus = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.getUpdateStatus();
+      setUpdateStatus(data || { inUpdate: false });
+      return data;
+    } catch (err) {
+      setErrorWithTimeout(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const startExistingUpdate = useCallback(async () => {
+    // Don't start update if a scan is running
+    if (scanInfo && (scanInfo.status === 1 || scanInfo.status === 2 || 
+        getStatusName(scanInfo.status) === 'running' || 
+        getStatusName(scanInfo.status) === 'started')) {
+      setUpdateQueuedWaiting(true);
+      setErrorWithTimeout('Cannot start update while a scan is running. Please wait or abort the scan.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.startUpdate();
+      await fetchUpdateStatus();
+      setUpdateQueuedWaiting(false);
+      return data;
+    } catch (err) {
+      setErrorWithTimeout(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [scanInfo, fetchUpdateStatus]);
+
+  // Helper function to convert numeric status codes to status names
+  const getStatusName = (status) => {
+    if (typeof status === 'string') return status;
+    const statusMap = {
+      0: 'pending',
+      1: 'started',
+      2: 'running',
+      3: 'completed',
+      4: 'aborted',
+      5: 'failed',
+    };
+    return statusMap[status] || 'unknown';
+  };
+
   const value = {
     // Navigation
     currentGroup,
@@ -366,6 +450,16 @@ export const ScannerProvider = ({ children }) => {
     abortExistingScan,
     loadScanInfo,
     uploadFile,
+
+    // Update Data
+    updates,
+    updateStatus,
+    updateQueuedWaiting,
+
+    // Update Actions
+    checkForUpdates,
+    fetchUpdateStatus,
+    startExistingUpdate,
   };
 
   return <ScannerContext.Provider value={value}>{children}</ScannerContext.Provider>;

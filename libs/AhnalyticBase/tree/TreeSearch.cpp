@@ -143,6 +143,110 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
   }
 }
 
+void TreeSearch::collectHashData(ankerl::unordered_dense::set<uint32_t>& hashes, SourceStructureTree* tree, uint32_t windowSize)
+{
+  std::vector<uint32_t> nodeData;
+
+  size_t nodeCount = 0;
+  nodeCount = tree->getNodeCount();
+
+  std::vector<const Tree<SourceStructureData>*> nodeVec;
+  nodeVec.reserve(nodeCount);
+  nodeData.reserve(nodeCount);
+
+  tree->getNodes(nodeVec);
+
+  std::vector<uint32_t> nodeId;
+  nodeId.reserve(nodeVec.size());
+  for (int index = 0; index < nodeVec.size(); index++)
+    nodeId.push_back(nodeVec[index]->data.id.cmpData);
+
+  auto write = [&nodeVec, &nodeData](size_t pos, size_t size)
+  {
+    for (int index = 0; index < size; index++)
+    {
+      const Tree<SourceStructureData>* first = nodeVec[index + pos];
+      nodeData.push_back(first->data.id.cmpData);
+    }
+  };
+
+  for (int index = 0; index < nodeVec.size(); index++)
+  {
+    bool foundDup = false;
+
+    int nextIndex = index;
+    int rest = (int)(nodeVec.size() - (nextIndex + 1));
+    for (int dupIndex = 16; dupIndex > 1; dupIndex--)
+    {
+      bool hasMatch = false;
+
+      if (nodeVec.size() <= nextIndex + dupIndex)
+        continue;
+
+      while (1)
+      {
+        if (nodeVec.size() <= nextIndex + dupIndex * 2)
+          break;
+
+        const uint32_t* base = &nodeId[nextIndex];
+        const uint32_t* next = &nodeId[nextIndex + dupIndex];
+
+        bool found = memcmp_equal(base, next, dupIndex * sizeof(uint32_t));
+
+        if (found)
+        {
+          nextIndex += dupIndex;
+          hasMatch = true;
+        }
+        else
+          break;
+      }
+
+      if (hasMatch)
+      {
+        // Write dupIndex
+        write(index, dupIndex);
+        index = nextIndex;
+        foundDup = true;
+        break;
+      }
+    }
+
+    if (!foundDup)
+      write(index, 1);
+  }
+
+  constexpr uint32_t base = 0x9E3779B1u;
+
+  static thread_local std::vector<uint32_t> powB;
+  if (powB.size() < windowSize + 1)
+  {
+    powB.resize(windowSize + 1);
+    powB[0] = 1;
+    for (size_t i = 1; i <= windowSize; ++i)
+      powB[i] = powB[i - 1] * base;
+  }
+
+  if (nodeData.size() >= windowSize)
+  {
+    uint32_t hash = 0;
+    for (size_t i = 0; i < windowSize; ++i)
+      hash = hash * base + nodeData[i];
+
+    hashes.insert(hash);
+
+    for (size_t index = 1; index <= nodeData.size() - windowSize; ++index)
+    {
+      uint32_t outgoing = nodeData[index - 1];
+      uint32_t incoming = nodeData[index + windowSize - 1];
+
+      hash = (hash - outgoing * powB[windowSize - 1]) * base + incoming;
+
+      hashes.insert(hash);
+    }
+  }
+}
+
 std::set<std::filesystem::path> TreeSearch::searchRawHash(const SearchNodeData& dbNodes, SourceStructureTree* tree, const std::filesystem::path& path,
                                                           uint32_t windowSize)
 {
@@ -423,8 +527,77 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   }
   trees.clear();
 
-  auto scanSnippedDb = [this, resultInter, env](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
+  auto checkHash = [](const auto& smallContainer, const auto& bigContainer) -> bool
   {
+    for (auto iter = smallContainer.begin(); iter != smallContainer.end(); iter++)
+    {
+      auto bigIter = bigContainer.find(iter.first);
+      if (bigIter != bigContainer.end())
+        return true;
+    }
+
+    return false;
+  };
+
+  auto checkIndex = [env, &checkHash](const std::filesystem::path& dbPath, const SearchNodeData& nodes) -> bool
+  {
+    bool ret = false;
+
+    std::filesystem::path indexPath = dbPath;
+    indexPath.replace_extension("." + std::to_string(env.windowSize));
+
+    if (!std::filesystem::exists(indexPath))
+    {
+      // TODO: create missing index
+    }
+
+    ankerl::unordered_dense::set<uint32_t> hashes;
+
+    if (std::filesystem ::exists(indexPath))
+    {
+      std::ifstream file(indexPath, std::ios::binary | std::ios::ate);
+      std::streamsize size = file.tellg();
+      file.seekg(0, std::ios::beg);
+      std::vector<uint32_t> data(size / sizeof(uint32_t));
+
+      if (file.read(reinterpret_cast<char*>(data.data()), size))
+      {
+        hashes.reserve(data.size());
+        hashes.insert(data.begin(), data.end());
+      }
+
+      if (hashes.size() < nodes.searchData.size())
+      {
+        for (auto iter = hashes.begin(); iter != hashes.end(); iter++)
+        {
+          auto bigIter = nodes.searchData.find(*iter);
+          if (bigIter != nodes.searchData.end())
+            return true;
+        }
+
+        return false;
+      }
+      else
+      {
+        for (auto iter = nodes.searchData.begin(); iter != nodes.searchData.end(); iter++)
+        {
+          auto bigIter = hashes.find(iter->first);
+          if (bigIter != hashes.end())
+            return true;
+        }
+
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  auto scanSnippedDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
+  {
+    if (!checkIndex(dbPath, nodes))
+      return;
+
     SnippedDatabase db(DBType::SQLite, dbPath.string());
 
     db.iterateSnippeds([this, &nodes, dbPath, resultInter, env](uint32_t internalId, const std::string& licence, SourceStructureTree* tree)
@@ -448,8 +621,11 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
     resultInter->incFinishedCount(1);
   };
 
-  auto scanGitHubDb = [this, resultInter, env](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
+  auto scanGitHubDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
+    if (!checkIndex(dbPath, nodes))
+      return;
+
     FileDatabase db(DBType::SQLite, dbPath.string());
 
     db.iterateFiles([this, &nodes, resultInter, dbPath, env](uint32_t fileId, const std::string& sha, const std::string& licence, SourceStructureTree* tree)
@@ -474,8 +650,11 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
     resultInter->incFinishedCount(1);
   };
 
-  auto scanSourceforgeDb = [this, resultInter, env](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
+  auto scanSourceforgeDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
+    if (!checkIndex(dbPath, nodes))
+      return;
+
     FileDatabase db(DBType::SQLite, dbPath.string());
 
     db.iterateFiles(

@@ -74,14 +74,14 @@ BscCompressor::BscCompressor()
 CompressData BscCompressor::compress(const CompressData& data)
 {
   std::vector<char> ret;
-  compress_bsc(data.getCharData(), ret);
+  compress_bsc(data.getCharData(CompressData::Auto), ret);
   return ret;
 }
 
 CompressData BscCompressor::decompress(const CompressData& data)
 {
   std::vector<char> ret;
-  decompress_bsc(data.getCharData(), ret, data.getHeader().originalSize);
+  decompress_bsc(data.getCharData(CompressData::Auto), ret, data.getHeader().originalSize);
   return ret;
 }
 
