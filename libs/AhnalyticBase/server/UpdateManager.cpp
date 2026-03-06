@@ -15,6 +15,23 @@ using json = nlohmann::json;
 
 #include <fstream>
 
+std::string getString(const nlohmann::json& data, const std::string& name)
+try
+{
+  if (data.contains(name))
+  {
+    const auto& value = data[name];
+    if (value.is_string())
+      return value.get<std::string>();
+  }
+
+  return "";
+}
+catch (const std::exception& e)
+{
+  return "";
+}
+
 UpdateManager::UpdateManager(EnviromentC* enviroment)
 {
   env = enviroment;
@@ -28,12 +45,12 @@ UpdateManager::UpdateManager(EnviromentC* enviroment)
     for (int index = 0; index < updateData.size(); index++)
     {
       UpdateInfo info;
-      info.name = updateData[index]["name"].get<std::string>();
-      info.baseName = updateData[index]["baseName"].get<std::string>();
-      info.sha = updateData[index]["sha"].get<std::string>();
-      info.maxVersion = updateData[index]["maxVersion"].get<std::string>();
-      info.type = updateData[index]["type"].get<std::string>();
-      info.language = updateData[index]["language"].get<std::string>();
+      info.name = getString(updateData[index], "name");
+      info.baseName = getString(updateData[index], "baseName");
+      info.sha = getString(updateData[index], "sha");
+      info.maxVersion = getString(updateData[index], "maxVersion");
+      info.type = getString(updateData[index], "type");
+      info.language = getString(updateData[index], "language");
       installedUpdates.push_back(info);
     }
   }
@@ -61,12 +78,12 @@ std::vector<UpdateInfo> UpdateManager::checkUpdates() const
       for (int index = 0; index < statusData.size(); index++)
       {
         UpdateInfo info;
-        info.name = statusData[index]["name"].get<std::string>();
-        info.baseName = statusData[index]["baseName"].get<std::string>();
-        info.sha = statusData[index]["sha"].get<std::string>();
-        info.maxVersion = statusData[index]["maxVersion"].get<std::string>();
-        info.type = statusData[index]["type"].get<std::string>();
-        info.language = statusData[index]["language"].get<std::string>();
+        info.name = getString(statusData[index], "name");
+        info.baseName = getString(statusData[index], "baseName");
+        info.sha = getString(statusData[index], "sha");
+        info.maxVersion = getString(statusData[index], "maxVersion");
+        info.type = getString(statusData[index], "type");
+        info.language = getString(statusData[index], "language");
 
         if (std::find(installedUpdates.begin(), installedUpdates.end(), info) == installedUpdates.end())
           ret.push_back(info);
@@ -96,8 +113,6 @@ std::vector<UpdateDiffInfo> UpdateManager::checkUpdateDiff() const
 
     if (info.type == "github")
     {
-      continue;
-
       diffInfo.type = info.type;
       diffInfo.language = info.language;
 
@@ -119,10 +134,10 @@ std::vector<UpdateDiffInfo> UpdateManager::checkUpdateDiff() const
           try
           {
             nlohmann::json repoJson = nlohmann::json::parse(repoRes->body);
-            diffInfo.licence = repoJson["Licence"].get<std::string>();
-            diffInfo.visibleName = repoJson["Name"].get<std::string>();
+            diffInfo.licence = getString(repoJson, "Licence");
+            diffInfo.visibleName = getString(repoJson, "Name");
             diffInfo.name = info.name;
-            diffInfo.url = repoJson["Url"].get<std::string>();
+            diffInfo.url = getString(repoJson, "Url");
           }
           catch (const std::exception& e)
           {
@@ -143,8 +158,8 @@ std::vector<UpdateDiffInfo> UpdateManager::checkUpdateDiff() const
           {
             for (; index < tagsJson.size(); index++)
             {
-              diffInfo.existingShas.push_back({tagsJson[index]["TagName"].get<std::string>(), tagsJson[index]["Sha"].get<std::string>()});
-              if (lastSha == tagsJson[index]["Tags"].get<std::string>())
+              diffInfo.existingShas.push_back({getString(tagsJson[index], "TagName"), getString(tagsJson[index], "Sha")});
+              if (lastSha == getString(tagsJson[index], "Tags"))
               {
                 index++;
                 break;
@@ -153,7 +168,7 @@ std::vector<UpdateDiffInfo> UpdateManager::checkUpdateDiff() const
           }
 
           for (; index < tagsJson.size(); index++)
-            diffInfo.missingShas.push_back({tagsJson[index]["TagName"].get<std::string>(), tagsJson[index]["Sha"].get<std::string>()});
+            diffInfo.missingShas.push_back({getString(tagsJson[index],"TagName"), getString(tagsJson[index], "Sha")});
         }
         catch (const std::exception& e)
         {
@@ -167,7 +182,6 @@ std::vector<UpdateDiffInfo> UpdateManager::checkUpdateDiff() const
       diffInfo.type = info.type;
       diffInfo.language = info.language;
       diffInfo.baseName = info.baseName;
-
     }
   }
 
