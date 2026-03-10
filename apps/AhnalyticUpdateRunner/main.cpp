@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
   std::string workPathBig = "R:/";
   std::string workPathSmall = "R:/";
-  std::string dbPath = "D:/source/git/Ahnalytic/db";
+  std::string dbPath = "E:/db";
 
   if (test)
   {
@@ -133,8 +133,8 @@ int main(int argc, char* argv[])
   {
     // GitHubHandler handler("D:/source/Ahnalytic/db", "D:/work");
 
-    BS::thread_pool poolBig(4);
-    BS::thread_pool poolSmall(4);
+    BS::thread_pool poolBig(8);
+    BS::thread_pool poolSmall(8);
 
     std::vector<std::string> langFilter{"C", "C++"};
 

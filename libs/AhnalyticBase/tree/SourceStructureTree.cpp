@@ -49,10 +49,10 @@ void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeLi
   ret.reserve(4 + compressedIndexList.getUint32Size() + symbolListCompressed.getUint32Size() + fieldListCompressed.getUint32Size() +
               amountListCompressed.getUint32Size());
 
-  std::vector<uint32_t> compressedIndexListData = compressedIndexList.getUint32Data();
-  std::vector<uint32_t> symbolListCompressedData = symbolListCompressed.getUint32Data();
-  std::vector<uint32_t> fieldListCompressedData = fieldListCompressed.getUint32Data();
-  std::vector<uint32_t> amountListCompressedData = amountListCompressed.getUint32Data();
+  std::vector<uint32_t> compressedIndexListData = compressedIndexList.getUint32Data(CompressData::On);
+  std::vector<uint32_t> symbolListCompressedData = symbolListCompressed.getUint32Data(CompressData::On);
+  std::vector<uint32_t> fieldListCompressedData = fieldListCompressed.getUint32Data(CompressData::On);
+  std::vector<uint32_t> amountListCompressedData = amountListCompressed.getUint32Data(CompressData::On);
 
   ret.push_back(static_cast<uint32_t>(compressedIndexListData.size()));
   ret.push_back(static_cast<uint32_t>(symbolListCompressedData.size()));
@@ -69,7 +69,7 @@ void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeLi
   if (dia)
     dia->setResultSize(result.getCharSize());
 
-  data = result.getCharData(CompressData::Auto);
+  data = result.getCharData(CompressData::Off);
 }
 
 void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector<FlatNodeDeDupData>& nodeList, std::vector<uint32_t>& indexList,
@@ -87,7 +87,7 @@ void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector
   // Step 1: decompress entire payload
   // CompressData decompressed = compressionManager.decompress(CompressData(data, true), labeledDia("Result"));
   CompressData inData(data, false);
-  std::vector<uint32_t> decompressedData = inData.getUint32Data();
+  std::vector<uint32_t> decompressedData = inData.getUint32Data(CompressData::Off);
 
   const uint32_t* raw = reinterpret_cast<const uint32_t*>(decompressedData.data());
   size_t totalUInts = decompressedData.size() / sizeof(uint32_t);
@@ -108,10 +108,13 @@ void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector
   p += amountSize;
 
   // Step 2: decompress each list
-  indexList = compressionManager.decompress(CompressData(compressedIndexList, true), labeledDia("Index")).getUint32Data();
-  std::vector<uint32_t> symbolList = compressionManager.decompress(CompressData(symbolListCompressed, true), labeledDia("Symbols")).getUint32Data();
-  std::vector<uint32_t> fieldList = compressionManager.decompress(CompressData(fieldListCompressed, true), labeledDia("Fields")).getUint32Data();
-  std::vector<uint32_t> amountList = compressionManager.decompress(CompressData(amountListCompressed, true), labeledDia("Amount")).getUint32Data();
+  indexList = compressionManager.decompress(CompressData(compressedIndexList, true), labeledDia("Index")).getUint32Data(CompressData::Off);
+  std::vector<uint32_t> symbolList =
+      compressionManager.decompress(CompressData(symbolListCompressed, true), labeledDia("Symbols")).getUint32Data(CompressData::Off);
+  std::vector<uint32_t> fieldList =
+      compressionManager.decompress(CompressData(fieldListCompressed, true), labeledDia("Fields")).getUint32Data(CompressData::Off);
+  std::vector<uint32_t> amountList =
+      compressionManager.decompress(CompressData(amountListCompressed, true), labeledDia("Amount")).getUint32Data(CompressData::Off);
 
   nodeList.resize(symbolList.size());
   for (uint32_t i = 0; i < symbolList.size(); ++i)

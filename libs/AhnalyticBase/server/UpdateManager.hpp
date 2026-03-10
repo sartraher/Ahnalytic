@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
+
 class EnviromentC;
 
 struct UpdateInfo
@@ -42,7 +44,9 @@ public:
   ~UpdateManager();
 
   std::vector<UpdateInfo> checkUpdates() const;
-  std::vector<UpdateDiffInfo> checkUpdateDiff() const;
+  //std::vector<UpdateDiffInfo> checkUpdateDiff() const;
+
+  void checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) const;
   void startUpdates();
 
 private:

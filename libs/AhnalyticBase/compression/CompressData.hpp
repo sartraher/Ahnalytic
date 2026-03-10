@@ -47,7 +47,7 @@ public:
   size_t getCharSize() const;
   size_t getUint32Size() const;
 
-  std::vector<uint32_t> getUint32Data() const;
+  std::vector<uint32_t> getUint32Data(CompressDataHeaderMode headerMode) const;
   std::vector<char> getCharData(CompressDataHeaderMode headerMode) const;
 
   const CompressDataHeader& getHeader() const;

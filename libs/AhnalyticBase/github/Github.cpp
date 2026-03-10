@@ -66,7 +66,10 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
       std::filesystem::path resPath = basePath;
       resPath = resPath.concat("/" + group).concat("/github/").concat(cleanFileName(info.fullName) + "_" + group + ".db");
       if (std::filesystem::exists(resPath))
-        std::filesystem::remove_all(resPath);
+      {
+        std::error_code ec;
+        std::filesystem::remove_all(resPath, ec);
+      }
 
       std::filesystem::path emptyPath = basePath;
       emptyPath = emptyPath.concat("/CPP").concat("/github/").concat(cleanFileName(info.fullName) + "_CPP.empty");
@@ -81,7 +84,10 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
     delete iter->second;
 
   if (std::filesystem::exists(repoPath))
-    std::filesystem::remove_all(repoPath);
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(repoPath, ec);
+  }
 }
 
 bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
@@ -127,13 +133,6 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
 
   std::unordered_map<std::string, std::string> fileData = getGitFiles(supportedExt, url, sha, lastSha);
 
-  // for (auto iter = lastFileData.begin(); iter != lastFileData.end(); iter++)
-  //{
-  //   auto searchIter = fileData.find(iter->first);
-  //   if (searchIter != fileData.end() && iter->second == searchIter->second)
-  //     fileData.erase(iter->first);
-  // }
-
   if (fileData.size() == 0)
     return ret;
 
@@ -160,6 +159,15 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
 
     std::vector<char> result;
     SourceStructureTree::serialize(deduped, indexList, result, nullptr);
+
+    // TEST
+    /*
+    std::vector<FlatNodeDeDupData> nodeListTestOut;
+    std::vector<uint32_t> indexListTestOut;
+    SourceStructureTree::deserialize(result, nodeListTestOut, indexListTestOut, nullptr);
+    SourceStructureTree* rootTest = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
+    */
+    // TEST
 
     // FileDatabase* db = dbs[type];
     uint32_t dataId = db->createSourceTreeData(result);

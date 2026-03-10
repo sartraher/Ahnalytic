@@ -105,7 +105,7 @@ uint32_t FileDatabase::createFile(uint32_t dataId, uint32_t index, uint32_t path
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
-  soci::rowset<int> rs = (sql->prepare << "INSERT INTO File (DataID,FileIndex,PathID,TagID) VALUES (:dataId,:fileIndex,:pathId,:tagId) RETURNING ID",
+  soci::rowset<int> rs = (sql->prepare << "INSERT OR IGNORE INTO File (DataID,FileIndex,PathID,TagID) VALUES (:dataId,:fileIndex,:pathId,:tagId) RETURNING ID",
                           soci::use(dataId, "dataId"), soci::use(index, "fileIndex"), soci::use(pathId, "pathId"), soci::use(tagId, "tagId"));
 
   return *rs.begin();
@@ -122,7 +122,7 @@ void FileDatabase::createFiles(uint32_t dataId, std::vector<uint32_t> indices, s
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
   sql->begin();
-  soci::statement statement = (sql->prepare << "INSERT INTO File (DataID,FileIndex,PathID,TagID) VALUES (:dataId,:fileIndex,:pathId,:tagId)",
+  soci::statement statement = (sql->prepare << "INSERT OR IGNORE INTO File (DataID,FileIndex,PathID,TagID) VALUES (:dataId,:fileIndex,:pathId,:tagId)",
                                soci::use(dataIds, "dataId"), soci::use(indices, "fileIndex"), soci::use(pathIds, "pathId"), soci::use(tagIds, "tagId"));
 
   statement.execute(true);
@@ -136,7 +136,7 @@ void FileDatabase::createFiles(std::vector<uint32_t> ids, std::vector<uint32_t> 
 
   sql->begin();
   soci::statement statement =
-      (sql->prepare << "INSERT INTO File (ID, DataID,FileIndex,PathID,TagID) VALUES (:id, :dataId,:fileIndex,:pathId,:tagId)", soci::use(ids, "id"),
+      (sql->prepare << "INSERT OR IGNORE INTO File (ID, DataID,FileIndex,PathID,TagID) VALUES (:id, :dataId,:fileIndex,:pathId,:tagId)", soci::use(ids, "id"),
        soci::use(dataIds, "dataId"), soci::use(indices, "fileIndex"), soci::use(pathIds, "pathId"), soci::use(tagIds, "tagId"));
 
   statement.execute(true);
@@ -147,7 +147,7 @@ uint32_t FileDatabase::createRepoData(const std::string& name, const std::string
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
-  soci::rowset<int> rs = (sql->prepare << "INSERT INTO Repo (Name,Url,Licence) VALUES (:name,:url,:license) RETURNING ID", soci::use(name, "name"),
+  soci::rowset<int> rs = (sql->prepare << "INSERT OR IGNORE INTO Repo (Name,Url,Licence) VALUES (:name,:url,:license) RETURNING ID", soci::use(name, "name"),
                           soci::use(url, "url"), soci::use(license, "license"));
 
   return *rs.begin();
@@ -524,7 +524,8 @@ void FileDatabase::importData(const std::string& tagName, const std::string& sha
   std::vector<uint32_t> tagIds(pathIds.getUint32Size());
   std::fill(tagIds.begin(), tagIds.end(), tagId);
 
-  createFiles(fileIds.getUint32Data(), dataIds.getUint32Data(), fileIndices.getUint32Data(), pathIds.getUint32Data(), tagIds);
+  createFiles(fileIds.getUint32Data(CompressData::Auto), dataIds.getUint32Data(CompressData::Auto), fileIndices.getUint32Data(CompressData::Auto),
+              pathIds.getUint32Data(CompressData::Auto), tagIds);
 
   // Data
   auto readDataBlock = [](std::ifstream& in, uint32_t& dataId, std::vector<char>& outBuffer)

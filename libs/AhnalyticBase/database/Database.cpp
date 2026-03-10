@@ -34,7 +34,7 @@ uint32_t Database::createSourceTreeData(const std::vector<char>& data)
   soci::blob dataBlob = soci::blob(*sql);
   dataBlob.append(data.data(), data.size());
 
-  soci::rowset<int> rs = (sql->prepare << "INSERT INTO SourceTreeData (Data) VALUES (:data) RETURNING ID", soci::use(dataBlob, "data"));
+  soci::rowset<int> rs = (sql->prepare << "INSERT OR IGNORE INTO SourceTreeData (Data) VALUES (:data) RETURNING ID", soci::use(dataBlob, "data"));
   return *rs.begin();
 }
 
@@ -42,11 +42,17 @@ uint32_t Database::createSourceTreeData(uint32_t dataId, const std::vector<char>
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
-  soci::blob dataBlob = soci::blob(*sql);
+  soci::blob dataBlob(*sql);
   dataBlob.append(data.data(), data.size());
 
-  soci::rowset<int> rs = (sql->prepare << "INSERT INTO SourceTreeData (ID,Data) VALUES (:dataId,:data) RETURNING ID", soci::use(dataId, "dataId"), soci::use(dataBlob, "data"));
-  return *rs.begin();
+  soci::rowset<uint32_t> rs = (sql->prepare << "INSERT OR IGNORE INTO SourceTreeData (ID,Data) VALUES (:dataId,:data) RETURNING ID",
+                               soci::use(dataId, "dataId"), soci::use(dataBlob, "data"));
+
+  auto it = rs.begin();
+  if (it != rs.end())
+    return *it;
+
+  return dataId;
 }
 
 void Database::getSourceTreeData(uint32_t id, std::vector<char>& data)

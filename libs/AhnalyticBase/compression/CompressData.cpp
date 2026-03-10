@@ -51,11 +51,11 @@ size_t CompressData::getUint32Size() const
   return data.size();
 }
 
-std::vector<uint32_t> CompressData::getUint32Data() const
+std::vector<uint32_t> CompressData::getUint32Data(CompressDataHeaderMode headerMode) const
 {
   std::vector<uint32_t> ret;
 
-  if (headers.algo == CompressionAlgosE::None)
+  if (headerMode == Off || (headerMode == Auto && headers.algo == CompressionAlgosE::None))
   {
     ret.resize(data.size());
     memcpy(ret.data(), data.data(), charSize);
