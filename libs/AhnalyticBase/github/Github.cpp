@@ -43,13 +43,20 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
   bool hasData = false;
   if (info.tags.size() > 0)
   {
+    std::vector<std::string> doneList;
+
     for (const TagInfo& tag : info.tags)
     {
+      if (std::find(doneList.begin(), doneList.end(), tag.commitSha) != doneList.end())
+        continue;
+
       if (!exitGracefull)
       {
         hasData |= scanTag(dbs, info, tag.name, tag.commitSha, lastSha, lastFiles /*, lastFileData*/);
         lastSha = tag.commitSha;
       }
+
+      doneList.push_back(lastSha);
     }
   }
   else
