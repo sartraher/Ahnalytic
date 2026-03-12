@@ -5,24 +5,9 @@
 #include <vector>
 
 #include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
+#include "AhnalyticBase/file/UpdateStatusFile.hpp"
 
 class EnviromentC;
-
-struct UpdateInfo
-{
-  std::string name;
-  std::string baseName;
-  std::string sha;
-  std::string maxVersion;
-  std::string type;
-  std::string language;
-
-  bool operator==(const UpdateInfo& other) const
-  {
-    return name == other.name && sha == other.sha && type == other.type && language == other.language && baseName == other.baseName &&
-           maxVersion == other.maxVersion;
-  }
-};
 
 struct UpdateDiffInfo
 {
@@ -51,7 +36,7 @@ public:
 
 private:
   EnviromentC* env;
-  std::vector<UpdateInfo> installedUpdates;
+  UpdateStatusFile installedUpdates;
 
 protected:
 };

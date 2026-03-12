@@ -362,11 +362,6 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
   if (!std::filesystem::exists(repoPath / ".git"))
   {
     GitCliHelperC::getGitClone(repoPath, repoUrl, tempPath);
-
-    // std::string cloneCmd = "git clone --no-tags --quiet \"" + repoUrl + "\" \"" + repoPath.string() + "\"";
-    // ExecResult r = execAndCapture(cloneCmd);
-    // if (r.exitCode != 0)
-    // return result;
   }
 
   if (lastSha != "")
@@ -374,15 +369,6 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
   GitCliHelperC::fetchTag(repoPath.string(), sha, tempPath);
 
   safeDelete(repoPath / ".git" / "index.lock");
-  // execAndCapture("git -C \"" + repoPath.string() + "\" remote prune origin");
-
-  // ExecResult fetch = execAndCapture("git -C \"" + repoPath.string() + "\" fetch origin --depth=1 " + sha);
-  // if (fetch.exitCode != 0)
-  //{
-  //   ExecResult full = execAndCapture("git -C \"" + repoPath.string() + "\" fetch origin " + sha);
-  //   if (full.exitCode != 0)
-  //     return result;
-  // }
 
   safeDelete(workPath);
   std::error_code ec;

@@ -2,6 +2,7 @@
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
 #include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
+#include "AhnalyticBase/helper/GitCliHelper.hpp"
 #include "AhnalyticBase/helper/SSE2ASC2memcmp.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 
@@ -596,7 +597,10 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   auto scanSnippedDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
     if (!checkIndex(dbPath, nodes))
+    {
+      resultInter->incFinishedCount(1);
       return;
+    }
 
     SnippedDatabase db(DBType::SQLite, dbPath.string());
 
@@ -624,7 +628,10 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   auto scanGitHubDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
     if (!checkIndex(dbPath, nodes))
+    {
+      resultInter->incFinishedCount(1);
       return;
+    }
 
     FileDatabase db(DBType::SQLite, dbPath.string());
 
@@ -653,7 +660,10 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   auto scanSourceforgeDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
     if (!checkIndex(dbPath, nodes))
+    {
+      resultInter->incFinishedCount(1);
       return;
+    }
 
     FileDatabase db(DBType::SQLite, dbPath.string());
 
@@ -802,7 +812,7 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     switch (result.type)
     {
     case TreeSearchResult::Github:
-      cmpFile = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence);
+      cmpFile = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence, env);
       break;
     case TreeSearchResult::SourceForge:
       cmpFile = getSourceForgeFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence);
@@ -843,11 +853,33 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   resultInter->incFinishedCount(1);
 }
 
-std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence)
+std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence, const EnviromentC& env)
 {
   std::string ret;
-  // TODO
-  return ret;
+
+  FileDatabase fileDb(DBType::SQLite, sourceDb);
+
+  std::string fileName = fileDb.getName(fileId);
+  std::string repoUrl = fileDb.getRepoUrl();
+
+  std::filesystem::path repoPath = std::filesystem::path(env.workFolder) / "getGitHubFile";
+  std::filesystem::path workPath = repoPath / "work";
+
+  GitCliHelperC::getGitClone(repoPath, repoUrl, env.workFolder.string());
+
+  GitCliHelperC::fetchTag(repoPath.string(), sha, env.workFolder.string());
+
+  std::vector<std::string> files;
+  files.push_back(fileName);
+  std::unordered_map<std::string, std::string> result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, files);
+
+  while (std::filesystem::exists(repoPath))
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(repoPath, ec);
+  }
+
+  return result[fileName];
 }
 
 std::string TreeSearch::getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision, std::string& licence)

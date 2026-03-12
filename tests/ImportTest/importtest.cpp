@@ -16,8 +16,24 @@ TEST(TestCaseGitHub, Serialize)
 {
   EnviromentC env;
 
-  FileDatabase db(DBType::SQLite, "D:/source/git/Ahnalytic/db/CPP/github/mongodb_mongo_CPP.db");
+  RepoInfo info;
+
+  info.name = "Slayer";
+  info.fullName = "666shashank/Slayer";
+  info.htmlUrl = "https://github.com/666shashank/Slayer";
+  info.language = "C++";
+
+  info.headSha = "87a747fc5ec367c5c1514c966aff269807304485";
+  info.tags.push_back({"HEAD", "87a747fc5ec367c5c1514c966aff269807304485"});
+
+  std::string dbIn = "d:/work/CPP/github/666shashank_Slayer_CPP.db";
   std::filesystem::path workPath = "D:/work";
+
+  GitHubHandler handler(workPath.string(), workPath.string());
+  handler.scanRepo(info);
+
+  FileDatabase db(DBType::SQLite, dbIn);
+  
 
   db.exportData(workPath);
 

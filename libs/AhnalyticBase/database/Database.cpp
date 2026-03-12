@@ -76,6 +76,18 @@ void Database::getSourceTreeData(uint32_t id, std::vector<char>& data)
   }
 }
 
+std::string Database::getName(uint32_t id)
+{
+  std::string ret;
+  soci::blob dataBlob(*sql);
+
+  soci::statement st = (sql->prepare << "SELECT Name FROM Name Where ID = :id", soci::use(id), soci::into(ret));
+
+  st.execute();
+
+  return ret;
+}
+
 std::unordered_map<std::string, uint32_t> Database::getNames()
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT ID,Name FROM Name");

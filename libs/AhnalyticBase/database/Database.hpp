@@ -49,6 +49,7 @@ public:
   uint32_t createSourceTreeData(uint32_t dataId, const std::vector<char>& data);
   void getSourceTreeData(uint32_t id, std::vector<char>& data);
 
+  std::string getName(uint32_t id);
   std::unordered_map<std::string, uint32_t> getNames();
   std::unordered_map<std::string, uint32_t> insertNames(std::vector<std::string> types);
 

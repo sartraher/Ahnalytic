@@ -34,6 +34,8 @@ public:
   void importData(const std::string& tagName, const std::string& sha, std::filesystem::path& tarPath, std::filesystem::path& pathesPath, bool tagOnly,
                   const EnviromentC& env, ankerl::unordered_dense::set<uint32_t>& hashes);
 
+  std::string getRepoUrl();
+
 private:
 protected:
   void initTables();

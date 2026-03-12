@@ -17,45 +17,12 @@ using json = nlohmann::json;
 
 #include <fstream>
 
-std::string getString(const nlohmann::json& data, const std::string& name)
-try
-{
-  if (data.contains(name))
-  {
-    const auto& value = data[name];
-    if (value.is_string())
-      return value.get<std::string>();
-  }
-
-  return "";
-}
-catch (const std::exception&)
-{
-  return "";
-}
-
 UpdateManager::UpdateManager(EnviromentC* enviroment)
 {
   env = enviroment;
 
   std::string dbData = (env->dbFolder / "status.json").string();
-
-  if (std::filesystem::exists(dbData))
-  {
-    nlohmann::json updateData = nlohmann::json::parse(std::ifstream(dbData));
-
-    for (int index = 0; index < updateData.size(); index++)
-    {
-      UpdateInfo info;
-      info.name = getString(updateData[index], "name");
-      info.baseName = getString(updateData[index], "baseName");
-      info.sha = getString(updateData[index], "sha");
-      info.maxVersion = getString(updateData[index], "maxVersion");
-      info.type = getString(updateData[index], "type");
-      info.language = getString(updateData[index], "language");
-      installedUpdates.push_back(info);
-    }
-  }
+  installedUpdates.read(dbData);
 }
 
 UpdateManager::~UpdateManager()
@@ -73,28 +40,13 @@ std::vector<UpdateInfo> UpdateManager::checkUpdates() const
 
   if (res && res->status == 200)
   {
-    try
-    {
-      nlohmann::json statusData = nlohmann::json::parse(res->body);
+    UpdateStatusFile updateFile;
+    updateFile.readBuffer(res->body);
 
-      for (int index = 0; index < statusData.size(); index++)
-      {
-        UpdateInfo info;
-        info.name = getString(statusData[index], "name");
-        info.baseName = getString(statusData[index], "baseName");
-        info.sha = getString(statusData[index], "sha");
-        info.maxVersion = getString(statusData[index], "maxVersion");
-        info.type = getString(statusData[index], "type");
-        info.language = getString(statusData[index], "language");
-
-        if (std::find(installedUpdates.begin(), installedUpdates.end(), info) == installedUpdates.end())
-          ret.push_back(info);
-      }
-    }
-    catch (const std::exception& e)
-    {
-      std::cerr << "JSON parse error: " << e.what() << "\n";
-    }
+    ret.reserve(updateFile.infos.size());
+    for (const UpdateInfo& info : updateFile.infos)
+      if (std::find(installedUpdates.infos.begin(), installedUpdates.infos.end(), info) == installedUpdates.infos.end())
+        ret.push_back(info);
   }
 
   return ret;
@@ -119,11 +71,11 @@ void UpdateManager::checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) cons
       diffInfo.type = info.type;
       diffInfo.language = info.language;
 
-      auto iter = std::find_if(installedUpdates.begin(), installedUpdates.end(),
+      auto iter = std::find_if(installedUpdates.infos.begin(), installedUpdates.infos.end(),
                                [info](const UpdateInfo& data) { return data.name == info.name && data.type == info.type && data.language == info.language; });
 
       std::string lastSha = "";
-      if (iter != installedUpdates.end())
+      if (iter != installedUpdates.infos.end())
       {
         lastSha = iter->sha;
         diffInfo.name = info.name;
@@ -137,10 +89,10 @@ void UpdateManager::checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) cons
           try
           {
             nlohmann::json repoJson = nlohmann::json::parse(repoRes->body);
-            diffInfo.licence = getString(repoJson, "Licence");
-            diffInfo.visibleName = getString(repoJson, "Name");
+            diffInfo.licence = UpdateStatusFile::getString(repoJson, "Licence");
+            diffInfo.visibleName = UpdateStatusFile::getString(repoJson, "Name");
             diffInfo.name = info.name;
-            diffInfo.url = getString(repoJson, "Url");
+            diffInfo.url = UpdateStatusFile::getString(repoJson, "Url");
           }
           catch (const std::exception&)
           {
@@ -161,8 +113,8 @@ void UpdateManager::checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) cons
           {
             for (; index < tagsJson.size(); index++)
             {
-              diffInfo.existingShas.push_back({getString(tagsJson[index], "TagName"), getString(tagsJson[index], "Sha")});
-              if (lastSha == getString(tagsJson[index], "Tags"))
+              diffInfo.existingShas.push_back({UpdateStatusFile::getString(tagsJson[index], "TagName"), UpdateStatusFile::getString(tagsJson[index], "Sha")});
+              if (lastSha == UpdateStatusFile::getString(tagsJson[index], "Tags"))
               {
                 index++;
                 break;
@@ -171,7 +123,7 @@ void UpdateManager::checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) cons
           }
 
           for (; index < tagsJson.size(); index++)
-            diffInfo.missingShas.push_back({getString(tagsJson[index], "TagName"), getString(tagsJson[index], "Sha")});
+            diffInfo.missingShas.push_back({UpdateStatusFile::getString(tagsJson[index], "TagName"), UpdateStatusFile::getString(tagsJson[index], "Sha")});
         }
         catch (const std::exception&)
         {
@@ -195,9 +147,10 @@ void UpdateManager::startUpdates()
 {
   httplib::Client cli("http://www.ahnalytic.org");
 
-  // std::vector<UpdateDiffInfo> updates = checkUpdateDiff();
+  UpdateStatusFile resUpdates = installedUpdates;
 
   ThreadSafeQueue<UpdateDiffInfo> queue;
+  ThreadSafeQueue<UpdateDiffInfo> finishedQueue;
   bool finished = false;
   std::jthread producer([this, &queue, &finished]
   {
@@ -217,7 +170,36 @@ void UpdateManager::startUpdates()
     }
   };
 
-  // for (const UpdateDiffInfo& update : updates)
+  auto updateStateFile = [&finishedQueue, &resUpdates, this]()
+  {
+    while (!finishedQueue.empty())
+    {
+      UpdateDiffInfo finishedUpdate = finishedQueue.wait_and_pop();
+      auto iter = std::find_if(resUpdates.infos.begin(), resUpdates.infos.end(), [finishedUpdate](const UpdateInfo& data)
+      { return data.name == finishedUpdate.name && data.type == finishedUpdate.type && data.language == finishedUpdate.language; });
+
+      if (iter != resUpdates.infos.end())
+      {
+        iter->sha = finishedUpdate.missingShas[finishedUpdate.missingShas.size() - 1].second;
+      }
+      else
+      {
+        UpdateInfo info;
+
+        info.name = finishedUpdate.name;
+        info.baseName = finishedUpdate.baseName;
+        info.sha = finishedUpdate.missingShas[finishedUpdate.missingShas.size() - 1].second;
+        info.maxVersion = "";
+        info.type = finishedUpdate.type;
+        info.language = finishedUpdate.language;
+
+        resUpdates.infos.push_back(info);
+      }
+    }
+
+    std::string dbData = (env->dbFolder / "status.json").string();
+    resUpdates.write(dbData);
+  };
 
   BS::thread_pool pool;
 
@@ -228,7 +210,7 @@ void UpdateManager::startUpdates()
 
     UpdateDiffInfo update = queue.wait_and_pop();
 
-    pool.detach_task([update, this, &downloadFile]()
+    pool.detach_task([update, this, &downloadFile, &finishedQueue]()
     {
       if (update.type == "github")
       {
@@ -294,9 +276,16 @@ void UpdateManager::startUpdates()
 
         std::filesystem::remove_all(pathesPath, ec);
         std::filesystem::remove_all(pathesPath.parent_path(), ec);
+
+        finishedQueue.push(update);
       }
     });
+
+    updateStateFile();
   }
 
   pool.wait();
+  updateStateFile();
+
+  installedUpdates = resUpdates;
 }

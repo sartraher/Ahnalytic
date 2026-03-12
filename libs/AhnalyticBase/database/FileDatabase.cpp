@@ -584,3 +584,12 @@ void FileDatabase::importData(const std::string& tagName, const std::string& sha
     delete root;
   }
 }
+
+std::string FileDatabase::getRepoUrl()
+{
+  const std::lock_guard<std::recursive_mutex> lock(mutex);
+
+  std::string ret;
+  (*sql) << "SELECT Url FROM repo WHERE id = 1", soci::into(ret);
+  return ret;
+}

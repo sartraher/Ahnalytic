@@ -112,7 +112,7 @@ public:
 
 private:
 protected:
-  std::string getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence);
+  std::string getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence, const EnviromentC& env);
   std::string getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision, std::string& licence);
   std::string getStackexchangeFile(const std::string& sourceDb, const uint32_t& sourceInternalId, std::string& licence);
 };
