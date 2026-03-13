@@ -692,7 +692,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
   int maxCount = 0;
 
-  BS::thread_pool pool;
+  BS::thread_pool pool(1);
   for (auto iter = searchData.begin(); iter != searchData.end(); iter++)
   {
     std::filesystem::path dbByFormatPath = env.dbFolder / iter->first;
@@ -710,7 +710,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         if (dbPath.extension() == ".db")
         {
           const SearchNodeData& nodes = iter->second;
-          std::future<void> result = pool.submit_task([&scanSnippedDb, dbPath, nodes]() { return scanSnippedDb(dbPath, nodes); });
+          std::future<void> result = pool.submit_task([&scanSnippedDb, dbPath, &nodes]() { return scanSnippedDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
           maxCount++;
         }
@@ -730,7 +730,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         if (dbPath.extension() == ".db")
         {
           const SearchNodeData& nodes = iter->second;
-          std::future<void> result = pool.submit_task([&scanGitHubDb, dbPath, nodes]() { return scanGitHubDb(dbPath, nodes); });
+          std::future<void> result = pool.submit_task([&scanGitHubDb, dbPath, &nodes]() { return scanGitHubDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
           maxCount++;
         }
@@ -750,7 +750,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
         if (dbPath.extension() == ".db")
         {
           const SearchNodeData& nodes = iter->second;
-          std::future<void> result = pool.submit_task([&scanSourceforgeDb, dbPath, nodes]() { return scanSourceforgeDb(dbPath, nodes); });
+          std::future<void> result = pool.submit_task([&scanSourceforgeDb, dbPath, &nodes]() { return scanSourceforgeDb(dbPath, nodes); });
           currentTasks.push_back(std::move(result));
           maxCount++;
         }
