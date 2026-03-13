@@ -644,7 +644,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       for (const std::filesystem::path& path : files)
       {
         TreeSearchResult result;
-        result.type = TreeSearchResult::Stackexchange;
+        result.type = TreeSearchResult::Github;
         result.sourceDb = dbPath.string();
         result.sourceRevision = sha;
         result.sourceInternalId = fileId;
@@ -677,7 +677,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       for (const std::filesystem::path& path : files)
       {
         TreeSearchResult result;
-        result.type = TreeSearchResult::Stackexchange;
+        result.type = TreeSearchResult::SourceForge;
         result.sourceDb = dbPath.string();
         result.sourceRevision = revision;
         result.sourceInternalId = fileId;
