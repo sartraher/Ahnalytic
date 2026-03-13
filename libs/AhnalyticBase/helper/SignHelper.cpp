@@ -4,10 +4,10 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 
-extern "C"
-{
-#include <ms/applink.c>
-}
+//extern "C"
+//{
+//#include <ms/applink.c>
+//}
 
 #include <fstream>
 #include <iostream>
