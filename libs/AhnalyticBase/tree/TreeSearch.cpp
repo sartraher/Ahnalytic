@@ -692,7 +692,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
   int maxCount = 0;
 
-  BS::thread_pool pool(1);
+  BS::thread_pool pool;
   for (auto iter = searchData.begin(); iter != searchData.end(); iter++)
   {
     std::filesystem::path dbByFormatPath = env.dbFolder / iter->first;

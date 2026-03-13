@@ -239,6 +239,8 @@ void FileDatabase::iterateFiles(std::function<void(uint32_t, const std::string&,
     if (root != nullptr && root->children.size() > fileIndex)
       callback(fileIndex, sha, licence, (SourceStructureTree*)root->children.at(fileIndex));
   }
+
+  delete root;
 }
 
 void FileDatabase::exportData(std::filesystem::path& outPath)
