@@ -26,29 +26,9 @@ using json = nlohmann::json;
 bool removeAll(const std::filesystem::path& path)
 {
   std::error_code ec;
+  std::filesystem::permissions(path, std::filesystem::perms::owner_all, std::filesystem::perm_options::add, ec);
 
-  if (!std::filesystem::exists(path))
-    return true;
-
-  for (auto& entry : std::filesystem::recursive_directory_iterator(path))
-  {
-    DWORD attrs = GetFileAttributesW(entry.path().wstring().c_str());
-    if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_READONLY))
-      SetFileAttributesW(entry.path().wstring().c_str(), attrs & ~FILE_ATTRIBUTE_READONLY);
-
-    std::filesystem::remove_all(entry.path(), ec);
-    if (ec)
-      std::cerr << "Failed to remove " << entry.path() << ": " << ec.message() << "\n";
-  }
-
-  // retry top-level folder if it still exists
-  int attempts = 0;
-  while (std::filesystem::exists(path) && attempts++ < 10)
-  {
-    std::filesystem::remove(path, ec);
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  }
-
+  std::filesystem::remove_all(path, ec);
   return !std::filesystem::exists(path);
 }
 
