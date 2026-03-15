@@ -79,8 +79,10 @@ jobs:
 
       - name: Prepare env folder
         run: |
-          mkdir env\bin
-          copy out\bin\x64\Release\* env\bin\
+          if (!(Test-Path "env/bin")) {
+            New-Item -ItemType Directory -Path "env/bin" | Out-Null
+          }
+          Copy-Item -Path "out/bin/x64/Release/*" -Destination "env/bin/" -Recurse -Force
 
       - name: Remove placeholder .stub files
         run: |
