@@ -29,7 +29,7 @@ jobs:
         run: ./tools/premake/premake5 gmake2
 
       - name: Build Linux binary
-        run: make config=linux-release
+        run: make config=release_linux
 
       - name: Upload Linux binary
         uses: actions/upload-artifact@v4
@@ -49,7 +49,8 @@ jobs:
         run: tools\premake\premake5.exe vs2022
 
       - name: Build Windows binary with MSVC
-        run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64
+        shell: cmd
+        run: '"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" Ahnalytic.sln /p:Configuration=Release /p:Platform=x64 /m'
 
       - name: Upload Windows binary
         uses: actions/upload-artifact@v4
