@@ -45,7 +45,7 @@ filter {}
 
 -- web
 group "web"
-dofile("web/AhnalyticScannerUi/source/premake5.lua")
+--dofile("web/AhnalyticScannerUi/source/premake5.lua")
 
 -- install
 --group "install"
