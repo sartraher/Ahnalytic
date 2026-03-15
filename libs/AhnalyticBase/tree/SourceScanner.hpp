@@ -45,6 +45,8 @@ public:
 
   SourceStructureTreeDeep* scanDeep(const std::filesystem::path& path, uint32_t& resSize, std::string& sourceType) const;
   SourceStructureTreeDeep* scanDeep(const std::string& content, uint32_t& resSize, std::string& sourceType) const;
+  SourceStructureTreeDeep* scanDeep(const std::filesystem::path& path, const std::string& content, uint32_t& resSize,
+                                                   std::string& sourceType) const;
   void traverseDeep(TSTreeCursor& cursor, SourceStructureTreeDeep* parent, SourceHandlerI* handler, const std::string& content, size_t depth = 0) const;
 
   int countErrorNodes(const TSTree* tree) const;

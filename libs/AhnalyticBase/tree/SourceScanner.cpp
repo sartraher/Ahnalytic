@@ -358,6 +358,41 @@ SourceStructureTreeDeep* SourceScanner::scanDeep(const std::string& content, uin
   return ret;
 }
 
+SourceStructureTreeDeep* SourceScanner::scanDeep(const std::filesystem::path& path, const std::string& content, uint32_t& resSize,
+                                                 std::string& sourceType) const
+{
+  auto handlerIter = handlers.find(path.extension().string());
+  if (handlerIter == handlers.end())
+    return nullptr;
+
+  sourceType = handlerIter->second->getId();
+
+  SourceStructureTreeDeep* ret = new SourceStructureTreeDeep();
+
+  TSParser* parser = ts_parser_new();
+  ts_parser_set_language(parser, handlerIter->second->getLanguage());
+
+
+  TSTree* tree = ts_parser_parse_string(parser, NULL, content.c_str(), (unsigned int)content.size());
+
+  if (tree != nullptr)
+  {
+    TSNode root_node = ts_tree_root_node(tree);
+    SourceStructureTreeDeep* cur = ret;
+
+    TSTreeCursor cursor = ts_tree_cursor_new(root_node);
+    traverseDeep(cursor, cur, handlerIter->second, content);
+    ts_tree_cursor_delete(&cursor);
+  }
+
+  ts_tree_delete(tree);
+  ts_parser_delete(parser);
+
+  resSize = (uint32_t)content.size();
+
+  return ret;
+}
+
 int SourceScanner::countErrorNodes(const TSTree* tree) const
 {
   int error_count = 0;

@@ -809,23 +809,32 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     std::string sourceFile;
     std::string licence;
     std::string cmpFile;
+
+    uint32_t resSize;
+    std::string sourceType;
+
+    SourceStructureTreeDeep* dbTree = nullptr;
+
     switch (result.type)
     {
     case TreeSearchResult::Github:
-      cmpFile = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence, env);
-      break;
+    {
+      std::pair<std::string, std::string> fileData = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence, env);
+      sourceFile = fileData.first;
+      cmpFile = fileData.second;
+      dbTree = scanner.scanDeep(sourceFile, cmpFile, resSize, sourceType);
+    }
+    break;
     case TreeSearchResult::SourceForge:
       cmpFile = getSourceForgeFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence);
+      dbTree = scanner.scanDeep(cmpFile, resSize, sourceType);
       break;
     case TreeSearchResult::Stackexchange:
       cmpFile = getStackexchangeFile(result.sourceDb, result.sourceInternalId, licence);
       sourceFile = "https://stackoverflow.com/questions/" + std::to_string(result.sourceInternalId);
+      dbTree = scanner.scanDeep(cmpFile, resSize, sourceType);
       break;
     }
-
-    uint32_t resSize;
-    std::string sourceType;
-    SourceStructureTreeDeep* dbTree = scanner.scanDeep(cmpFile, resSize, sourceType);
 
     if (dbTree == nullptr)
     {
@@ -853,7 +862,8 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   resultInter->incFinishedCount(1);
 }
 
-std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence, const EnviromentC& env)
+std::pair<std::string, std::string> TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence,
+                                                              const EnviromentC& env)
 {
   std::string ret;
 
@@ -879,7 +889,7 @@ std::string TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_
     std::filesystem::remove_all(repoPath, ec);
   }
 
-  return result[fileName];
+  return std::make_pair(fileName, result[fileName]);
 }
 
 std::string TreeSearch::getSourceForgeFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sourceRevision, std::string& licence)

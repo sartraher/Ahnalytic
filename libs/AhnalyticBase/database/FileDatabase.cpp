@@ -155,6 +155,15 @@ std::unordered_map<std::string, std::string> FileDatabase::getTags() const
   return ret;
 }
 
+std::string FileDatabase::getTagSha(uint32_t id) const
+{
+  std::string ret;
+
+  *sql << "SELECT Sha FROM Tag WHERE ID = :id", soci::use(id), soci::into(ret);
+
+  return ret;
+}
+
 void FileDatabase::iterateSourceTrees(std::function<void(SourceStructureTree*)> callback)
 {
   soci::blob dataBlob(*sql);
@@ -186,6 +195,8 @@ void FileDatabase::iterateSourceTrees(std::function<void(SourceStructureTree*)> 
 
 void FileDatabase::iterateFiles(std::function<void(uint32_t, const std::string&, const std::string&, SourceStructureTree*)> callback)
 {
+  std::string licence = getRepoLicence();
+
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT DataID,FileIndex,PathID,TagID FROM File");
 
 #undef max
@@ -199,8 +210,7 @@ void FileDatabase::iterateFiles(std::function<void(uint32_t, const std::string&,
     uint32_t pathId = r.get<uint32_t>("PathID");
     uint32_t tagId = r.get<uint32_t>("TagID");
 
-    std::string licence;
-    std::string sha;
+    std::string sha = getTagSha(tagId);
 
     if (lastSourceTreeId != sourceTreeDataID)
     {
@@ -573,5 +583,14 @@ std::string FileDatabase::getRepoUrl()
 
   std::string ret;
   (*sql) << "SELECT Url FROM repo WHERE id = 1", soci::into(ret);
+  return ret;
+}
+
+std::string FileDatabase::getRepoLicence()
+{
+  const std::lock_guard<std::recursive_mutex> lock(mutex);
+
+  std::string ret;
+  (*sql) << "SELECT Licence FROM repo WHERE id = 1", soci::into(ret);
   return ret;
 }

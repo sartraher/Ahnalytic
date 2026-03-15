@@ -44,6 +44,23 @@ void UpdateStatusFile::read(const std::filesystem::path& path)
 
 void UpdateStatusFile::write(const std::filesystem::path& path)
 {
+  nlohmann::json statusData;
+
+  for (const UpdateInfo& info : infos)
+  {
+    nlohmann::json infoData;
+    infoData["name"] = info.name;
+    infoData["baseName"] = info.baseName;
+    infoData["sha"] = info.sha;
+    infoData["maxVersion"] = info.maxVersion;
+    infoData["type"] = info.type;
+    infoData["language"] = info.language;
+
+    statusData.push_back(infoData);
+  }
+
+  std::ofstream ofs(path.string(), std::ios::out | std::ios::trunc);
+  ofs << statusData.dump(2);
 }
 
 void UpdateStatusFile::readBuffer(const std::string& buffer)

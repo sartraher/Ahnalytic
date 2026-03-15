@@ -24,6 +24,7 @@ public:
   uint32_t createTag(const std::string& tagName, const std::string& sha);
 
   std::unordered_map<std::string, std::string> getTags() const;
+  std::string getTagSha(uint32_t id) const;
 
   void iterateSourceTrees(std::function<void(SourceStructureTree*)> callback);
   void iterateFiles(std::function<void(uint32_t, const std::string&, const std::string&, SourceStructureTree*)> callback);
@@ -35,6 +36,7 @@ public:
                   const EnviromentC& env, ankerl::unordered_dense::set<uint32_t>& hashes);
 
   std::string getRepoUrl();
+  std::string getRepoLicence();
 
 private:
 protected:

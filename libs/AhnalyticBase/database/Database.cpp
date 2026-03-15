@@ -79,11 +79,8 @@ void Database::getSourceTreeData(uint32_t id, std::vector<char>& data)
 std::string Database::getName(uint32_t id)
 {
   std::string ret;
-  soci::blob dataBlob(*sql);
 
-  soci::statement st = (sql->prepare << "SELECT Name FROM Name Where ID = :id", soci::use(id), soci::into(ret));
-
-  st.execute();
+  *sql << "SELECT Name FROM Name WHERE ID = :id", soci::use(id), soci::into(ret);
 
   return ret;
 }
