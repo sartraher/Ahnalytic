@@ -1,5 +1,6 @@
 name: Build Linux & Windows
 
+# Force Node.js 24 for all JS-based actions (future-proof)
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -18,23 +19,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install build dependencies & Premake
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential wget jq unzip
+      - name: Install build dependencies
+        run: sudo apt update && sudo apt install -y build-essential
 
-          PKG=$(curl -s https://api.github.com/repos/premake/premake-core/releases/latest \
-            | jq -r '.assets[] | select(.name | test("linux")) | .browser_download_url' \
-            | head -n1)
-
-          echo "Downloading Premake from $PKG"
-          wget "$PKG"
-          tar -xzf *.tar.gz
-          sudo mv premake5 /usr/local/bin/
-          premake5 --version
+      - name: Make Linux Premake executable
+        run: chmod +x tools/premake/premake5
 
       - name: Generate Makefiles with Premake
-        run: premake5 gmake2
+        run: ./tools/premake/premake5 gmake2
 
       - name: Build Linux binary
         run: make config=linux-release
@@ -53,11 +45,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install Premake
-        run: choco install premake -y
-
       - name: Generate Visual Studio solution
-        run: premake5 vs2022
+        run: tools\premake\premake5.exe vs2022
 
       - name: Build Windows binary with MSVC
         run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64
