@@ -23,7 +23,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential wget unzip pkg-config \
-            libxml2-dev liblzma-dev zlib1g-dev libbz2-dev libssl-dev
+            libxml2-dev liblzma-dev zlib1g-dev libbz2-dev liblz4-dev \
+            libzstd-dev libssl-dev
 
       - name: Make Premake executable
         run: chmod +x tools/premake/premake5
