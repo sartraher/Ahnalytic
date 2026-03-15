@@ -109,7 +109,7 @@ project "AhnalyticBase"
         runtime "Release"
         optimize "Speed"
         defines { "NDEBUG" }		
-        flags { "linktimeoptimization" }
+        linktimeoptimization "On"
 
     filter "platforms:x64"
     vectorextensions "AVX2"

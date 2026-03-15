@@ -32,7 +32,8 @@ project "SrvLib"
             runtime "Release"
             optimize "Speed"
             defines { "NDEBUG", "_CONSOLE" }
-            flags { "LinkTimeOptimization", "MultiProcessorCompile" }
+            flags { "MultiProcessorCompile" }
+			linktimeoptimization "On"
 			
 	filter "system:linux or system:macosx"
 		buildoptions {

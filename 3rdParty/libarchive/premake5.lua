@@ -224,7 +224,8 @@ project "archive_static"
         runtime "Release"
         optimize "Speed"
         defines { "NDEBUG" }
-        flags { "linktimeoptimization" }
+        optimize "Speed"
+        linktimeoptimization "On"
 
     filter "configurations:MinSizeRel"
         runtime "Release"

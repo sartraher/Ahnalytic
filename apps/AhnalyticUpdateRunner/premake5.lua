@@ -76,7 +76,7 @@ project "AhnalyticUpdateRunner"
         runtime "Release"
         optimize "Speed"
         defines { "NDEBUG", "_CONSOLE" }
-        flags { "linktimeoptimization" }
+        linktimeoptimization "On"
 
     filter "platforms:x64"
         vectorextensions "AVX2"
