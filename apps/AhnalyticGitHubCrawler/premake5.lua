@@ -59,6 +59,15 @@ project "AhnalyticGitHubCrawler"
         systemversion "latest"
         characterset "Unicode"
         links { "ws2_32" }  -- optional for networking
+		
+	filter "system:linux"
+		links {        
+        "zstd",   -- libzstd
+        "bz2",    -- libbz2
+        "lz4",    -- liblz4
+        "lzma",   -- liblzma
+        "z"       -- zlib
+		}
 
     filter "system:linux or system:macosx"
         pic "On"
@@ -69,9 +78,6 @@ project "AhnalyticGitHubCrawler"
 		}
 		buildoptions { "`pkg-config --cflags libxml-2.0`" }
 		linkoptions { "`pkg-config --libs libxml-2.0`" }
-		-- Compression libraries
-		buildoptions { "`pkg-config --cflags zstd bzip2 lz4 liblzma zlib`" }
-		linkoptions    { "`pkg-config --libs zstd bzip2 lz4 liblzma zlib`" }
 
     filter "configurations:Debug"
         runtime "Debug"
