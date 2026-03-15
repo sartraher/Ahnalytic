@@ -3,6 +3,7 @@ name: Build Linux & Windows
 # Force Node.js 24 for all JS-based actions (future-proof)
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BUILD_NUMBER: ${{ github.run_number }}
 
 on:
   push:
@@ -23,8 +24,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential wget unzip pkg-config \
-              libxml2-dev liblzma-dev zlib1g-dev libbz2-dev liblz4-dev \
-              libzstd-dev libssl-dev
+            libxml2-dev liblzma-dev zlib1g-dev libbz2-dev liblz4-dev \
+            libzstd-dev libssl-dev
 
       - name: Make Premake executable
         run: chmod +x tools/premake/premake5
@@ -38,11 +39,24 @@ jobs:
           CFLAGS: "-I/usr/include/libxml2"
           LDFLAGS: "-L/usr/lib/x86_64-linux-gnu"
 
-      - name: Upload Linux binary
+      - name: Prepare env folder
+        run: |
+          mkdir -p env/bin
+          cp out/bin/x64/Release/* env/bin/
+
+      - name: Remove placeholder .stub files
+        run: |
+          find env -name "*.stub" -type f -delete
+
+      - name: Package env folder
+        run: |
+          tar -czf ahnalytic_nightly_${{ env.BUILD_NUMBER }}.tar.gz -C env .
+
+      - name: Upload Linux package
         uses: actions/upload-artifact@v4
         with:
-          name: linux-binary
-          path: out/bin/x64/Release_x64/*
+          name: linux-package
+          path: ahnalytic_nightly_${{ env.BUILD_NUMBER }}.tar.gz
 
   build-windows:
     name: Windows Build
@@ -63,8 +77,21 @@ jobs:
       - name: Build Windows binary with MSVC
         run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64 /m
 
-      - name: Upload Windows binary
+      - name: Prepare env folder
+        run: |
+          mkdir env\bin
+          copy out\bin\x64\Release\* env\bin\
+
+      - name: Remove placeholder .stub files
+        run: |
+          powershell -Command "Get-ChildItem -Path env -Recurse -Filter '*.stub' | Remove-Item -Force"
+
+      - name: Package env folder
+        run: |
+          powershell Compress-Archive -Path env\* -DestinationPath ahnalytic_nightly_${{ env.BUILD_NUMBER }}.zip
+
+      - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: windows-binary
-          path: out/bin/x64/Release/*
+          name: windows-package
+          path: ahnalytic_nightly_${{ env.BUILD_NUMBER }}.zip
