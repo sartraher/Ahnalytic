@@ -48,39 +48,39 @@ group "web"
 dofile("web/AhnalyticScannerUi/source/premake5.lua")
 
 -- install
-group "install"
-project "Install"
-    kind "Utility"
-    language "C"
-    targetname "install_build"
-	
-	targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
-    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
-	
-	dependson { "AhnalyticScannerServer", "AhnalyticUpdateServer" }
-    
-    filter "system:linux or system:macosx"
-		prebuildcommands {
-			("")
-		}
-	
-	filter "system:windows"
-		prebuildcommands {
-			("if not exist \"%{wks.location}bin\" ( packbuild.cmd %{wks.location}\\bin %{wks.location}\\out\\bin\\%{cfg.platform}\\%{cfg.buildcfg} )")
-		}
+--group "install"
+--project "Install"
+--    kind "Utility"
+--    language "C"
+--    targetname "install_build"
+--	
+--	targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
+--    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+--	
+--	dependson { "AhnalyticScannerServer", "AhnalyticUpdateServer" }
+--    
+--    filter "system:linux or system:macosx"
+--		prebuildcommands {
+--			("")
+--		}
+--	
+--	filter "system:windows"
+--		prebuildcommands {
+--			("if not exist \"%{wks.location}bin\" ( packbuild.cmd %{wks.location}\\bin %{wks.location}\\out\\bin\\%{cfg.platform}\\%{cfg.buildcfg} )")
+--		}
 		
 -- tests, visual studio only
-if _ACTION:match("vs") and os.target() == "windows" then
-    group "tests"
-    
-    local tests = { "CompressionTest", "DatabaseTest", "ImportTest", "SearchTest" }
-    for _, t in ipairs(tests) do
-        externalproject(t)
-            kind "ConsoleApp"
-            language "C++"
-            location("tests/" .. t)
-            dependson { "AhnalyticBase" }
-    end
-end
+--if _ACTION:match("vs") and os.target() == "windows" then
+--    group "tests"
+--    
+--    local tests = { "CompressionTest", "DatabaseTest", "ImportTest", "SearchTest" }
+--    for _, t in ipairs(tests) do
+--        externalproject(t)
+--            kind "ConsoleApp"
+--            language "C++"
+--            location("tests/" .. t)
+--            dependson { "AhnalyticBase" }
+--    end
+--end
 
 filter {} 

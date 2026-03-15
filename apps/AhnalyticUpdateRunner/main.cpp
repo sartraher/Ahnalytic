@@ -133,8 +133,8 @@ int main(int argc, char* argv[])
   {
     // GitHubHandler handler("D:/source/Ahnalytic/db", "D:/work");
 
-    BS::thread_pool poolBig(8);
-    BS::thread_pool poolSmall(8);
+    BS::thread_pool poolBig(4);
+    BS::thread_pool poolSmall(4);
 
     std::vector<std::string> langFilter{"C", "C++"};
 

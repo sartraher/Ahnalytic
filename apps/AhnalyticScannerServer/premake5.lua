@@ -58,6 +58,8 @@ project "AhnalyticScannerServer"
     filter "system:linux or system:macosx"
         pic "On"
         links { "pthread" }  -- standard threading library
+		buildoptions { "`pkg-config --cflags libxml-2.0`" }
+		linkoptions { "`pkg-config --libs libxml-2.0`" }
 
     filter "configurations:Debug"
         runtime "Debug"

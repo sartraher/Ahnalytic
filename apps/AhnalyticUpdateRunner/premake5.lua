@@ -66,6 +66,8 @@ project "AhnalyticUpdateRunner"
 			"crypto",
 			"pthread" 
 		}
+		buildoptions { "`pkg-config --cflags libxml-2.0`" }
+		linkoptions { "`pkg-config --libs libxml-2.0`" }
 
     filter "configurations:Debug"
         runtime "Debug"
