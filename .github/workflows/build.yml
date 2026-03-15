@@ -1,0 +1,56 @@
+name: Build Linux & Windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-linux:
+    name: Linux Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential premake5
+
+      - name: Generate Makefiles with Premake
+        run: premake5 gmake2
+
+      - name: Build Linux binary
+        run: make config=linux-release
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-binary
+          path: out/bin/x64/Release/*
+
+  build-windows:
+    name: Windows Build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Premake
+        run: choco install premake -y
+
+      - name: Generate Visual Studio solution
+        run: premake5 vs2022
+
+      - name: Build Windows binary with MSVC
+        run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64
+
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-binary
+          path: out/bin/x64/Release/*

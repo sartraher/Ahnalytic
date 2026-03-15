@@ -34,10 +34,14 @@ dofile("libs/AhnalyticBase/premake5.lua")
 -- apps
 group "apps"
 dofile("apps/AhnalyticScannerServer/premake5.lua")
-dofile("apps/AhnalyticUpdateServer/premake5.lua")
-dofile("apps/AhnalyticUpdateRunner/premake5.lua")
-dofile("apps/AhnalyticDatabaseExporter/premake5.lua")
-dofile("apps/AhnalyticGitHubCrawler/premake5.lua")
+--dofile("apps/AhnalyticUpdateServer/premake5.lua")
+
+filter "system:windows"
+	dofile("apps/AhnalyticGitHubCrawler/premake5.lua")
+	dofile("apps/AhnalyticUpdateRunner/premake5.lua")
+	dofile("apps/AhnalyticDatabaseExporter/premake5.lua")
+	
+filter {}
 
 -- web
 group "web"
