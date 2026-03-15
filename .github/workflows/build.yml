@@ -6,9 +6,9 @@ env:
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-linux:
@@ -37,27 +37,27 @@ jobs:
           name: linux-binary
           path: out/bin/x64/Release/*
 
-    build-windows:
-      name: Windows Build
-      runs-on: windows-latest
+  build-windows:
+    name: Windows Build
+    runs-on: windows-latest
 
-      steps:
-        - name: Checkout repo
-          uses: actions/checkout@v3
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-        - name: Add MSBuild to PATH
-          uses: microsoft/setup-msbuild@v2
-          with:
-            msbuild-architecture: x64
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
 
-        - name: Generate Visual Studio solution
-          run: tools\premake\premake5.exe vs2022
+      - name: Generate Visual Studio solution
+        run: tools\premake\premake5.exe vs2022
 
-        - name: Build Windows binary with MSVC
-          run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64 /m
+      - name: Build Windows binary with MSVC
+        run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64 /m
 
-        - name: Upload Windows binary
-          uses: actions/upload-artifact@v4
-          with:
-            name: windows-binary
-            path: out/bin/x64/Release/*
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binary
+          path: out/bin/x64/Release/*
