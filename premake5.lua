@@ -7,6 +7,11 @@ workspace "Ahnalytic"
 
     filter {}
 	
+newoption {
+    trigger     = "local",
+    description = "Include local-only projects"
+}
+	
 -- 3rdParty
 group "3rdParty"	
 group "3rdParty/compression"
@@ -36,51 +41,56 @@ group "apps"
 dofile("apps/AhnalyticScannerServer/premake5.lua")
 --dofile("apps/AhnalyticUpdateServer/premake5.lua")
 
-filter "system:windows"
-	dofile("apps/AhnalyticGitHubCrawler/premake5.lua")
-	dofile("apps/AhnalyticUpdateRunner/premake5.lua")
-	dofile("apps/AhnalyticDatabaseExporter/premake5.lua")
+if os.host() == "windows" then
+    dofile("apps/AhnalyticGitHubCrawler/premake5.lua")
+    dofile("apps/AhnalyticUpdateRunner/premake5.lua")
+    dofile("apps/AhnalyticDatabaseExporter/premake5.lua")
+end
 	
 filter {}
 
 -- web
-group "web"
---dofile("web/AhnalyticScannerUi/source/premake5.lua")
 
--- install
---group "install"
---project "Install"
---    kind "Utility"
---    language "C"
---    targetname "install_build"
---	
---	targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
---    objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
---	
---	dependson { "AhnalyticScannerServer", "AhnalyticUpdateServer" }
---    
---    filter "system:linux or system:macosx"
---		prebuildcommands {
---			("")
---		}
---	
---	filter "system:windows"
---		prebuildcommands {
---			("if not exist \"%{wks.location}bin\" ( packbuild.cmd %{wks.location}\\bin %{wks.location}\\out\\bin\\%{cfg.platform}\\%{cfg.buildcfg} )")
---		}
+if _OPTIONS["local"] then
+
+	group "web"
+	dofile("web/AhnalyticScannerUi/source/premake5.lua")
+
+	-- install
+	group "install"
+	project "Install"
+		kind "Utility"
+		language "C"
+		targetname "install_build"
 		
--- tests, visual studio only
---if _ACTION:match("vs") and os.target() == "windows" then
---    group "tests"
---    
---    local tests = { "CompressionTest", "DatabaseTest", "ImportTest", "SearchTest" }
---    for _, t in ipairs(tests) do
---        externalproject(t)
---            kind "ConsoleApp"
---            language "C++"
---            location("tests/" .. t)
---            dependson { "AhnalyticBase" }
---    end
---end
+		targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
+		objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+		
+		dependson { "AhnalyticScannerServer", "AhnalyticUpdateServer" }
+		
+		filter "system:linux or system:macosx"
+			prebuildcommands {
+				("")
+			}
+		
+		filter "system:windows"
+			prebuildcommands {
+				("if not exist \"%{wks.location}bin\" ( packbuild.cmd %{wks.location}\\bin %{wks.location}\\out\\bin\\%{cfg.platform}\\%{cfg.buildcfg} )")
+			}
+		
+	-- tests, visual studio only
+	if _ACTION:match("vs") and os.target() == "windows" then
+		group "tests"
+		
+		local tests = { "CompressionTest", "DatabaseTest", "ImportTest", "SearchTest" }
+		for _, t in ipairs(tests) do
+			externalproject(t)
+				kind "ConsoleApp"
+				language "C++"
+				location("tests/" .. t)
+				dependson { "AhnalyticBase" }
+		end
+	end
+end
 
 filter {} 
