@@ -22,13 +22,17 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential wget unzip pkg-config libxml2-dev liblzma-dev zlib1g-dev
+          sudo apt install -y build-essential wget unzip pkg-config \
+            libxml2-dev liblzma-dev zlib1g-dev libbz2-dev libssl-dev
 
-      - name: Make Linux Premake executable
+      - name: Make Premake executable
         run: chmod +x tools/premake/premake5
 
       - name: Generate Makefiles with Premake
         run: ./tools/premake/premake5 gmake2
+
+      - name: Show make targets (debug)
+        run: make help
 
       - name: Build Linux binary
         run: make config=release_x64
