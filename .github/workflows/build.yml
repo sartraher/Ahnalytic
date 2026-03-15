@@ -27,7 +27,7 @@ jobs:
         run: make config=linux-release
 
       - name: Upload Linux binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-binary
           path: out/bin/x64/Release/*
@@ -50,7 +50,7 @@ jobs:
         run: msbuild Ahnalytic.sln /p:Configuration=Release /p:Platform=x64
 
       - name: Upload Windows binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-binary
           path: out/bin/x64/Release/*
