@@ -1,6 +1,5 @@
 name: Build Linux & Windows
 
-# Force Node.js 24 for all JS-based actions (future-proof)
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -22,9 +21,15 @@ jobs:
       - name: Install build dependencies & Premake
         run: |
           sudo apt update
-          sudo apt install -y build-essential wget unzip
-          wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha17/premake-5.0.0-alpha17-linux.tar.gz
-          tar -xzf premake-5.0.0-alpha17-linux.tar.gz
+          sudo apt install -y build-essential wget jq unzip
+
+          PKG=$(curl -s https://api.github.com/repos/premake/premake-core/releases/latest \
+            | jq -r '.assets[] | select(.name | test("linux")) | .browser_download_url' \
+            | head -n1)
+
+          echo "Downloading Premake from $PKG"
+          wget "$PKG"
+          tar -xzf *.tar.gz
           sudo mv premake5 /usr/local/bin/
           premake5 --version
 
