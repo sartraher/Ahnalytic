@@ -1,6 +1,5 @@
 name: Build Linux & Windows
 
-# Force Node.js 24 for all JS-based actions (future-proof)
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BUILD_NUMBER: ${{ github.run_number }}
@@ -42,21 +41,23 @@ jobs:
       - name: Prepare env folder
         run: |
           mkdir -p env/bin
+          rm -rf env/bin/*
           cp out/bin/x64/Release/* env/bin/
 
       - name: Remove placeholder .stub files
         run: |
           find env -name "*.stub" -type f -delete
 
-      - name: Package env folder
+      - name: Create Linux package
         run: |
-          tar -czf ahnalytic_nightly_${{ env.BUILD_NUMBER }}.tar.gz -C env .
+          tar -czf ahnalytic_nightly_linux_${{ env.BUILD_NUMBER }}.tar.gz -C env .
 
       - name: Upload Linux package
         uses: actions/upload-artifact@v4
         with:
-          name: linux-package
-          path: ahnalytic_nightly_${{ env.BUILD_NUMBER }}.tar.gz
+          name: ahnalytic-linux
+          path: ahnalytic_nightly_linux_${{ env.BUILD_NUMBER }}.tar.gz
+
 
   build-windows:
     name: Windows Build
@@ -79,21 +80,32 @@ jobs:
 
       - name: Prepare env folder
         run: |
-          if (!(Test-Path "env/bin")) {
-            New-Item -ItemType Directory -Path "env/bin" | Out-Null
-          }
-          Copy-Item -Path "out/bin/x64/Release/*" -Destination "env/bin/" -Recurse -Force
+          powershell -Command "
+            if (!(Test-Path 'env/bin')) {
+              New-Item -ItemType Directory -Path 'env/bin' | Out-Null
+            }
+            Remove-Item 'env/bin/*' -Recurse -Force -ErrorAction SilentlyContinue
+            Copy-Item -Path 'out/bin/x64/Release/*' -Destination 'env/bin/' -Recurse -Force
+          "
 
       - name: Remove placeholder .stub files
         run: |
-          powershell -Command "Get-ChildItem -Path env -Recurse -Filter '*.stub' | Remove-Item -Force"
+          powershell -Command "
+            Get-ChildItem -Path env -Recurse -Filter '*.stub' | Remove-Item -Force
+          "
 
-      - name: Package env folder
+      - name: Create Windows package
         run: |
-          powershell Compress-Archive -Path env\* -DestinationPath ahnalytic_nightly_${{ env.BUILD_NUMBER }}.zip
+          powershell -Command "
+            Add-Type -AssemblyName 'System.IO.Compression.FileSystem';
+            [System.IO.Compression.ZipFile]::CreateFromDirectory(
+              'env',
+              'ahnalytic_nightly_windows_${{ env.BUILD_NUMBER }}.zip'
+            )
+          "
 
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: windows-package
-          path: ahnalytic_nightly_${{ env.BUILD_NUMBER }}.zip
+          name: ahnalytic-windows
+          path: ahnalytic_nightly_windows_${{ env.BUILD_NUMBER }}.zip
