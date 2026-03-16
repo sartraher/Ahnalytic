@@ -488,16 +488,22 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPa
   std::unordered_map<std::string, std::vector<ScanTreeData>> ret;
 
   std::vector<std::filesystem::path> scanPathes;
-  // std::vector<std::filesystem::path> ignorePathes;
   scanPathes.push_back(path);
 
-  // for (auto& filePath : std::filesystem::recursive_directory_iterator(path))
+  BS::thread_pool pool;
+
+  struct ResData
+  {
+    std::string path;
+    uint32_t resSize = 0;
+    std::string sourceType;
+    SourceStructureTree* tree = nullptr;
+  };
+  std::list<std::future<ResData>> tasks;
 
   for (int index = 0; index < scanPathes.size(); index++)
   {
     std::filesystem::path curPath = scanPathes.at(index);
-    // if (std::find(ignorePathes.begin(), ignorePathes.end(), curPath) != ignorePathes.end())
-    // continue;
 
     bool ignore = false;
     for (auto& filePath : std::filesystem::directory_iterator(curPath))
@@ -536,13 +542,33 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPa
           continue;
         }
 
+        std::future<ResData> resultFuture = pool.submit_task([filePath, this]()
+        {
+          ResData ret;
+          ret.path = filePath.path().string();
+          ret.tree = scan(filePath, ret.resSize, ret.sourceType);
+          return ret;
+        });
+
+        tasks.push_back(std::move(resultFuture));
+
+        /*
         uint32_t resSize;
         std::string sourceType;
         SourceStructureTree* tree = scan(filePath, resSize, sourceType);
         if (tree != nullptr)
           ret[sourceType].push_back({filePath, tree, resSize});
+          */
       }
     }
+  }
+
+  for (std::future<ResData>& task : tasks)
+  {
+    ResData result = task.get();
+
+    if (result.tree != nullptr)
+      ret[result.sourceType].push_back({result.path, result.tree, result.resSize});
   }
 
   return ret;
