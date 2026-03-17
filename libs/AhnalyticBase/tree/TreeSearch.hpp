@@ -79,10 +79,10 @@ struct SearchNodes
 
 struct SearchNodeData
 {
-  std::vector<uint32_t> nodeData;
+  ahn::vector<uint32_t> nodeData;
   // std::vector<uint32_t> lineNrs;
 
-  ankerl::unordered_dense::map<uint32_t, ankerl::unordered_dense::map<size_t, std::vector<uint32_t>>> searchData;
+  ankerl::unordered_dense::map<uint32_t, ankerl::unordered_dense::map<size_t, ahn::vector<uint32_t>>> searchData;
 
   ankerl::unordered_dense::map<std::filesystem::path, size_t> pathLookup;
   ankerl::unordered_dense::map<size_t, std::filesystem::path> pathLookupReverse;

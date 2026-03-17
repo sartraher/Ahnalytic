@@ -23,7 +23,8 @@ project "AhnalyticScannerServer"
     includedirs {
         "../../libs",
         "../../3rdParty/SrvLib",
-        "../../3rdParty"
+        "../../3rdParty",		
+		"../../3rdParty/mimalloc/include"
     }
 	
 	libdirs {

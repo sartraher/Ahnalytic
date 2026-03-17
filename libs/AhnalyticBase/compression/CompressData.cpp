@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-CompressData::CompressData(const std::vector<uint32_t>& inData, bool withHeader)
+CompressData::CompressData(const ahn::vector<uint32_t>& inData, bool withHeader)
 {
   if (withHeader)
   {
@@ -20,7 +20,7 @@ CompressData::CompressData(const std::vector<uint32_t>& inData, bool withHeader)
   }
 }
 
-CompressData::CompressData(const std::vector<char>& inData, bool withHeader)
+CompressData::CompressData(const ahn::vector<char>& inData, bool withHeader)
 {
   if (withHeader)
   {
@@ -51,9 +51,9 @@ size_t CompressData::getUint32Size() const
   return data.size();
 }
 
-std::vector<uint32_t> CompressData::getUint32Data(CompressDataHeaderMode headerMode) const
+ahn::vector<uint32_t> CompressData::getUint32Data(CompressDataHeaderMode headerMode) const
 {
-  std::vector<uint32_t> ret;
+  ahn::vector<uint32_t> ret;
 
   if (headerMode == Off || (headerMode == Auto && headers.algo == CompressionAlgosE::None))
   {
@@ -70,9 +70,9 @@ std::vector<uint32_t> CompressData::getUint32Data(CompressDataHeaderMode headerM
   return ret;
 }
 
-std::vector<char> CompressData::getCharData(CompressDataHeaderMode headerMode) const
+ahn::vector<char> CompressData::getCharData(CompressDataHeaderMode headerMode) const
 {
-  std::vector<char> ret;
+  ahn::vector<char> ret;
 
   if (headerMode == Off || (headerMode == Auto && headers.algo == CompressionAlgosE::None))
   {

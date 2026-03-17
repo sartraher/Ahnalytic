@@ -7,7 +7,7 @@
 
 #include <cstring> 
 
-void compress_memory(const std::vector<char>& input, std::vector<char>& out_data)
+void compress_memory(const ahn::vector<char>& input, ahn::vector<char>& out_data)
 {
   const size_t propsSize = LZMA_PROPS_SIZE;
   std::vector<unsigned char> props(propsSize);
@@ -34,7 +34,7 @@ void compress_memory(const std::vector<char>& input, std::vector<char>& out_data
   }
 
   // Combine props + compressed data
-  std::vector<char> result;
+  ahn::vector<char> result;
   result.reserve(propsSize + destLen);
 
   result.insert(result.end(), props.begin(), props.end());
@@ -43,7 +43,7 @@ void compress_memory(const std::vector<char>& input, std::vector<char>& out_data
   std::swap(result, out_data);
 }
 
-void decompress_lzma(const std::vector<char>& in_data, std::vector<char>& out_data, size_t originalSize)
+void decompress_lzma(const ahn::vector<char>& in_data, ahn::vector<char>& out_data, size_t originalSize)
 {
   if (in_data.size() < LZMA_PROPS_SIZE)
   {
@@ -69,14 +69,14 @@ LZMACompressor::LZMACompressor()
 
 CompressData LZMACompressor::compress(const CompressData& data)
 {
-  std::vector<char> compressed;
+  ahn::vector<char> compressed;
   compress_memory(data.getCharData(CompressData::Auto), compressed);
   return compressed;
 }
 
 CompressData LZMACompressor::decompress(const CompressData& data)
 {
-  std::vector<char> ret;
+  ahn::vector<char> ret;
   decompress_lzma(data.getCharData(CompressData::Auto), ret, data.getHeader().originalSize);
   return ret;
 }

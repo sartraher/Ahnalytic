@@ -41,21 +41,21 @@ public:
     Auto = 3
   };
 
-  CompressData(const std::vector<uint32_t>& inData, bool withHeader = false);
-  CompressData(const std::vector<char>& inData, bool withHeader = false);
+  CompressData(const ahn::vector<uint32_t>& inData, bool withHeader = false);
+  CompressData(const ahn::vector<char>& inData, bool withHeader = false);
 
   size_t getCharSize() const;
   size_t getUint32Size() const;
 
-  std::vector<uint32_t> getUint32Data(CompressDataHeaderMode headerMode) const;
-  std::vector<char> getCharData(CompressDataHeaderMode headerMode) const;
+  ahn::vector<uint32_t> getUint32Data(CompressDataHeaderMode headerMode) const;
+  ahn::vector<char> getCharData(CompressDataHeaderMode headerMode) const;
 
   const CompressDataHeader& getHeader() const;
   void setHeader(const CompressDataHeader& header);
 
 private:
 protected:
-  std::vector<uint32_t> data;
+  ahn::vector<uint32_t> data;
   size_t charSize;
 
   CompressDataHeader headers;

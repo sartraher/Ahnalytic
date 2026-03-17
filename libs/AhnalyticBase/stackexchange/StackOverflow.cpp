@@ -57,11 +57,11 @@ void StackOverflowHandler::importData(const std::string& stackDb, const std::str
     for (const TreeData& data : dataCollector[sourceType])
       root->children.push_back(data.tree);
 
-    std::vector<FlatNodeDeDupData> deduped;
-    std::vector<uint32_t> indexList;
+    ahn::vector<FlatNodeDeDupData> deduped;
+    ahn::vector<uint32_t> indexList;
     reduceTree(root, deduped, indexList);
 
-    std::vector<char> result;
+    ahn::vector<char> result;
     SourceStructureTree::serialize(deduped, indexList, result, nullptr);
 
     /*

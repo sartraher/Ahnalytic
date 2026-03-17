@@ -160,11 +160,11 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
       names.push_back(data.path.string());
     }
 
-    std::vector<FlatNodeDeDupData> deduped;
-    std::vector<uint32_t> indexList;
+    ahn::vector<FlatNodeDeDupData> deduped;
+    ahn::vector<uint32_t> indexList;
     reduceTree(root, deduped, indexList);
 
-    std::vector<char> result;
+    ahn::vector<char> result;
     SourceStructureTree::serialize(deduped, indexList, result, nullptr);
 
     // TEST
@@ -180,8 +180,8 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
     uint32_t dataId = db->createSourceTreeData(result);
     std::unordered_map<std::string, uint32_t> pathIds = db->insertNames(names);
 
-    std::vector<uint32_t> vecPathId;
-    std::vector<uint32_t> indices;
+    ahn::vector<uint32_t> vecPathId;
+    ahn::vector<uint32_t> indices;
     vecPathId.reserve(datas[type].size());
     int index = 0;
     for (const ScanTreeData& data : datas[type])

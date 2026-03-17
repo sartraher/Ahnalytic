@@ -10,7 +10,7 @@
 #include <set>
 #include <unordered_map>
 
-void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeList, const std::vector<uint32_t>& indexList, std::vector<char>& data,
+void SourceStructureTree::serialize(const ahn::vector<FlatNodeDeDupData>& nodeList, const ahn::vector<uint32_t>& indexList, ahn::vector<char>& data,
                                     Diagnostic* dia)
 {
   auto labeledDia = [dia](const std::string& label)
@@ -20,9 +20,9 @@ void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeLi
     return dia;
   };
 
-  std::vector<uint32_t> symbolList(nodeList.size());
-  std::vector<uint32_t> fieldList(nodeList.size());
-  std::vector<uint32_t> amountList(nodeList.size());
+  ahn::vector<uint32_t> symbolList(nodeList.size());
+  ahn::vector<uint32_t> fieldList(nodeList.size());
+  ahn::vector<uint32_t> amountList(nodeList.size());
 
   for (uint32_t index = 0; index < nodeList.size(); index++)
   {
@@ -45,14 +45,14 @@ void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeLi
                                                                   std::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
 
   // Build final buffer with sizes prepended
-  std::vector<uint32_t> ret;
+  ahn::vector<uint32_t> ret;
   ret.reserve(4 + compressedIndexList.getUint32Size() + symbolListCompressed.getUint32Size() + fieldListCompressed.getUint32Size() +
               amountListCompressed.getUint32Size());
 
-  std::vector<uint32_t> compressedIndexListData = compressedIndexList.getUint32Data(CompressData::On);
-  std::vector<uint32_t> symbolListCompressedData = symbolListCompressed.getUint32Data(CompressData::On);
-  std::vector<uint32_t> fieldListCompressedData = fieldListCompressed.getUint32Data(CompressData::On);
-  std::vector<uint32_t> amountListCompressedData = amountListCompressed.getUint32Data(CompressData::On);
+  ahn::vector<uint32_t> compressedIndexListData = compressedIndexList.getUint32Data(CompressData::On);
+  ahn::vector<uint32_t> symbolListCompressedData = symbolListCompressed.getUint32Data(CompressData::On);
+  ahn::vector<uint32_t> fieldListCompressedData = fieldListCompressed.getUint32Data(CompressData::On);
+  ahn::vector<uint32_t> amountListCompressedData = amountListCompressed.getUint32Data(CompressData::On);
 
   ret.push_back(static_cast<uint32_t>(compressedIndexListData.size()));
   ret.push_back(static_cast<uint32_t>(symbolListCompressedData.size()));
@@ -72,7 +72,7 @@ void SourceStructureTree::serialize(const std::vector<FlatNodeDeDupData>& nodeLi
   data = result.getCharData(CompressData::Off);
 }
 
-void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector<FlatNodeDeDupData>& nodeList, std::vector<uint32_t>& indexList,
+void SourceStructureTree::deserialize(const ahn::vector<char>& data, ahn::vector<FlatNodeDeDupData>& nodeList, ahn::vector<uint32_t>& indexList,
                                       Diagnostic* dia)
 {
   auto labeledDia = [dia](const std::string& label)
@@ -87,7 +87,7 @@ void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector
   // Step 1: decompress entire payload
   // CompressData decompressed = compressionManager.decompress(CompressData(data, true), labeledDia("Result"));
   CompressData inData(data, false);
-  std::vector<uint32_t> decompressedData = inData.getUint32Data(CompressData::Off);
+  ahn::vector<uint32_t> decompressedData = inData.getUint32Data(CompressData::Off);
 
   const uint32_t* raw = reinterpret_cast<const uint32_t*>(decompressedData.data());
   size_t totalUInts = decompressedData.size() / sizeof(uint32_t);
@@ -98,22 +98,22 @@ void SourceStructureTree::deserialize(const std::vector<char>& data, std::vector
   uint32_t amountSize = raw[3];
 
   const uint32_t* p = raw + 4;
-  std::vector<uint32_t> compressedIndexList(p, p + indexSize);
+  ahn::vector<uint32_t> compressedIndexList(p, p + indexSize);
   p += indexSize;
-  std::vector<uint32_t> symbolListCompressed(p, p + symbolSize);
+  ahn::vector<uint32_t> symbolListCompressed(p, p + symbolSize);
   p += symbolSize;
-  std::vector<uint32_t> fieldListCompressed(p, p + fieldSize);
+  ahn::vector<uint32_t> fieldListCompressed(p, p + fieldSize);
   p += fieldSize;
-  std::vector<uint32_t> amountListCompressed(p, p + amountSize);
+  ahn::vector<uint32_t> amountListCompressed(p, p + amountSize);
   p += amountSize;
 
   // Step 2: decompress each list
   indexList = compressionManager.decompress(CompressData(compressedIndexList, true), labeledDia("Index")).getUint32Data(CompressData::Off);
-  std::vector<uint32_t> symbolList =
+  ahn::vector<uint32_t> symbolList =
       compressionManager.decompress(CompressData(symbolListCompressed, true), labeledDia("Symbols")).getUint32Data(CompressData::Off);
-  std::vector<uint32_t> fieldList =
+  ahn::vector<uint32_t> fieldList =
       compressionManager.decompress(CompressData(fieldListCompressed, true), labeledDia("Fields")).getUint32Data(CompressData::Off);
-  std::vector<uint32_t> amountList =
+  ahn::vector<uint32_t> amountList =
       compressionManager.decompress(CompressData(amountListCompressed, true), labeledDia("Amount")).getUint32Data(CompressData::Off);
 
   nodeList.resize(symbolList.size());

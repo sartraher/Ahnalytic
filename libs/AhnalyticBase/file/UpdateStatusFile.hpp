@@ -1,6 +1,8 @@
 #ifndef UPDATESTATUSFILE_HPP__
 #define UPDATESTATUSFILE_HPP__
 
+#include "AhnalyticBase/Export.hpp"
+
 #include <filesystem>
 
 #include <nlohmann/json.hpp>

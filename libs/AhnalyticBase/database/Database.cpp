@@ -27,7 +27,7 @@ Database::~Database()
 {
 }
 
-uint32_t Database::createSourceTreeData(const std::vector<char>& data)
+uint32_t Database::createSourceTreeData(const ahn::vector<char>& data)
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
@@ -38,7 +38,7 @@ uint32_t Database::createSourceTreeData(const std::vector<char>& data)
   return *rs.begin();
 }
 
-uint32_t Database::createSourceTreeData(uint32_t dataId, const std::vector<char>& data)
+uint32_t Database::createSourceTreeData(uint32_t dataId, const ahn::vector<char>& data)
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
@@ -55,7 +55,7 @@ uint32_t Database::createSourceTreeData(uint32_t dataId, const std::vector<char>
   return dataId;
 }
 
-void Database::getSourceTreeData(uint32_t id, std::vector<char>& data)
+void Database::getSourceTreeData(uint32_t id, ahn::vector<char>& data)
 {
   soci::blob dataBlob(*sql);
 

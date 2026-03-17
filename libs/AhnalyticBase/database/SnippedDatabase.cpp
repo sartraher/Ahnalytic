@@ -121,12 +121,12 @@ void SnippedDatabase::iterateSnippeds(std::function<void(uint32_t, const std::st
     {
       delete root;
       root = nullptr;
-      std::vector<char> sourceTreeData;
+      ahn::vector<char> sourceTreeData;
       lastSourceTreeId = sourceTreeDataID;
       getSourceTreeData(sourceTreeDataID, sourceTreeData);
 
-      std::vector<FlatNodeDeDupData> nodeListTestOut;
-      std::vector<uint32_t> indexListTestOut;
+      ahn::vector<FlatNodeDeDupData> nodeListTestOut;
+      ahn::vector<uint32_t> indexListTestOut;
       SourceStructureTree::deserialize(sourceTreeData, nodeListTestOut, indexListTestOut, nullptr);
       root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
     }

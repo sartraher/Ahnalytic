@@ -48,12 +48,12 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
 
   //searchData.nodeData.reserve(searchData.nodeData.size() + nodeCount);
 
-  std::vector<const Tree<SourceStructureData>*> nodeVec;
+  ahn::vector<const Tree<SourceStructureData>*> nodeVec;
   nodeVec.reserve(nodeCount);
 
   tree->getNodes(nodeVec);
 
-  std::vector<uint32_t> nodeId;
+  ahn::vector<uint32_t> nodeId;
   nodeId.reserve(nodeVec.size());
   for (int index = 0; index < nodeVec.size(); index++)
     nodeId.push_back(nodeVec[index]->data.id.cmpData);
@@ -115,7 +115,7 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
 
   constexpr uint32_t base = 0x9E3779B1u;
 
-  static thread_local std::vector<uint32_t> powB;
+  static thread_local ahn::vector<uint32_t> powB;
   if (powB.size() < windowSize + 1)
   {
     powB.resize(windowSize + 1);
@@ -146,18 +146,18 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
 
 void TreeSearch::collectHashData(ankerl::unordered_dense::set<uint32_t>& hashes, SourceStructureTree* tree, uint32_t windowSize)
 {
-  std::vector<uint32_t> nodeData;
+  ahn::vector<uint32_t> nodeData;
 
   size_t nodeCount = 0;
   nodeCount = tree->getNodeCount();
 
-  std::vector<const Tree<SourceStructureData>*> nodeVec;
+  ahn::vector<const Tree<SourceStructureData>*> nodeVec;
   nodeVec.reserve(nodeCount);
   nodeData.reserve(nodeCount);
 
   tree->getNodes(nodeVec);
 
-  std::vector<uint32_t> nodeId;
+  ahn::vector<uint32_t> nodeId;
   nodeId.reserve(nodeVec.size());
   for (int index = 0; index < nodeVec.size(); index++)
     nodeId.push_back(nodeVec[index]->data.id.cmpData);
@@ -219,7 +219,7 @@ void TreeSearch::collectHashData(ankerl::unordered_dense::set<uint32_t>& hashes,
 
   constexpr uint32_t base = 0x9E3779B1u;
 
-  static thread_local std::vector<uint32_t> powB;
+  static thread_local ahn::vector<uint32_t> powB;
   if (powB.size() < windowSize + 1)
   {
     powB.resize(windowSize + 1);
@@ -256,15 +256,15 @@ std::set<std::filesystem::path> TreeSearch::searchRawHash(const SearchNodeData& 
   size_t nodeCount = 0;
   nodeCount = tree->getNodeCount();
 
-  std::vector<uint32_t> nodeData;
+  ahn::vector<uint32_t> nodeData;
   nodeData.reserve(nodeCount);
 
-  std::vector<const Tree<SourceStructureData>*> nodeVec;
+  ahn::vector<const Tree<SourceStructureData>*> nodeVec;
   nodeVec.reserve(nodeCount);
 
   tree->getNodes(nodeVec);
 
-  std::vector<uint32_t> nodeId;
+  ahn::vector<uint32_t> nodeId;
   nodeId.reserve(nodeVec.size());
   for (int index = 0; index < nodeVec.size(); index++)
     nodeId.push_back(nodeVec[index]->data.id.cmpData);
@@ -327,7 +327,7 @@ std::set<std::filesystem::path> TreeSearch::searchRawHash(const SearchNodeData& 
   // Tuned odd constant with good avalanche under mod 2^32
   constexpr uint32_t base = 0x9E3779B1u; // 2^32 / golden ratio
 
-  static thread_local std::vector<uint32_t> powB;
+  static thread_local ahn::vector<uint32_t> powB;
   if (powB.size() < windowSize + 1)
   {
     powB.resize(windowSize + 1);
@@ -386,12 +386,12 @@ SearchNodes TreeSearch::initNodesDeep(SourceStructureTreeDeep* tree, uint32_t wi
   ret.lineNrs.reserve(nodecount);
   ret.nodeData.reserve(nodecount);
 
-  std::vector<const Tree<SourceStructureDeepData>*> nodeVec;
+  ahn::vector<const Tree<SourceStructureDeepData>*> nodeVec;
   nodeVec.reserve(nodecount);
 
   tree->getNodes(nodeVec);
 
-  std::vector<uint32_t> nodeId;
+  ahn::vector<uint32_t> nodeId;
   nodeId.reserve(nodeVec.size());
   for (int index = 0; index < nodeVec.size(); index++)
     nodeId.push_back(nodeVec[index]->data.id.cmpData);
@@ -409,7 +409,7 @@ SearchNodes TreeSearch::initNodesDeep(SourceStructureTreeDeep* tree, uint32_t wi
   {
     constexpr uint32_t base = 0x9E3779B1u;
 
-    static thread_local std::vector<uint32_t> powB;
+    static thread_local ahn::vector<uint32_t> powB;
     if (powB.size() < windowSize + 1)
     {
       powB.resize(windowSize + 1);
@@ -569,7 +569,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       std::ifstream file(indexPath, std::ios::binary | std::ios::ate);
       std::streamsize size = file.tellg();
       file.seekg(0, std::ios::beg);
-      std::vector<uint32_t> data(size / sizeof(uint32_t));
+      ahn::vector<uint32_t> data(size / sizeof(uint32_t));
 
       if (file.read(reinterpret_cast<char*>(data.data()), size))
       {

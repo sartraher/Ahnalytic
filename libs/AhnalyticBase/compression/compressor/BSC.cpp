@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-void compress_bsc(const std::vector<char>& input, std::vector<char>& out_data)
+void compress_bsc(const ahn::vector<char>& input, ahn::vector<char>& out_data)
 {
   if (input.empty())
   {
@@ -39,7 +39,7 @@ void compress_bsc(const std::vector<char>& input, std::vector<char>& out_data)
   // std::memcpy(out_data.data() + sizeof(uint32_t), tempOut.data(), compressedSize);
 }
 
-void decompress_bsc(const std::vector<char>& in_data, std::vector<char>& out_data, uint32_t originalSize)
+void decompress_bsc(const ahn::vector<char>& in_data, ahn::vector<char>& out_data, uint32_t originalSize)
 {
   if (in_data.size() < sizeof(uint32_t))
   {
@@ -73,14 +73,14 @@ BscCompressor::BscCompressor()
 
 CompressData BscCompressor::compress(const CompressData& data)
 {
-  std::vector<char> ret;
+  ahn::vector<char> ret;
   compress_bsc(data.getCharData(CompressData::Auto), ret);
   return ret;
 }
 
 CompressData BscCompressor::decompress(const CompressData& data)
 {
-  std::vector<char> ret;
+  ahn::vector<char> ret;
   decompress_bsc(data.getCharData(CompressData::Auto), ret, data.getHeader().originalSize);
   return ret;
 }

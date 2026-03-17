@@ -38,7 +38,8 @@ project "AhnalyticBase"
 		"../../3rdParty/openssl-3.5.4",
         "../../3rdParty/openssl-3.5.4/include",
         "../../3rdParty/libarchive/libarchive",
-		"../../3rdParty/magic_enum/include"
+		"../../3rdParty/magic_enum/include",
+		"../../3rdParty/mimalloc/include"
     }
 	
 	defines {

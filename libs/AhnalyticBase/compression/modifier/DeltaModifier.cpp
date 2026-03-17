@@ -6,8 +6,8 @@ DeltaModifier::DeltaModifier()
 
 CompressData DeltaModifier::modify(const CompressData& data)
 {
-  std::vector<char> inData = data.getCharData(CompressData::Auto);
-  std::vector<char> ret = data.getCharData(CompressData::Auto);
+  ahn::vector<char> inData = data.getCharData(CompressData::Auto);
+  ahn::vector<char> ret = data.getCharData(CompressData::Auto);
   ret[0] = inData[0];
   for (size_t index = 1; index < inData.size(); index++)
     ret[index] = inData[index] - inData[index - 1];
@@ -16,8 +16,8 @@ CompressData DeltaModifier::modify(const CompressData& data)
 
 CompressData DeltaModifier::unmodify(const CompressData& data)
 {
-  std::vector<char> inData = data.getCharData(CompressData::Auto);
-  std::vector<char> ret = data.getCharData(CompressData::Auto);
+  ahn::vector<char> inData = data.getCharData(CompressData::Auto);
+  ahn::vector<char> ret = data.getCharData(CompressData::Auto);
   ret[0] = inData[0];
   for (size_t index = 1; index < inData.size(); index++)
     ret[index] = inData[index] + ret[index - 1];

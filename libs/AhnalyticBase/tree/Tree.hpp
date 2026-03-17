@@ -16,7 +16,7 @@ template <typename T>
 struct DLLEXPORT Tree
 {
   T data;
-  std::vector<Tree<T>*> children;
+  ahn::vector<Tree<T>*> children;
   Tree<T>* parent = nullptr;
 
   // mutable uint32_t complexity = 0;
@@ -83,7 +83,7 @@ struct DLLEXPORT Tree
     return ret;
   }
 
-  void getNodes(std::vector<const Tree<T>*>& nodes) const
+  void getNodes(ahn::vector<const Tree<T>*>& nodes) const
   {
     nodes.push_back(this);
     for (const Tree<T>* child : children)
@@ -125,7 +125,7 @@ struct DLLEXPORT FlatNode
 {
   T data;
 
-  std::vector<uint32_t> nodeIndex;
+  ahn::vector<uint32_t> nodeIndex;
 
   bool operator==(const FlatNode& other) const
   {
@@ -187,9 +187,9 @@ struct DLLEXPORT std::hash<CompareContainer<T>>
 };
 
 template <typename T>
-void reduceTree(Tree<T>* root, std::vector<FlatNodeDeDup<T>>& dedupedNodes, std::vector<uint32_t>& indexList)
+void reduceTree(Tree<T>* root, ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, ahn::vector<uint32_t>& indexList)
 {
-  std::vector<FlatNode<T>*> flatList;
+  ahn::vector<FlatNode<T>*> flatList;
   // std::vector<Tree<T>*> cmpList;
 
   std::function<uint32_t(Tree<T>*)> dedupTree = nullptr;
@@ -240,9 +240,9 @@ void reduceTree(Tree<T>* root, std::vector<FlatNodeDeDup<T>>& dedupedNodes, std:
 }
 
 template <typename T>
-Tree<T>* rebuildTree(const std::vector<FlatNodeDeDup<T>>& dedupedNodes, const std::vector<uint32_t>& indexList)
+Tree<T>* rebuildTree(const ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, const ahn::vector<uint32_t>& indexList)
 {
-  std::vector<FlatNode<T>*> flatList;
+  ahn::vector<FlatNode<T>*> flatList;
   flatList.resize(dedupedNodes.size());
 
   int cursor = 0;
@@ -289,7 +289,7 @@ Tree<T>* rebuildTree(const std::vector<FlatNodeDeDup<T>>& dedupedNodes, const st
 }
 
 template <typename T>
-void flattenTree(Tree<T>* root, std::vector<FlatNode<T>>& flatVec, std::unordered_map<Tree<T>*, uint32_t>& nodeToIndex)
+void flattenTree(Tree<T>* root, ahn::vector<FlatNode<T>>& flatVec, std::unordered_map<Tree<T>*, uint32_t>& nodeToIndex)
 {
   if (!root)
     return;
@@ -306,21 +306,21 @@ void flattenTree(Tree<T>* root, std::vector<FlatNode<T>>& flatVec, std::unordere
 }
 
 template <typename T>
-std::vector<FlatNode<T>> treeToFlat(Tree<T>* root)
+ahn::vector<FlatNode<T>> treeToFlat(Tree<T>* root)
 {
-  std::vector<FlatNode<T>> flatVec;
+  ahn::vector<FlatNode<T>> flatVec;
   std::unordered_map<Tree<T>*, uint32_t> nodeToIndex;
   flattenTree(root, flatVec, nodeToIndex);
   return flatVec;
 }
 
 template <typename T>
-void flattenAndDedupFlatNodes(const std::vector<FlatNode<T>>& flatNodes, std::vector<FlatNodeDeDup<T>>& dedupedNodes, std::vector<uint32_t>& indexList)
+void flattenAndDedupFlatNodes(const ahn::vector<FlatNode<T>>& flatNodes, ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, ahn::vector<uint32_t>& indexList)
 {
   dedupedNodes.clear();
   indexList.clear();
   std::unordered_map<FlatNode<T>, uint32_t> dedupMap;
-  std::vector<uint32_t> nodeToDedupedIndex(flatNodes.size());
+  ahn::vector<uint32_t> nodeToDedupedIndex(flatNodes.size());
 
   // Deduplicate and assign deduped indices
   for (size_t i = 0; i < flatNodes.size(); ++i)
@@ -372,13 +372,13 @@ void flattenAndDedupFlatNodes(const std::vector<FlatNode<T>>& flatNodes, std::ve
 
 template <typename T>
 
-std::vector<FlatNode<T>> reconstructFlatNodesFromDedup(const std::vector<FlatNodeDeDup<T>>& dedupedNodes, const std::vector<uint32_t>& indexList,
+ahn::vector<FlatNode<T>> reconstructFlatNodesFromDedup(const ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, const ahn::vector<uint32_t>& indexList,
                                                        size_t originalNodeCount)
 {
   if (indexList.size() < originalNodeCount)
     throw std::runtime_error("Index list too short");
 
-  std::vector<FlatNode<T>> flatNodes(originalNodeCount);
+  ahn::vector<FlatNode<T>> flatNodes(originalNodeCount);
 
   // The first originalNodeCount entries are deduped node indices
   // The rest are concatenated children indices

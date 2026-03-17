@@ -92,9 +92,9 @@ struct DLLEXPORT SourceStructureTree : public Tree<SourceStructureData>
   {
   }
 
-  static void serialize(const std::vector<FlatNodeDeDupData>& nodeList, const std::vector<uint32_t>& indexList, std::vector<char>& data,
+  static void serialize(const ahn::vector<FlatNodeDeDupData>& nodeList, const ahn::vector<uint32_t>& indexList, ahn::vector<char>& data,
                         Diagnostic* dia = nullptr);
-  static void deserialize(const std::vector<char>& data, std::vector<FlatNodeDeDupData>& nodeList, std::vector<uint32_t>& indexList, Diagnostic* dia);
+  static void deserialize(const ahn::vector<char>& data, ahn::vector<FlatNodeDeDupData>& nodeList, ahn::vector<uint32_t>& indexList, Diagnostic* dia);
 };
 
 struct DLLEXPORT SourceStructureTreeDeep : public Tree<SourceStructureDeepData>

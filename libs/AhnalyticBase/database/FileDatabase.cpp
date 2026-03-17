@@ -20,6 +20,18 @@
 #include <numeric>
 #include <set>
 
+template <typename T>
+std::vector<T> toStd(const ahn::vector<T>& v)
+{
+  return {v.begin(), v.end()};
+}
+
+template <typename T>
+std::vector<T> toStd(ahn::vector<T>&& v)
+{
+  return {std::make_move_iterator(v.begin()), std::make_move_iterator(v.end())};
+}
+
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -91,7 +103,7 @@ uint32_t FileDatabase::createFile(uint32_t dataId, uint32_t index, uint32_t path
   return *rs.begin();
 }
 
-void FileDatabase::createFiles(uint32_t dataId, std::vector<uint32_t> indices, std::vector<uint32_t> pathIds, uint32_t tagId)
+void FileDatabase::createFiles(uint32_t dataId, ahn::vector<uint32_t> indices, ahn::vector<uint32_t> pathIds, uint32_t tagId)
 {
   std::vector<uint32_t> dataIds(pathIds.size());
   std::vector<uint32_t> tagIds(pathIds.size());
@@ -101,23 +113,34 @@ void FileDatabase::createFiles(uint32_t dataId, std::vector<uint32_t> indices, s
 
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
+  std::vector<uint32_t> stdIndices = toStd(indices);
+  std::vector<uint32_t> stdPathIds = toStd(pathIds);
+
   sql->begin();
   soci::statement statement = (sql->prepare << "INSERT OR IGNORE INTO File (DataID,FileIndex,PathID,TagID) VALUES (:dataId,:fileIndex,:pathId,:tagId)",
-                               soci::use(dataIds, "dataId"), soci::use(indices, "fileIndex"), soci::use(pathIds, "pathId"), soci::use(tagIds, "tagId"));
+                               soci::use(dataIds, "dataId"), soci::use(stdIndices, "fileIndex"), soci::use(stdPathIds, "pathId"), soci::use(tagIds, "tagId"));
 
   statement.execute(true);
   sql->commit();
 }
 
-void FileDatabase::createFiles(std::vector<uint32_t> ids, std::vector<uint32_t> dataIds, std::vector<uint32_t> indices, std::vector<uint32_t> pathIds,
-                               std::vector<uint32_t> tagIds)
+void FileDatabase::createFiles(ahn::vector<uint32_t> ids, ahn::vector<uint32_t> dataIds, ahn::vector<uint32_t> indices, ahn::vector<uint32_t> pathIds,
+                               ahn::vector<uint32_t> tagIds)
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
+  
+  std::vector<uint32_t> stdIds = toStd(ids);
+  std::vector<uint32_t> stdDataIds = toStd(dataIds);
+  std::vector<uint32_t> stdIndices = toStd(indices);
+  std::vector<uint32_t> stdPathIds = toStd(pathIds);
+  std::vector<uint32_t> stdTagIds = toStd(tagIds);
+
   sql->begin();
   soci::statement statement =
-      (sql->prepare << "INSERT OR IGNORE INTO File (ID, DataID,FileIndex,PathID,TagID) VALUES (:id, :dataId,:fileIndex,:pathId,:tagId)", soci::use(ids, "id"),
-       soci::use(dataIds, "dataId"), soci::use(indices, "fileIndex"), soci::use(pathIds, "pathId"), soci::use(tagIds, "tagId"));
+      (sql->prepare << "INSERT OR IGNORE INTO File (ID, DataID,FileIndex,PathID,TagID) VALUES (:id, :dataId,:fileIndex,:pathId,:tagId)",
+                               soci::use(stdIds, "id"), soci::use(stdDataIds, "dataId"), soci::use(stdIndices, "fileIndex"), soci::use(stdPathIds, "pathId"),
+                               soci::use(stdTagIds, "tagId"));
 
   statement.execute(true);
   sql->commit();
@@ -177,12 +200,12 @@ void FileDatabase::iterateSourceTrees(std::function<void(SourceStructureTree*)> 
   {
     std::size_t size = dataBlob.get_len();
 
-    std::vector<char> sourceTreeData(size);
+    ahn::vector<char> sourceTreeData(size);
     size_t readAmount = dataBlob.read_from_start(sourceTreeData.data(), size);
     sourceTreeData.resize(readAmount);
 
-    std::vector<FlatNodeDeDupData> nodeListTestOut;
-    std::vector<uint32_t> indexListTestOut;
+    ahn::vector<FlatNodeDeDupData> nodeListTestOut;
+    ahn::vector<uint32_t> indexListTestOut;
     SourceStructureTree::deserialize(sourceTreeData, nodeListTestOut, indexListTestOut, nullptr);
     root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
 
@@ -216,12 +239,12 @@ void FileDatabase::iterateFiles(std::function<void(uint32_t, const std::string&,
     {
       delete root;
 
-      std::vector<char> sourceTreeData;
+      ahn::vector<char> sourceTreeData;
       lastSourceTreeId = sourceTreeDataID;
       getSourceTreeData(sourceTreeDataID, sourceTreeData);
 
-      std::vector<FlatNodeDeDupData> nodeListTestOut;
-      std::vector<uint32_t> indexListTestOut;
+      ahn::vector<FlatNodeDeDupData> nodeListTestOut;
+      ahn::vector<uint32_t> indexListTestOut;
       SourceStructureTree::deserialize(sourceTreeData, nodeListTestOut, indexListTestOut, nullptr);
       root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
     }
@@ -273,10 +296,10 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
 
     soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT ID, DataID, FileIndex, PathID FROM File WHERE TagID = :tagId", soci::use(tagData.first, "tagId"));
 
-    std::vector<uint32_t> fileIds;
-    std::vector<uint32_t> dataIds;
-    std::vector<uint32_t> fileIndices;
-    std::vector<uint32_t> pathIds;
+    ahn::vector<uint32_t> fileIds;
+    ahn::vector<uint32_t> dataIds;
+    ahn::vector<uint32_t> fileIndices;
+    ahn::vector<uint32_t> pathIds;
 
     for (const soci::row& r : rowSet)
     {
@@ -322,7 +345,7 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
 
     auto writeCompressedData = [&fileOut](const CompressData& data)
     {
-      std::vector<char> charData = data.getCharData(CompressData::On);
+      ahn::vector<char> charData = data.getCharData(CompressData::On);
 
       uint32_t value = static_cast<uint32_t>(charData.size());
       fileOut.write(reinterpret_cast<const char*>(&value), sizeof(value));
@@ -342,7 +365,7 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
     dataPath = dataPath.concat("/").concat("data.dat");
     std::ofstream dataOut(dataPath.native(), std::ios::binary);
 
-    auto writeData = [&dataOut](const uint32_t& dataId, const std::vector<char>& data)
+    auto writeData = [&dataOut](const uint32_t& dataId, const ahn::vector<char>& data)
     {
       dataOut.write(reinterpret_cast<const char*>(&dataId), sizeof(dataId));
 
@@ -353,7 +376,7 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
 
     for (const uint32_t& dataId : datas)
     {
-      std::vector<char> sourceTreeData;
+      ahn::vector<char> sourceTreeData;
       getSourceTreeData(dataId, sourceTreeData);
       writeData(dataId, sourceTreeData);
     }
@@ -407,14 +430,14 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
 
     Diagnostic diagonstic(joinedData.size());
 
-    std::vector<char> data(joinedData.begin(), joinedData.end());
+    ahn::vector<char> data(joinedData.begin(), joinedData.end());
     CompressData compressedFileIds = compressionManager.compress(data, &diagonstic, std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
                                                                  std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
 
     std::filesystem::path pathesPath = outPath;
     pathesPath = pathesPath.concat("/").concat("pathes.dat");
     std::ofstream pathOut(pathesPath.native(), std::ios::binary);
-    std::vector<char> charData = compressedFileIds.getCharData(CompressData::On);
+    ahn::vector<char> charData = compressedFileIds.getCharData(CompressData::On);
     pathOut.write(charData.data(), static_cast<std::streamsize>(charData.size()));
     pathOut.close();
   }
@@ -440,12 +463,12 @@ void FileDatabase::importPathesData(std::filesystem::path& pathesPath)
   std::ifstream file(pathesPath, std::ios::binary | std::ios::ate);
 
   std::streamsize size = file.tellg();
-  std::vector<char> buffer(static_cast<size_t>(size));
+  ahn::vector<char> buffer(static_cast<size_t>(size));
   file.seekg(0, std::ios::beg);
   file.read(buffer.data(), size);
 
   CompressData pathData = compressionManager.decompress(CompressData(buffer, true), nullptr);
-  std::vector<char> uncompressed = pathData.getCharData(CompressData::Auto);
+  ahn::vector<char> uncompressed = pathData.getCharData(CompressData::Auto);
   std::string dataString(uncompressed.begin(), uncompressed.end());
 
   std::vector<std::string> names;
@@ -491,7 +514,7 @@ void FileDatabase::importData(const std::string& tagName, const std::string& sha
     if (!fileIn)
       throw std::runtime_error("Failed to read block size");
 
-    std::vector<char> buffer(size);
+    ahn::vector<char> buffer(size);
 
     if (size > 0)
     {
@@ -513,14 +536,14 @@ void FileDatabase::importData(const std::string& tagName, const std::string& sha
   CompressData fileIndices = compressionManager.decompress(compressedFileIndices, nullptr);
   CompressData pathIds = compressionManager.decompress(compressedPathIds, nullptr);
 
-  std::vector<uint32_t> tagIds(pathIds.getUint32Size());
+  ahn::vector<uint32_t> tagIds(pathIds.getUint32Size());
   std::fill(tagIds.begin(), tagIds.end(), tagId);
 
   createFiles(fileIds.getUint32Data(CompressData::Auto), dataIds.getUint32Data(CompressData::Auto), fileIndices.getUint32Data(CompressData::Auto),
               pathIds.getUint32Data(CompressData::Auto), tagIds);
 
   // Data
-  auto readDataBlock = [](std::ifstream& in, uint32_t& dataId, std::vector<char>& outBuffer)
+  auto readDataBlock = [](std::ifstream& in, uint32_t& dataId, ahn::vector<char>& outBuffer)
   {
     uint32_t size = 0;
 
@@ -557,7 +580,7 @@ void FileDatabase::importData(const std::string& tagName, const std::string& sha
   if (!dataIn)
     throw std::runtime_error("Failed to open data.dat for reading");
 
-  std::vector<char> treeData;
+  ahn::vector<char> treeData;
 
   TreeSearch treeSearch;
   uint32_t dataId;
@@ -565,8 +588,8 @@ void FileDatabase::importData(const std::string& tagName, const std::string& sha
   {
     createSourceTreeData(dataId, treeData);
 
-    std::vector<FlatNodeDeDupData> nodeListTestOut;
-    std::vector<uint32_t> indexListTestOut;
+    ahn::vector<FlatNodeDeDupData> nodeListTestOut;
+    ahn::vector<uint32_t> indexListTestOut;
     SourceStructureTree::deserialize(treeData, nodeListTestOut, indexListTestOut, nullptr);
     SourceStructureTree* root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
 

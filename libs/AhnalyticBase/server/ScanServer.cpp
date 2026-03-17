@@ -549,11 +549,10 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
   std::filesystem::create_directories(outputPath);
 
   struct archive* a = archive_read_new();
-  struct archive* disk = archive_write_disk_new();
   struct archive_entry* entry = nullptr;
 
-  if (!a || !disk)
-    throw std::runtime_error("Failed to allocate archive structures");
+  if (!a)
+    throw std::runtime_error("Failed to allocate archive");
 
   try
   {
@@ -561,13 +560,10 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
     archive_read_support_format_tar(a);
     archive_read_support_filter_gzip(a);
 
-    int flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS | ARCHIVE_EXTRACT_UNLINK;
-
-    archive_write_disk_set_options(disk, flags);
-    archive_write_disk_set_standard_lookup(disk);
-
     if (archive_read_open_filename(a, archivePath.string().c_str(), 4 * 1024 * 1024) != ARCHIVE_OK)
       throw std::runtime_error(std::string("Failed to open archive: ") + archive_error_string(a));
+
+    int flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_UNLINK;
 
     int r;
     while ((r = archive_read_next_header(a, &entry)) == ARCHIVE_OK)
@@ -576,54 +572,31 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
       if (!entryPath)
         continue;
 
-      std::filesystem::path fullPath = outputPath / entryPath;
-      archive_entry_set_pathname(entry, fullPath.string().c_str());
+      std::filesystem::path entryRel = std::filesystem::path(entryPath).relative_path();
+      std::filesystem::path fullPath = outputPath / entryRel;
 
-      r = archive_write_header(disk, entry);
+      std::string fullPathStr = fullPath.string();
 
-      if (r < ARCHIVE_WARN)
+      archive_entry_set_pathname(entry, fullPathStr.c_str());
+
+      r = archive_read_extract(a, entry, flags);
+
+      if (r != ARCHIVE_OK && r != ARCHIVE_WARN)
       {
+        // skip bad entry but continue
         archive_read_data_skip(a);
         continue;
       }
-
-      const void* buff;
-      size_t size;
-      la_int64_t offset;
-
-      while (true)
-      {
-        int r_data = archive_read_data_block(a, &buff, &size, &offset);
-
-        if (r_data == ARCHIVE_EOF)
-          break;
-
-        if (r_data < ARCHIVE_WARN)
-          throw std::runtime_error(archive_error_string(a));
-
-        if (size > 0)
-        {
-          r_data = archive_write_data_block(disk, buff, size, offset);
-
-          if (r_data < ARCHIVE_WARN)
-            throw std::runtime_error(archive_error_string(disk));
-        }
-      }
-
-      // only here
-      archive_write_finish_entry(disk);
     }
 
     if (r != ARCHIVE_EOF)
       throw std::runtime_error(archive_error_string(a));
 
     archive_read_free(a);
-    archive_write_free(disk);
   }
   catch (...)
   {
     archive_read_free(a);
-    archive_write_free(disk);
     throw;
   }
 }

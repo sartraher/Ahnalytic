@@ -29,7 +29,8 @@ project "AhnalyticDatabaseExporter"
 		"../../3rdParty/cpp-httplib",
 		"../../3rdParty/openssl-3.5.4/include",
 		"../../3rdParty/json/include",
-        "../../3rdParty"
+        "../../3rdParty",		
+		"../../3rdParty/mimalloc/include"
     }
 	
 	libdirs {

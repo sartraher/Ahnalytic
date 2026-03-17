@@ -17,9 +17,9 @@ public:
   FileDatabase(DBType type, std::string connectionString);
 
   uint32_t createFile(uint32_t dataId, uint32_t index, uint32_t pathId, uint32_t tagId);
-  void createFiles(uint32_t dataId, std::vector<uint32_t> indices, std::vector<uint32_t> pathIds, uint32_t tagId);
-  void createFiles(std::vector<uint32_t> ids, std::vector<uint32_t> dataIds, std::vector<uint32_t> indices, std::vector<uint32_t> pathIds,
-                   std::vector<uint32_t> tagIds);
+  void createFiles(uint32_t dataId, ahn::vector<uint32_t> indices, ahn::vector<uint32_t> pathIds, uint32_t tagId);
+  void createFiles(ahn::vector<uint32_t> ids, ahn::vector<uint32_t> dataIds, ahn::vector<uint32_t> indices, ahn::vector<uint32_t> pathIds,
+                   ahn::vector<uint32_t> tagIds);
   uint32_t createRepoData(const std::string& name, const std::string& url, const std::string& license);
   uint32_t createTag(const std::string& tagName, const std::string& sha);
 
