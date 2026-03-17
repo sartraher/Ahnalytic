@@ -858,6 +858,8 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
     if (deepResult)
     {
+      deepResult.sourceDb = result.sourceDb;
+      deepResult.sourceRevision = result.sourceRevision;
       deepResult.searchFile = std::filesystem::relative(result.searchFile, path).string();
       deepResult.sourceFile = sourceFile;
 
