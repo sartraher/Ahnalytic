@@ -4,7 +4,7 @@ project "mimalloc"
 
     targetdir ("%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}")
     objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
-	
+
     files {
         "src/static.c",
         "include/**.h"
@@ -12,7 +12,10 @@ project "mimalloc"
 
     includedirs {
         "..",
-		"./include"
+        "./include"
     }
 
     defines { "MI_STATIC_LIB" }
+
+    filter { "system:linux or macosx", "kind:StaticLib" }
+        pic "On"
