@@ -372,7 +372,6 @@ SourceStructureTreeDeep* SourceScanner::scanDeep(const std::filesystem::path& pa
   TSParser* parser = ts_parser_new();
   ts_parser_set_language(parser, handlerIter->second->getLanguage());
 
-
   TSTree* tree = ts_parser_parse_string(parser, NULL, content.c_str(), (unsigned int)content.size());
 
   if (tree != nullptr)
@@ -490,6 +489,8 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPa
   std::vector<std::filesystem::path> scanPathes;
   scanPathes.push_back(path);
 
+  std::list<std::string> supportedExt = getFileTypes();
+
   BS::thread_pool pool;
 
   struct ResData
@@ -538,27 +539,28 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPa
 
         std::filesystem::path resPath = filePath;
         if (resPath.extension().string() == ".ahnalytic")
-        {
           continue;
-        }
+        else if (std::find(supportedExt.begin(), supportedExt.end(), resPath.extension().string()) == supportedExt.end())
+          continue;
 
-        std::future<ResData> resultFuture = pool.submit_task([filePath, this]()
+        try
         {
-          ResData ret;
-          ret.path = filePath.path().string();
-          ret.tree = scan(filePath, ret.resSize, ret.sourceType);
-          return ret;
-        });
+          std::filesystem::path resPath = filePath.path();
+          std::string resPathName = resPath.string();
 
-        tasks.push_back(std::move(resultFuture));
+          std::future<ResData> resultFuture = pool.submit_task([resPath, resPathName, this]()
+          {
+            ResData ret;
+            ret.path = resPathName;
+            ret.tree = scan(resPath, ret.resSize, ret.sourceType);
+            return ret;
+          });
 
-        /*
-        uint32_t resSize;
-        std::string sourceType;
-        SourceStructureTree* tree = scan(filePath, resSize, sourceType);
-        if (tree != nullptr)
-          ret[sourceType].push_back({filePath, tree, resSize});
-          */
+          tasks.push_back(std::move(resultFuture));
+        }
+        catch (const std::exception&)
+        {
+        }
       }
     }
   }

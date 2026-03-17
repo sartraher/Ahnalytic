@@ -44,8 +44,11 @@ project "AhnalyticScannerServer"
 		"soci_core_4_1",
 		"libbsc",
 		"LzmaLib",
-		"zlibstatic"
-    }    
+		"zlibstatic",
+		"mimalloc"
+    } 
+
+	defines { "MI_MALLOC_OVERRIDE" }	
 
     filter "system:windows"
         systemversion "latest"

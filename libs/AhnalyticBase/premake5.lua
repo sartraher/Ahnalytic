@@ -52,6 +52,8 @@ project "AhnalyticBase"
 		"../../out/lib/%{cfg.platform}/%{cfg.buildcfg}",
 		"../../out/bin/%{cfg.platform}/%{cfg.buildcfg}"
 	}
+	
+	defines { "MI_MALLOC_OVERRIDE" }
 
 	filter "system:linux or system:macosx"
 		removefiles { "dllmain.cpp" }
@@ -76,7 +78,8 @@ project "AhnalyticBase"
             "LzmaLib",
             "zlibstatic",
             "libssl_static",
-            "libcrypto_static"
+            "libcrypto_static",
+			"mimalloc"
         }        
 
     filter "system:linux or system:macosx"
@@ -87,7 +90,8 @@ project "AhnalyticBase"
             "lzmaLib",
             "ssl",
             "crypto",
-            "pthread"
+            "pthread",
+			"mimalloc"
         }
 
 	filter "system:windows"

@@ -546,8 +546,7 @@ void ScanServer::checkoutSvnRevision(const std::string& svnUrl, const std::strin
 
 void ScanServer::extractArchive(const std::filesystem::path& archivePath, const std::filesystem::path& outputPath)
 {
-  if (!std::filesystem::exists(outputPath))
-    std::filesystem::create_directories(outputPath);
+  std::filesystem::create_directories(outputPath);
 
   struct archive* a = archive_read_new();
   struct archive* disk = archive_write_disk_new();
@@ -558,23 +557,17 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
 
   try
   {
-    // Support only required formats
     archive_read_support_format_zip(a);
     archive_read_support_format_tar(a);
     archive_read_support_filter_gzip(a);
 
-    // Secure + efficient extraction flags
-    int flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
+    int flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS | ARCHIVE_EXTRACT_UNLINK;
 
     archive_write_disk_set_options(disk, flags);
     archive_write_disk_set_standard_lookup(disk);
 
-    // Use a large read buffer (4 MB)
-    std::string archivePathStr = archivePath.string();
-    if (archive_read_open_filename(a, archivePathStr.c_str(), 4 * 1024 * 1024) != ARCHIVE_OK)
-    {
+    if (archive_read_open_filename(a, archivePath.string().c_str(), 4 * 1024 * 1024) != ARCHIVE_OK)
       throw std::runtime_error(std::string("Failed to open archive: ") + archive_error_string(a));
-    }
 
     int r;
     while ((r = archive_read_next_header(a, &entry)) == ARCHIVE_OK)
@@ -588,27 +581,28 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
 
       r = archive_write_header(disk, entry);
 
-      if (r != ARCHIVE_OK)
+      if (r < ARCHIVE_WARN)
       {
-        // Important: skip data if we cannot write header
         archive_read_data_skip(a);
+        continue;
       }
-      else
+
+      const void* buff;
+      size_t size;
+      la_int64_t offset;
+
+      while (true)
       {
-        const void* buff;
-        size_t size;
-        la_int64_t offset;
+        int r_data = archive_read_data_block(a, &buff, &size, &offset);
 
-        while (true)
+        if (r_data == ARCHIVE_EOF)
+          break;
+
+        if (r_data < ARCHIVE_WARN)
+          throw std::runtime_error(archive_error_string(a));
+
+        if (size > 0)
         {
-          int r_data = archive_read_data_block(a, &buff, &size, &offset);
-
-          if (r_data == ARCHIVE_EOF)
-            break;
-
-          if (r_data < ARCHIVE_WARN)
-            throw std::runtime_error(archive_error_string(a));
-
           r_data = archive_write_data_block(disk, buff, size, offset);
 
           if (r_data < ARCHIVE_WARN)
@@ -616,26 +610,20 @@ void ScanServer::extractArchive(const std::filesystem::path& archivePath, const 
         }
       }
 
+      // only here
       archive_write_finish_entry(disk);
     }
 
     if (r != ARCHIVE_EOF)
       throw std::runtime_error(archive_error_string(a));
 
-    archive_read_close(a);
     archive_read_free(a);
-
-    archive_write_close(disk);
     archive_write_free(disk);
   }
   catch (...)
   {
-    archive_read_close(a);
     archive_read_free(a);
-
-    archive_write_close(disk);
     archive_write_free(disk);
-
     throw;
   }
 }

@@ -24,6 +24,7 @@ group "3rdParty/other"
 dofile("3rdParty/SrvLib/premake5.lua")
 dofile("3rdParty/openssl-3.5.4/premake5.lua")
 dofile("3rdParty/expat/premake5.lua")
+dofile("3rdParty/mimalloc/premake5.lua")
 
 group "3rdParty/soci"
 dofile("3rdParty/soci/premake5.lua")

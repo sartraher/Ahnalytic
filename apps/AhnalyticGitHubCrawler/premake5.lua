@@ -52,8 +52,11 @@ project "AhnalyticGitHubCrawler"
 		"LzmaLib",
 		"zlibstatic",
         "libssl_static",
-        "libcrypto_static"
-        }        
+        "libcrypto_static",
+		"mimalloc"
+        }  
+
+	defines { "MI_MALLOC_OVERRIDE" }		
 
     filter "system:windows"
         systemversion "latest"

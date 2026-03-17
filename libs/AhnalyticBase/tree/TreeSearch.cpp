@@ -46,7 +46,7 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
 
   size_t origSize = searchData.nodeData.size();
 
-  searchData.nodeData.reserve(searchData.nodeData.size() + nodeCount);
+  //searchData.nodeData.reserve(searchData.nodeData.size() + nodeCount);
 
   std::vector<const Tree<SourceStructureData>*> nodeVec;
   nodeVec.reserve(nodeCount);
@@ -519,6 +519,16 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   for (auto iter = trees.begin(); iter != trees.end(); iter++)
   {
     SearchNodeData& searchDataByLang = searchData[iter->first];
+
+    size_t nodeCount = 0;
+    for (int index = 0; index < iter->second.size(); index++)
+    {
+      ScanTreeData& data = iter->second[index];
+      nodeCount += data.tree->getNodeCount();
+    }
+
+    searchDataByLang.nodeData.reserve(nodeCount);
+
     for (int index = 0; index < iter->second.size(); index++)
     {
       ScanTreeData& data = iter->second[index];
