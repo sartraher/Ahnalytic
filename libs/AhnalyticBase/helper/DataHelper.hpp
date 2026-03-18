@@ -20,6 +20,9 @@ public:
 
   static ExecResult execAndCapture(const std::string& cmdBase, const std::string& tempPath);
 
+  static std::string extractOwnerRepo(const std::string& url);
+  static std::string cleanFileName(const std::string& name);
+
 private:
   static std::string uniqueTempName(const std::string& prefix);
   static std::string nowString();

@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <regex>
 
 #include <nlohmann/json.hpp>
 
@@ -1595,4 +1596,57 @@ std::string DataHelperC::uniqueTempName(const std::string& prefix)
   std::ostringstream ss;
   ss << prefix << "_" << nowString() << "_" << id << "_" << threadIdString();
   return ss.str();
+}
+
+std::string DataHelperC::extractOwnerRepo(const std::string& url)
+{
+  std::regex rgx(R"(github\.com/([^/]+)/([^/]+)(?:\.git)?)", std::regex::icase);
+  std::smatch match;
+  if (!std::regex_search(url, match, rgx) || match.size() < 3)
+    return "";
+  return match[1].str() + "/" + match[2].str();
+}
+
+std::string DataHelperC::cleanFileName(const std::string& name)
+{
+  static const std::string illegal = "\\/:*?\"<>|";
+  std::string out;
+  out.reserve(name.size());
+
+  for (char c : name)
+  {
+    if (static_cast<unsigned char>(c) < 32)
+      continue;
+    if (illegal.find(c) != std::string::npos)
+      out.push_back('_');
+    else
+      out.push_back(c);
+  }
+
+  auto trim = [](std::string& s)
+  {
+    auto is_bad = [](char c)
+    {
+      return c == ' ' || c == '.' || c == '\t';
+    };
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [&](char c) { return !is_bad(c); }));
+    if (s.empty())
+      return;
+    s.erase(std::find_if(s.rbegin(), s.rend(), [&](char c) { return !is_bad(c); }).base(), s.end());
+  };
+  trim(out);
+
+  if (out.empty())
+    out = "_";
+
+  static const std::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
+                                                    "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+
+  std::string upper;
+  upper.reserve(out.size());
+  std::transform(out.begin(), out.end(), std::back_inserter(upper), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+  if (std::find(reserved.begin(), reserved.end(), upper) != reserved.end())
+    out = "_" + out;
+
+  return out;
 }
