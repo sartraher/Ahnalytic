@@ -31,4 +31,6 @@
 		|-LICENSE
 	|-magic_enum: MIT
 		|-LICENSE
+	|-mimalloc
+	    |-LICENSE
 	

@@ -142,7 +142,7 @@ inline void from_json(const nlohmann::json& j, ScanData& s)
   if (s.status == ScanDataStatusE::Running)
     s.status = ScanDataStatusE::Aborted;
 
-  //j.at("results").get_to(s.results);
+  // j.at("results").get_to(s.results);
   j.at("deepResults").get_to(s.deepResults);
   j.at("maxCount").get_to(s.maxCount);
   j.at("finishedCount").get_to(s.finishedCount);
@@ -285,13 +285,27 @@ void ScanDatabase::load()
 
 void ScanDatabase::save()
 {
-  nlohmann::json j = nlohmann::json::object();
-  for (const auto& [id, group] : priv->groups)
-    j[std::to_string(id)] = group;
+  try
+  {
+    nlohmann::json j = nlohmann::json::object();
+    for (const auto& [id, group] : priv->groups)
+      j[std::to_string(id)] = group;
 
-  std::filesystem::path filename = priv->scanFolder / "status.json";
-  std::ofstream ofs(filename.string(), std::ios::out | std::ios::trunc);
-  ofs << j.dump(2);
+    std::filesystem::path newFilename = priv->scanFolder / "status_new.json";
+    {
+      std::ofstream ofs(newFilename.string(), std::ios::out | std::ios::trunc);
+      ofs << j.dump(2);
+    }
+
+    std::filesystem::path origFilename = priv->scanFolder / "status.json";
+    std::filesystem::path oldFilename = priv->scanFolder / "status_old.json";
+    std::filesystem::rename(origFilename, oldFilename);
+    std::filesystem::rename(newFilename, origFilename);
+    std::filesystem::remove(oldFilename);
+  }
+  catch (...)
+  {
+  }
 }
 
 size_t ScanDatabase::createGroup(const std::string& name)
