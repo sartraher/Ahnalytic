@@ -2,10 +2,14 @@
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
 #include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
+#include "AhnalyticBase/helper/DataHelper.hpp"
 #include "AhnalyticBase/helper/GitCliHelper.hpp"
 #include "AhnalyticBase/helper/SSE2ASC2memcmp.hpp"
-#include "AhnalyticBase/helper/DataHelper.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
+
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#define CPPHTTPLIB_ZLIB_SUPPORT
+#include <httplib.h>
 
 #include "BS_thread_pool.hpp"
 
@@ -787,10 +791,13 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 {
   std::vector<TreeSearchResult> fastResults = resultInter->getResult();
 
+  std::unordered_map<std::string, std::vector<TreeSearchResult>> resultByCatalog;
+  for (const TreeSearchResult& entry : fastResults)
+    resultByCatalog[entry.sourceDb].push_back(entry);
+
   SourceScanner scanner;
   struct FileData
   {
-    std::string id;
     std::string cmpFile;
     std::string sourceFile;
     SourceStructureTreeDeep* dbTree = nullptr;
@@ -802,22 +809,23 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   };
 
   BS::thread_pool pool;
+
   std::vector<std::string> doneList;
   std::unordered_map<TreeSearchResult::ResultSourceTypeE, std::unordered_map<std::string, FileData>> cache;
-  std::vector<std::future<FileData>> tasks;
-  for (const TreeSearchResult& entry : fastResults)
+  std::vector<std::future<std::vector<FileData>>> tasks;
+
+  for (auto iter = resultByCatalog.begin(); iter != resultByCatalog.end(); iter++)
   {
-    std::string id = entry.sourceDb + "_||_" + std::to_string(entry.sourceInternalId) + "_||_" + entry.sourceRevision;
+    std::vector<TreeSearchResult> entries = iter->second;
 
-    if (std::find(doneList.begin(), doneList.end(), id) == doneList.end())
+    tasks.push_back(pool.submit_task([entries, &scanner, &env, this]() -> std::vector<FileData>
     {
-      doneList.push_back(id);
-
-      tasks.push_back(pool.submit_task([&]()
+      std::vector<FileData> ret;
+      for (const TreeSearchResult& entry : entries)
       {
         FileData result;
 
-        result.id = id;
+        // result.id = id;
         result.entry = entry;
 
         switch (entry.type)
@@ -841,9 +849,11 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
           break;
         }
 
-        return result;
-      }));
-    }
+        ret.push_back(result);
+      }
+
+      return ret;
+    }));
   }
 
   struct DeepScanData
@@ -855,130 +865,55 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   std::unordered_map<std::string, DeepScanData> trees;
   for (int index = 0; index < tasks.size(); index++)
   {
-    FileData data = tasks[index].get();
+    std::vector<FileData> datas = tasks[index].get();
 
-    if (data.dbTree == nullptr)
-      continue;
-
-    auto iter = trees.find(data.entry.searchFile);
-    if (iter == trees.end())
+    for (const FileData& data : datas)
     {
-      uint32_t resSize;
-      std::string sourceType;
-
-      std::ifstream in(data.entry.searchFile, std::ios::binary);
-      if (!in.is_open())
+      if (data.dbTree == nullptr)
         continue;
 
-      std::ostringstream ss;
-      ss << in.rdbuf();
-      std::string content = ss.str();
+      auto iter = trees.find(data.entry.searchFile);
+      if (iter == trees.end())
+      {
+        uint32_t resSize;
+        std::string sourceType;
 
-      std::filesystem::path path = data.entry.searchFile;
-      SourceStructureTreeDeep* tree = scanner.scanDeep(path, resSize, sourceType);
+        std::ifstream in(data.entry.searchFile, std::ios::binary);
+        if (!in.is_open())
+          continue;
 
-      if (tree == nullptr)
-        continue;
+        std::ostringstream ss;
+        ss << in.rdbuf();
+        std::string content = ss.str();
 
-      trees[data.entry.searchFile] = {content, tree};
-    }
+        std::filesystem::path path = data.entry.searchFile;
+        SourceStructureTreeDeep* tree = scanner.scanDeep(path, resSize, sourceType);
 
-    SearchNodes dbNodes = initNodesDeep(data.dbTree, env.windowSize);
-    SearchNodes searchNodes = initNodesDeep(trees[data.entry.searchFile].tree, env.windowSize);
+        if (tree == nullptr)
+          continue;
 
-    TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
-    if (deepResult)
-    {
-      deepResult.sourceDb = data.entry.sourceDb;
-      deepResult.sourceRevision = data.entry.sourceRevision;
-      deepResult.searchFile = std::filesystem::relative(data.entry.searchFile, path).string();
-      deepResult.sourceFile = data.sourceFile;
+        trees[data.entry.searchFile] = {content, tree};
+      }
 
-      deepResult.sourceContent = data.cmpFile;
-      deepResult.searchContent = trees[data.entry.searchFile].content;
-      deepResult.licence = data.licence;
+      SearchNodes dbNodes = initNodesDeep(data.dbTree, env.windowSize);
+      SearchNodes searchNodes = initNodesDeep(trees[data.entry.searchFile].tree, env.windowSize);
 
-      resultInter->addDeepResult(deepResult);
+      TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
+      if (deepResult)
+      {
+        deepResult.sourceDb = data.entry.sourceDb;
+        deepResult.sourceRevision = data.entry.sourceRevision;
+        deepResult.searchFile = std::filesystem::relative(data.entry.searchFile, path).string();
+        deepResult.sourceFile = data.sourceFile;
+
+        deepResult.sourceContent = data.cmpFile;
+        deepResult.searchContent = trees[data.entry.searchFile].content;
+        deepResult.licence = data.licence;
+
+        resultInter->addDeepResult(deepResult);
+      }
     }
   }
-
-  /*
-  for (const TreeSearchResult& result : fastResults)
-  {
-    auto iter = trees.find(result.searchFile);
-    if (iter == trees.end())
-    {
-      uint32_t resSize;
-      std::string sourceType;
-
-      std::ifstream in(result.searchFile, std::ios::binary);
-      if (!in.is_open())
-        continue;
-
-      std::ostringstream ss;
-      ss << in.rdbuf();
-      std::string content = ss.str();
-
-      std::filesystem::path path = result.searchFile;
-      SourceStructureTreeDeep* tree = scanner.scanDeep(path, resSize, sourceType);
-      trees[result.searchFile] = {content, tree};
-    }
-
-    std::string sourceFile;
-    std::string licence;
-    std::string cmpFile;
-
-    uint32_t resSize;
-    std::string sourceType;
-
-    SourceStructureTreeDeep* dbTree = nullptr;
-
-    switch (result.type)
-    {
-    case TreeSearchResult::Github:
-    {
-      std::pair<std::string, std::string> fileData = getGitHubFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence, env);
-      sourceFile = fileData.first;
-      cmpFile = fileData.second;
-      dbTree = scanner.scanDeep(sourceFile, cmpFile, resSize, sourceType);
-    }
-    break;
-    case TreeSearchResult::SourceForge:
-      cmpFile = getSourceForgeFile(result.sourceDb, result.sourceInternalId, result.sourceRevision, licence);
-      dbTree = scanner.scanDeep(cmpFile, resSize, sourceType);
-      break;
-    case TreeSearchResult::Stackexchange:
-      cmpFile = getStackexchangeFile(result.sourceDb, result.sourceInternalId, licence);
-      sourceFile = "https://stackoverflow.com/questions/" + std::to_string(result.sourceInternalId);
-      dbTree = scanner.scanDeep(cmpFile, resSize, sourceType);
-      break;
-    }
-
-    if (dbTree == nullptr)
-    {
-      // TODO: add error, should not happen
-      continue;
-    }
-
-    SearchNodes dbNodes = initNodesDeep(dbTree, env.windowSize);
-    SearchNodes searchNodes = initNodesDeep(trees[result.searchFile].tree, env.windowSize);
-
-    TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
-    if (deepResult)
-    {
-      deepResult.sourceDb = result.sourceDb;
-      deepResult.sourceRevision = result.sourceRevision;
-      deepResult.searchFile = std::filesystem::relative(result.searchFile, path).string();
-      deepResult.sourceFile = sourceFile;
-
-      deepResult.sourceContent = cmpFile;
-      deepResult.searchContent = trees[result.searchFile].content;
-      deepResult.licence = licence;
-
-      resultInter->addDeepResult(deepResult);
-    }
-  }
-  */
 
   resultInter->incFinishedCount(1);
 }
@@ -993,28 +928,66 @@ std::pair<std::string, std::string> TreeSearch::getGitHubFile(const std::string&
   std::string fileName = fileDb.getName(fileId);
   std::string repoUrl = fileDb.getRepoUrl();
 
-  std::string workRepoName = DataHelperC::cleanFileName(DataHelperC::extractOwnerRepo(repoUrl));
-
-  std::filesystem::path repoPath = std::filesystem::path(env.workFolder) / workRepoName;
-  std::filesystem::path workPath = repoPath / "work";
-
-  std::filesystem::create_directories(repoPath);
-  std::filesystem::create_directories(workPath);
-
-  GitCliHelperC::getGitClone(repoPath, repoUrl, env.workFolder.string());
-
-  GitCliHelperC::fetchTag(repoPath.string(), sha, env.workFolder.string());
-
-  std::vector<std::string> files;
-  files.push_back(fileName);
-  std::unordered_map<std::string, std::string> result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, files);
-
-  while (std::filesystem::exists(repoPath))
+  std::unordered_map<std::string, std::string> result;
+  if (repoUrl.find("github") != std::string::npos)
   {
-    std::error_code ec;
-    std::filesystem::remove_all(repoPath, ec);
-  }
+    auto downloadFromGithub = [](const std::string& repoUrl, const std::string& sha, const std::string& relPath, std::string& outputFile)
+    {
+      // Extract owner and repo using regex
+      std::regex re(R"(https://github\.com/([^/]+)/([^/]+))");
+      std::smatch match;
 
+      if (!std::regex_search(repoUrl, match, re))
+        return false;
+
+      std::string owner = match[1];
+      std::string repo = match[2];
+
+      // Build raw.githubusercontent.com path
+      std::string host = "raw.githubusercontent.com";
+      std::string path = "/" + owner + "/" + repo + "/" + sha + "/" + relPath;
+
+      httplib::SSLClient cli(host);
+      cli.set_follow_location(true);
+
+      auto res = cli.Get(path.c_str());
+      if (!res)
+        return false;
+
+      if (res->status != 200)
+        return false;
+
+      outputFile = res->body;
+
+      return true;
+    };
+
+    downloadFromGithub(repoUrl, sha, fileName, result[fileName]);
+  }
+  else
+  {
+    std::string workRepoName = DataHelperC::cleanFileName(DataHelperC::extractOwnerRepo(repoUrl));
+
+    std::filesystem::path repoPath = std::filesystem::path(env.workFolder) / workRepoName;
+    std::filesystem::path workPath = repoPath / "work";
+
+    std::filesystem::create_directories(repoPath);
+    std::filesystem::create_directories(workPath);
+
+    GitCliHelperC::getGitClone(repoPath, repoUrl, env.workFolder.string());
+
+    GitCliHelperC::fetchTag(repoPath.string(), sha, env.workFolder.string());
+
+    std::vector<std::string> files;
+    files.push_back(fileName);
+    result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, files);
+
+    while (std::filesystem::exists(repoPath))
+    {
+      std::error_code ec;
+      std::filesystem::remove_all(repoPath, ec);
+    }
+  }
   return std::make_pair(fileName, result[fileName]);
 }
 
