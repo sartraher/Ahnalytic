@@ -101,6 +101,18 @@ public:
     finishedCount += count;
   }
 
+  virtual void setDeepMaxCount(int count)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    deepMaxCount = count;
+  }
+
+  virtual void incDeepFinishedCount(int count)
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    deepFinishedCount += count;
+  }
+
   virtual int getMaxCount()
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -111,6 +123,18 @@ public:
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex);
     return finishedCount;
+  }
+
+  virtual int getDeepMaxCount()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    return deepMaxCount;
+  }
+
+  virtual int getDeepFinishedCount()
+  {
+    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    return deepFinishedCount;
   }
 
   mutable std::recursive_mutex mutex;
@@ -126,6 +150,9 @@ public:
 
   int maxCount = 0;
   int finishedCount = 0;
+
+  int deepMaxCount = 0;
+  int deepFinishedCount = 0;
 
 private:
 protected:

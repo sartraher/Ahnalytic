@@ -64,6 +64,9 @@ public:
 
   virtual void setMaxCount(int count) = 0;
   virtual void incFinishedCount(int count) = 0;
+
+  virtual void setDeepMaxCount(int count) = 0;
+  virtual void incDeepFinishedCount(int count) = 0;
 };
 
 struct SearchNodes

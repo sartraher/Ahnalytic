@@ -350,6 +350,9 @@ void ScanServer::init()
       ret["maxCount"] = scanData->getMaxCount();
       ret["finishedCount"] = scanData->getFinishedCount();
 
+      ret["deepMaxCount"] = scanData->getDeepMaxCount();
+      ret["deepFinishedCount"] = scanData->getDeepFinishedCount();
+
       json results = json::array();
       for (const TreeSearchResult& searchResult : searchResults)
       {

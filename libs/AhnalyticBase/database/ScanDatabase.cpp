@@ -125,7 +125,9 @@ inline void to_json(nlohmann::json& j, const ScanData& s)
        //{"results", s.results},
        {"deepResults", s.deepResults},
        {"maxCount", s.maxCount},
-       {"finishedCount", s.finishedCount}};
+       {"finishedCount", s.finishedCount},
+       {"deepMaxCount", s.deepMaxCount},
+       {"deepfinishedCount", s.deepFinishedCount}};
 }
 
 inline void from_json(const nlohmann::json& j, ScanData& s)

@@ -776,7 +776,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   if (resultInter->isAborted())
     return;
 
-  resultInter->setMaxCount(maxCount + 1);
+  resultInter->setMaxCount(maxCount);
 
   for (std::future<void>& task : currentTasks)
   {
@@ -789,7 +789,12 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
 void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env, TreeResultInterface* resultInter)
 {
+  if (resultInter->isAborted())
+    return;
+
   std::vector<TreeSearchResult> fastResults = resultInter->getResult();
+
+  resultInter->setDeepMaxCount(fastResults.size());
 
   std::unordered_map<std::string, std::vector<TreeSearchResult>> resultByCatalog;
   for (const TreeSearchResult& entry : fastResults)
@@ -819,11 +824,14 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   {
     std::vector<TreeSearchResult> entries = iter->second;
 
-    tasks.push_back(pool.submit_task([entries, &scanner, &env, this]() -> std::vector<FileData>
+    tasks.push_back(pool.submit_task([entries, &scanner, &env, this, &resultInter]() -> std::vector<FileData>
     {
       std::vector<FileData> ret;
       for (const TreeSearchResult& entry : entries)
       {
+        if (resultInter->isAborted())
+          return ret;
+
         FileData result;
 
         bool found = false;
@@ -915,6 +923,9 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
     for (const FileData& data : datas)
     {
+      if (resultInter->isAborted())
+        return;
+
       if (data.dbTree == nullptr)
         continue;
 
@@ -947,21 +958,48 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
       TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
       if (deepResult)
       {
-        deepResult.sourceDb = data.entry.sourceDb;
-        deepResult.sourceRevision = data.entry.sourceRevision;
-        deepResult.searchFile = std::filesystem::relative(data.entry.searchFile, path).string();
-        deepResult.sourceFile = data.sourceFile;
+        // Stich the resultSets back together;
+        TreeSearchResult stiched;
 
-        deepResult.sourceContent = data.cmpFile;
-        deepResult.searchContent = trees[data.entry.searchFile].content;
-        deepResult.licence = data.licence;
+        for (int outerIndex = 0; outerIndex < deepResult.size(); outerIndex++)
+        {
+          const TreeSearchResultSet& outerSet = deepResult.at(outerIndex);
+          stiched.push_back(outerSet);
 
-        resultInter->addDeepResult(deepResult);
+          for (int innerIndex = outerIndex + 1; innerIndex < deepResult.size(); innerIndex++)
+          {
+            const TreeSearchResultSet innerSet = deepResult.at(innerIndex);
+
+            if ((outerSet.baseStart <= innerSet.baseStart) && (outerSet.baseEnd + 1 <= innerSet.baseStart) && (outerSet.searchStart <= innerSet.searchStart) &&
+                (outerSet.searchEnd + 1 <= innerSet.searchStart))
+            {
+              deepResult[outerIndex].baseEnd = innerSet.baseEnd;
+              deepResult[outerIndex].searchEnd = innerSet.searchEnd;
+            }
+            else
+            {
+              outerIndex = innerIndex - 1;
+              break;
+            }
+          }
+        }
+
+        stiched.sourceDb = data.entry.sourceDb;
+        stiched.sourceFile = data.sourceFile;
+        stiched.sourceRevision = data.entry.sourceRevision;
+        stiched.sourceInternalId = deepResult.sourceInternalId;
+        stiched.searchFile = std::filesystem::relative(data.entry.searchFile, path).string();
+        stiched.type = deepResult.type;
+        stiched.sourceContent = data.cmpFile;
+        stiched.searchContent = trees[data.entry.searchFile].content;
+        stiched.licence = data.licence;
+
+        resultInter->addDeepResult(stiched);
       }
+
+      resultInter->incDeepFinishedCount(1);
     }
   }
-
-  resultInter->incFinishedCount(1);
 }
 
 std::pair<std::string, std::string> TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence,

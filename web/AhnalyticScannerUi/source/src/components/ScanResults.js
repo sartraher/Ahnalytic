@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useScanner } from '../context/ScannerContext';
 import { DiffViewer } from './DiffViewer';
+import api from '../services/api';
 import '../styles/components.css';
 
 // Helper function to convert numeric status codes to status names
@@ -112,12 +113,240 @@ const FileTreeRenderer = ({ tree, selectedPath, onSelect, expandedPaths, onToggl
   );
 };
 
+// Memoized progress bars component - updates independently
+const ProgressBarsSection = React.memo(({ status, results, finishedCount, maxCount, deepFinishedCount, deepMaxCount }) => {
+  const progress = maxCount > 0 ? (finishedCount / maxCount) * 100 : 0;
+  const deepProgress = deepMaxCount > 0 ? (deepFinishedCount / deepMaxCount) * 100 : 0;
+
+  return (
+    <div className="scan-results-header">
+      <h3>Scan Results</h3>
+
+      {status && (
+        <div className="scan-header">
+          <span className={`status-badge status-${getStatusName(status)}`}>{getStatusName(status).toUpperCase()}</span>
+          <span className="result-count">{results.length} matches found</span>
+        </div>
+      )}
+
+      {/* Progress Bars */}
+      {maxCount > 0 && (
+        <div className="progress-container">
+          <div className="progress-label">Files Scanned</div>
+          <div className="progress-bar-wrapper">
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+            </div>
+          </div>
+          <span className="progress-text">
+            {finishedCount} / {maxCount}
+          </span>
+        </div>
+      )}
+
+      {deepMaxCount > 0 && (
+        <div className="progress-container">
+          <div className="progress-label">Deep Scan Progress</div>
+          <div className="progress-bar-wrapper">
+            <div className="progress-bar deep">
+              <div className="progress-fill" style={{ width: `${deepProgress}%` }}></div>
+            </div>
+          </div>
+          <span className="progress-text">
+            {deepFinishedCount} / {deepMaxCount}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+});
+
+ProgressBarsSection.displayName = 'ProgressBarsSection';
+
+// Memoized results list section
+const ResultsListSection = React.memo(({ 
+  filteredResults, 
+  selectedFilePath, 
+  fileTree, 
+  expandedPaths, 
+  expandedResultId, 
+  onToggleExpand, 
+  onSelectFile, 
+  onToggleResultExpand,
+  scrollContainerRef 
+}) => {
+  const getSeverityColor = (matchCount) => {
+    if (matchCount === 0) return 'green';
+    if (matchCount < 5) return 'yellow';
+    if (matchCount < 20) return 'orange';
+    return 'red';
+  };
+
+  return (
+    <div className="scan-results-content">
+      {/* File Tree Panel */}
+      <div className="file-tree-panel">
+        <div className="file-tree-header">
+          <h4>Files</h4>
+          {selectedFilePath && (
+            <button
+              className="btn-icon"
+              onClick={() => onSelectFile(null)}
+              title="Clear selection"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <FileTreeRenderer
+          tree={fileTree}
+          selectedPath={selectedFilePath}
+          onSelect={onSelectFile}
+          expandedPaths={expandedPaths}
+          onToggleExpand={onToggleExpand}
+        />
+      </div>
+
+      {/* Results Panel */}
+      <div className="results-panel">
+        {filteredResults.length === 0 ? (
+          <p className="empty-message">No results for selected file</p>
+        ) : (
+          <div className="results-container" ref={scrollContainerRef}>
+            {filteredResults.map((result, idx) => (
+              <div
+                key={idx}
+                className="result-item"
+                onClick={() => onToggleResultExpand(idx)}
+              >
+                <div className="result-header">
+                  <div className="result-title-section">
+                    <span className={`severity-indicator severity-${getSeverityColor(result.resultSets?.length || 0)}`}>
+                      ●
+                    </span>
+                    <span className="result-title">
+                      {result.sourceDb} - {result.sourceFile}
+                    </span>
+                  </div>
+                  <div className="result-meta">
+                    <span className="match-count">
+                      {result.resultSets?.length || 0} matches
+                    </span>
+                    <button className="btn-icon">
+                      {expandedResultId === idx ? '▼' : '▶'}
+                    </button>
+                  </div>
+                </div>
+
+                {expandedResultId === idx && (
+                  <div className="result-details">
+                    {result.licence && (
+                      <div className="detail-section">
+                        <h5>License</h5>
+                        <div className="detail-row">
+                          <span className="label">Type:</span>
+                          <span className="value">{result.licence}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="detail-section">
+                      <h5>Source Information</h5>
+                      <div className="detail-row">
+                        <span className="label">Database:</span>
+                        <span className="value">{result.sourceDb}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="label">File:</span>
+                        <span className="value code">{result.sourceFile}</span>
+                      </div>
+                      {result.sourceRevision && (
+                        <div className="detail-row">
+                          <span className="label">Revision:</span>
+                          <span className="value code">{result.sourceRevision}</span>
+                        </div>
+                      )}
+                      {result.sourceInternalId && (
+                        <div className="detail-row">
+                          <span className="label">Internal ID:</span>
+                          <span className="value code">{result.sourceInternalId}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="detail-section">
+                      <h5>Scan File</h5>
+                      <div className="detail-row">
+                        <span className="label">File:</span>
+                        <span className="value code">{result.searchFile}</span>
+                      </div>
+                    </div>
+
+                    {result.resultSets && result.resultSets.length > 0 && (
+                      <div className="detail-section">
+                        <h5>Match Locations ({result.resultSets.length})</h5>
+                        
+                        {/* Show Diff Viewer if content is available */}
+                        {result.searchContent && result.sourceContent && (
+                          <div className="detail-subsection">
+                            <DiffViewer
+                              searchContent={result.searchContent}
+                              sourceContent={result.sourceContent}
+                              resultSets={result.resultSets}
+                            />
+                          </div>
+                        )}
+
+                        {/* Show match locations list */}
+                        <div className="matches-list">
+                          {result.resultSets.map((match, matchIdx) => (
+                            <div key={matchIdx} className="match-item">
+                              <div className="match-header">
+                                Match {matchIdx + 1}
+                              </div>
+                              <div className="match-locations">
+                                <div className="location">
+                                  <span className="location-label">Source Location:</span>
+                                  <span className="location-value">
+                                    {match.baseStart} - {match.baseEnd}
+                                  </span>
+                                </div>
+                                <div className="location">
+                                  <span className="location-label">Search Location:</span>
+                                  <span className="location-value">
+                                    {match.searchStart} - {match.searchEnd}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+ResultsListSection.displayName = 'ResultsListSection';
+
 export const ScanResults = () => {
   const { currentGroup, currentProject, currentVersion, currentScan, scanInfo, loading, error, loadScanInfo } = useScanner();
   const [expandedResultId, setExpandedResultId] = useState(null);
   const [selectedFilePath, setSelectedFilePath] = useState(null);
   const [expandedPaths, setExpandedPaths] = useState({});
   const scrollContainerRef = useRef(null);
+  const scrollPositionRef = useRef(0);
+  
+  // Separate progress state to avoid re-rendering the entire component during polling
+  const [progress, setProgress] = useState({ finishedCount: 0, maxCount: 0, deepFinishedCount: 0, deepMaxCount: 0 });
+  const progressTimeoutRef = useRef(null);
 
   // Load scan info automatically when a scan is selected
   useEffect(() => {
@@ -125,6 +354,83 @@ export const ScanResults = () => {
       loadScanInfo(currentGroup, currentProject, currentVersion, currentScan);
     }
   }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
+
+  // Initialize progress state from scanInfo when it loads
+  useEffect(() => {
+    if (scanInfo) {
+      setProgress({
+        finishedCount: scanInfo.finishedCount || 0,
+        maxCount: scanInfo.maxCount || 0,
+        deepFinishedCount: scanInfo.deepFinishedCount || 0,
+        deepMaxCount: scanInfo.deepMaxCount || 0,
+      });
+    }
+  }, [scanInfo?.results?.length]); // Only update when results length changes, not on every poll
+
+  // Save scroll position before updates
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const handleScroll = () => {
+        scrollPositionRef.current = container.scrollTop;
+      };
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  // Poll for progress updates only - uses a separate API call to avoid full re-render
+  useEffect(() => {
+    if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current);
+        progressTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    // Check if scan is still running based on current scanInfo
+    const isRunning = scanInfo && (scanInfo.status === 1 || scanInfo.status === 2 || scanInfo.status === 'started' || scanInfo.status === 'running');
+    
+    if (!isRunning) {
+      if (progressTimeoutRef.current) {
+        clearTimeout(progressTimeoutRef.current);
+        progressTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    const pollProgress = async () => {
+      try {
+        // Call the API directly to avoid setting loading state
+        const data = await api.getScanInfo(currentGroup, currentProject, currentVersion, currentScan);
+        if (data) {
+          // Only update progress state, not full scanInfo, to avoid re-rendering results
+          setProgress({
+            finishedCount: data.finishedCount || 0,
+            maxCount: data.maxCount || 0,
+            deepFinishedCount: data.deepFinishedCount || 0,
+            deepMaxCount: data.deepMaxCount || 0,
+          });
+        }
+      } catch (e) {
+        // Silently fail on polling errors
+      }
+    };
+
+    // Initial poll
+    pollProgress();
+
+    // Set up polling interval
+    progressTimeoutRef.current = setInterval(pollProgress, 1000);
+
+    return () => {
+      if (progressTimeoutRef.current) {
+        clearInterval(progressTimeoutRef.current);
+        progressTimeoutRef.current = null;
+      }
+    };
+  }, [currentGroup, currentProject, currentVersion, currentScan, scanInfo]);
 
   // Build file tree from results
   const fileTree = useMemo(() => {
@@ -142,6 +448,18 @@ export const ScanResults = () => {
       return normalizedPath === selectedFilePath;
     });
   }, [scanInfo, selectedFilePath]);
+
+  // Restore scroll position after filtered results change (but not on every poll)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      // Use setTimeout to defer scroll restoration to after render
+      const timer = setTimeout(() => {
+        container.scrollTop = scrollPositionRef.current;
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [filteredResults]);
 
   const handleToggleExpand = (path) => {
     setExpandedPaths((prev) => ({
@@ -180,199 +498,39 @@ export const ScanResults = () => {
     return <div className="loading">Loading scan results...</div>;
   }
 
-  const { results = [], status, finishedCount, maxCount } = scanInfo;
-  const progress = maxCount > 0 ? (finishedCount / maxCount) * 100 : 0;
+  const { results = [], status } = scanInfo;
 
   const toggleExpanded = (id) => {
     setExpandedResultId(expandedResultId === id ? null : id);
   };
 
-  const getSeverityColor = (matchCount) => {
-    if (matchCount === 0) return 'green';
-    if (matchCount < 5) return 'yellow';
-    if (matchCount < 20) return 'orange';
-    return 'red';
-  };
-
   return (
     <div className="scan-results-wrapper">
-      <div className="scan-results-header">
-        <h3>Scan Results</h3>
-        {error && <div className="error-message">{error}</div>}
-
-        {status && (
-          <div className="scan-header">
-            <span className={`status-badge status-${getStatusName(status)}`}>{getStatusName(status).toUpperCase()}</span>
-            <span className="result-count">{results.length} matches found</span>
-          </div>
-        )}
-
-        {/* Progress Bar */}
-        {maxCount > 0 && (
-          <div className="progress-container">
-            <div className="progress-bar-wrapper">
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-              </div>
-            </div>
-            <span className="progress-text">
-              {finishedCount} / {maxCount}
-            </span>
-          </div>
-        )}
-      </div>
+      {error && <div className="error-message">{error}</div>}
+      
+      <ProgressBarsSection
+        status={status}
+        results={results}
+        finishedCount={progress.finishedCount}
+        maxCount={progress.maxCount}
+        deepFinishedCount={progress.deepFinishedCount}
+        deepMaxCount={progress.deepMaxCount}
+      />
 
       {results.length === 0 ? (
         <p className="empty-message">No matches found in this scan</p>
       ) : (
-        <div className="scan-results-content">
-          {/* File Tree Panel */}
-          <div className="file-tree-panel">
-            <div className="file-tree-header">
-              <h4>Files</h4>
-              {selectedFilePath && (
-                <button
-                  className="btn-icon"
-                  onClick={() => handleSelectFile(null)}
-                  title="Clear selection"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-            <FileTreeRenderer
-              tree={fileTree}
-              selectedPath={selectedFilePath}
-              onSelect={handleSelectFile}
-              expandedPaths={expandedPaths}
-              onToggleExpand={handleToggleExpand}
-            />
-          </div>
-
-          {/* Results Panel */}
-          <div className="results-panel">
-            {filteredResults.length === 0 ? (
-              <p className="empty-message">No results for selected file</p>
-            ) : (
-              <div className="results-container" ref={scrollContainerRef}>
-                {filteredResults.map((result, idx) => (
-                  <div
-                    key={idx}
-                    className="result-item"
-                    onClick={() => toggleExpanded(idx)}
-                  >
-                    <div className="result-header">
-                      <div className="result-title-section">
-                        <span className={`severity-indicator severity-${getSeverityColor(result.resultSets?.length || 0)}`}>
-                          ●
-                        </span>
-                        <span className="result-title">
-                          {result.sourceDb} - {result.sourceFile}
-                        </span>
-                      </div>
-                      <div className="result-meta">
-                        <span className="match-count">
-                          {result.resultSets?.length || 0} matches
-                        </span>
-                        <button className="btn-icon">
-                          {expandedResultId === idx ? '▼' : '▶'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {expandedResultId === idx && (
-                      <div className="result-details">
-                        {result.licence && (
-                          <div className="detail-section">
-                            <h5>License</h5>
-                            <div className="detail-row">
-                              <span className="label">Type:</span>
-                              <span className="value">{result.licence}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="detail-section">
-                          <h5>Source Information</h5>
-                          <div className="detail-row">
-                            <span className="label">Database:</span>
-                            <span className="value">{result.sourceDb}</span>
-                          </div>
-                          <div className="detail-row">
-                            <span className="label">File:</span>
-                            <span className="value code">{result.sourceFile}</span>
-                          </div>
-                          {result.sourceRevision && (
-                            <div className="detail-row">
-                              <span className="label">Revision:</span>
-                              <span className="value code">{result.sourceRevision}</span>
-                            </div>
-                          )}
-                          {result.sourceInternalId && (
-                            <div className="detail-row">
-                              <span className="label">Internal ID:</span>
-                              <span className="value code">{result.sourceInternalId}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="detail-section">
-                          <h5>Scan File</h5>
-                          <div className="detail-row">
-                            <span className="label">File:</span>
-                            <span className="value code">{result.searchFile}</span>
-                          </div>
-                        </div>
-
-                        {result.resultSets && result.resultSets.length > 0 && (
-                          <div className="detail-section">
-                            <h5>Match Locations ({result.resultSets.length})</h5>
-                            
-                            {/* Show Diff Viewer if content is available */}
-                            {result.searchContent && result.sourceContent && (
-                              <div className="detail-subsection">
-                                <DiffViewer
-                                  searchContent={result.searchContent}
-                                  sourceContent={result.sourceContent}
-                                  resultSets={result.resultSets}
-                                />
-                              </div>
-                            )}
-
-                            {/* Show match locations list */}
-                            <div className="matches-list">
-                              {result.resultSets.map((match, matchIdx) => (
-                                <div key={matchIdx} className="match-item">
-                                  <div className="match-header">
-                                    Match {matchIdx + 1}
-                                  </div>
-                                  <div className="match-locations">
-                                    <div className="location">
-                                      <span className="location-label">Source Location:</span>
-                                      <span className="location-value">
-                                        {match.baseStart} - {match.baseEnd}
-                                      </span>
-                                    </div>
-                                    <div className="location">
-                                      <span className="location-label">Search Location:</span>
-                                      <span className="location-value">
-                                        {match.searchStart} - {match.searchEnd}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <ResultsListSection
+          filteredResults={filteredResults}
+          selectedFilePath={selectedFilePath}
+          fileTree={fileTree}
+          expandedPaths={expandedPaths}
+          expandedResultId={expandedResultId}
+          onToggleExpand={handleToggleExpand}
+          onSelectFile={handleSelectFile}
+          onToggleResultExpand={toggleExpanded}
+          scrollContainerRef={scrollContainerRef}
+        />
       )}
     </div>
   );
