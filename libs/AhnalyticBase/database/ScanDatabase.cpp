@@ -13,6 +13,49 @@ using json = nlohmann::json;
  * Data serialisation/deserialisation
  *************************************/
 
+inline std::string utf8_repair(const std::string& input)
+{
+  std::string result;
+  result.reserve(input.size());
+
+  const unsigned char* data = reinterpret_cast<const unsigned char*>(input.data());
+  size_t i = 0;
+  size_t len = input.size();
+
+  while (i < len)
+  {
+    unsigned char c = data[i];
+
+    if (c <= 0x7F)
+    {
+      result.push_back(c);
+      i++;
+    }
+    else if ((c >> 5) == 0x6 && i + 1 < len && (data[i + 1] >> 6) == 0x2)
+    {
+      result.append(reinterpret_cast<const char*>(&data[i]), 2);
+      i += 2;
+    }
+    else if ((c >> 4) == 0xE && i + 2 < len && (data[i + 1] >> 6) == 0x2 && (data[i + 2] >> 6) == 0x2)
+    {
+      result.append(reinterpret_cast<const char*>(&data[i]), 3);
+      i += 3;
+    }
+    else if ((c >> 3) == 0x1E && i + 3 < len && (data[i + 1] >> 6) == 0x2 && (data[i + 2] >> 6) == 0x2 && (data[i + 3] >> 6) == 0x2)
+    {
+      result.append(reinterpret_cast<const char*>(&data[i]), 4);
+      i += 4;
+    }
+    else
+    {
+      result += "\xEF\xBF\xBD";
+      i++;
+    }
+  }
+
+  return result;
+}
+
 NLOHMANN_JSON_SERIALIZE_ENUM(ScanDataTypeE, {{ScanDataTypeE::Git, "Git"}, {ScanDataTypeE::Svn, "Svn"}, {ScanDataTypeE::Archive, "Archive"}})
 
 NLOHMANN_JSON_SERIALIZE_ENUM(ScanDataStatusE, {{ScanDataStatusE::Idle, "Idle"},
@@ -37,18 +80,19 @@ inline void from_json(const nlohmann::json& j, TreeSearchResultSet& v)
   j.at("searchStart").get_to(v.searchStart);
   j.at("searchEnd").get_to(v.searchEnd);
 }
+
 inline void to_json(nlohmann::json& j, const TreeSearchResult& r)
 {
   j = {{"sets", static_cast<const std::vector<TreeSearchResultSet>&>(r)},
-       {"sourceDb", r.sourceDb},
-       {"sourceFile", r.sourceFile},
-       {"sourceRevision", r.sourceRevision},
+       {"sourceDb", utf8_repair(r.sourceDb)},
+       {"sourceFile", utf8_repair(r.sourceFile)},
+       {"sourceRevision", utf8_repair(r.sourceRevision)},
        {"sourceInternalId", r.sourceInternalId},
-       {"searchFile", r.searchFile},
-       {"type", r.type},
-       {"sourceContent", r.sourceContent},
-       {"searchContent", r.searchContent},
-       {"licence", r.licence}};
+       {"searchFile", utf8_repair(r.searchFile)},
+       {"type", static_cast<int>(r.type)},
+       {"sourceContent", utf8_repair(r.sourceContent)},
+       {"searchContent", utf8_repair(r.searchContent)},
+       {"licence", utf8_repair(r.licence)}};
 }
 
 inline void from_json(const nlohmann::json& j, TreeSearchResult& r)
@@ -78,7 +122,7 @@ inline void to_json(nlohmann::json& j, const ScanData& s)
        {"dataPath", s.dataPath},
        {"revision", s.revision},
        {"status", s.status},
-       {"results", s.results},
+       //{"results", s.results},
        {"deepResults", s.deepResults},
        {"maxCount", s.maxCount},
        {"finishedCount", s.finishedCount}};
@@ -98,7 +142,7 @@ inline void from_json(const nlohmann::json& j, ScanData& s)
   if (s.status == ScanDataStatusE::Running)
     s.status = ScanDataStatusE::Aborted;
 
-  j.at("results").get_to(s.results);
+  //j.at("results").get_to(s.results);
   j.at("deepResults").get_to(s.deepResults);
   j.at("maxCount").get_to(s.maxCount);
   j.at("finishedCount").get_to(s.finishedCount);

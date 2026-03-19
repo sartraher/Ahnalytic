@@ -800,6 +800,7 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   {
     std::string cmpFile;
     std::string sourceFile;
+    std::string sourceFileVis;
     SourceStructureTreeDeep* dbTree = nullptr;
     uint32_t resSize;
     std::string sourceType;
@@ -825,34 +826,79 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
       {
         FileData result;
 
+        bool found = false;
+
         // result.id = id;
         result.entry = entry;
 
-        switch (entry.type)
+        // Sanitize sourceDb path for use as a cache folder name
+        std::string sanitizedSourceDb = DataHelperC::cleanFileName(entry.sourceDb);
+        std::string sanitizedRevision = entry.sourceRevision.empty() ? "default" : entry.sourceRevision;
+        std::filesystem::path cachePath = env.dataFolder / sanitizedSourceDb / sanitizedRevision / std::to_string(entry.sourceInternalId);
+
+        try
         {
-        case TreeSearchResult::Github:
-        {
-          std::pair<std::string, std::string> fileData = getGitHubFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence, env);
-          result.sourceFile = fileData.first;
-          result.cmpFile = fileData.second;
-          result.dbTree = scanner.scanDeep(result.sourceFile, result.cmpFile, result.resSize, result.sourceType);
+          if (std::filesystem::exists(cachePath))
+          {
+            for (auto& filePath : std::filesystem::recursive_directory_iterator(cachePath))
+            {
+              if (filePath.is_regular_file())
+              {
+                std::filesystem::path dbPath = filePath.path();
+                std::ifstream in(dbPath, std::ios::binary);
+                result.cmpFile.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+                result.sourceFile = std::filesystem::relative(dbPath, cachePath).string();
+                found = true;
+                break;
+              }
+            }
+          }
         }
-        break;
-        case TreeSearchResult::SourceForge:
-          result.cmpFile = getSourceForgeFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence);
-          result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
-          break;
-        case TreeSearchResult::Stackexchange:
-          result.cmpFile = getStackexchangeFile(entry.sourceDb, entry.sourceInternalId, result.licence);
-          result.sourceFile = "https://stackoverflow.com/questions/" + std::to_string(entry.sourceInternalId);
-          result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
-          break;
+        catch (const std::filesystem::filesystem_error&)
+        {
         }
 
-        ret.push_back(result);
+        if (!found)
+        {
+          switch (entry.type)
+          {
+          case TreeSearchResult::Github:
+          {
+            std::pair<std::string, std::string> fileData = getGitHubFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence, env);
+            result.sourceFile = fileData.first;
+            result.sourceFileVis = result.sourceFile;
+            result.cmpFile = fileData.second;
+            result.dbTree = scanner.scanDeep(result.sourceFile, result.cmpFile, result.resSize, result.sourceType);
+          }
+          break;
+          case TreeSearchResult::SourceForge:
+            result.cmpFile = getSourceForgeFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence);
+            result.sourceFile = std::to_string(entry.sourceInternalId);
+            result.sourceFileVis = result.sourceFile;
+            result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
+            break;
+          case TreeSearchResult::Stackexchange:
+            result.cmpFile = getStackexchangeFile(entry.sourceDb, entry.sourceInternalId, result.licence);
+            result.sourceFile = std::to_string(entry.sourceInternalId) + ".txt";
+            result.sourceFileVis = "https://stackoverflow.com/questions/" + std::to_string(entry.sourceInternalId);
+            result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
+            break;
+          }
+
+          try
+          {
+            std::filesystem::path cacheFilePath = cachePath / result.sourceFile;
+            std::filesystem::create_directories(cacheFilePath.parent_path());
+            std::ofstream out(cacheFilePath, std::ios::binary);
+            out << result.cmpFile;
+          }
+          catch (const std::filesystem::filesystem_error&)
+          {
+          }
+        }
+
+        return ret;
       }
-
-      return ret;
     }));
   }
 

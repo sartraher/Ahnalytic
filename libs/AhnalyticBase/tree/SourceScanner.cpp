@@ -243,6 +243,16 @@ void SourceScanner::traverseDeep(TSTreeCursor& cursor, SourceStructureTreeDeep* 
         name = nodeText(functionNode, content.c_str());
     }
   }
+  else if (type == "preproc_function_def" || type == "preproc_def")
+  {
+    if (TSNode nameNode = ts_node_child_by_field_name(node, "name", 4); !ts_node_is_null(nameNode))
+      name = nodeText(nameNode, content.c_str());
+  }
+  else if (type == "case_statement")
+  {
+    if (TSNode valueNode = ts_node_child_by_field_name(node, "value", 5); !ts_node_is_null(valueNode))
+      name = nodeText(valueNode, content.c_str());
+  }
 
   TSPoint start = ts_node_start_point(node);
   unsigned lineNr = start.row + 1;
