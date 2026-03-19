@@ -818,15 +818,17 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
   std::vector<std::string> doneList;
   std::unordered_map<TreeSearchResult::ResultSourceTypeE, std::unordered_map<std::string, FileData>> cache;
-  std::vector<std::future<std::vector<FileData>>> tasks;
+  std::vector<std::future<ahn::vector<FileData>>> tasks;
 
   for (auto iter = resultByCatalog.begin(); iter != resultByCatalog.end(); iter++)
   {
     std::vector<TreeSearchResult> entries = iter->second;
 
-    tasks.push_back(pool.submit_task([entries, &scanner, &env, this, &resultInter]() -> std::vector<FileData>
+    tasks.push_back(pool.submit_task([entries, &scanner, &env, this, &resultInter]() -> ahn::vector<FileData>
     {
-      std::vector<FileData> ret;
+      ahn::vector<FileData> ret;
+      ret.reserve(entries.size());
+
       for (const TreeSearchResult& entry : entries)
       {
         if (resultInter->isAborted())
@@ -905,8 +907,9 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
           }
         }
 
-        return ret;
+        ret.push_back(result);
       }
+      return ret;
     }));
   }
 
@@ -919,7 +922,7 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   std::unordered_map<std::string, DeepScanData> trees;
   for (int index = 0; index < tasks.size(); index++)
   {
-    std::vector<FileData> datas = tasks[index].get();
+    ahn::vector<FileData> datas = tasks[index].get();
 
     for (const FileData& data : datas)
     {
