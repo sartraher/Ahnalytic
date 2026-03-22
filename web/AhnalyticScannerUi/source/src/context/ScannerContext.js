@@ -392,12 +392,11 @@ export const ScannerProvider = ({ children }) => {
   const getStatusName = (status) => {
     if (typeof status === 'string') return status;
     const statusMap = {
-      0: 'pending',
+      0: 'idle',
       1: 'started',
       2: 'running',
-      3: 'completed',
-      4: 'aborted',
-      5: 'failed',
+      3: 'aborted',
+      4: 'finished',
     };
     return statusMap[status] || 'unknown';
   };

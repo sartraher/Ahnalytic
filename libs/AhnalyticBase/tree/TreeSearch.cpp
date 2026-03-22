@@ -1,9 +1,9 @@
 #include "TreeSearch.hpp"
+#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
 #include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
 #include "AhnalyticBase/helper/DataHelper.hpp"
-#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/helper/SSE2ASC2memcmp.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 
@@ -459,7 +459,6 @@ TreeSearchResult TreeSearch::searchHash(const SearchNodes& baseNodes, const Sear
 
     if (searchIter != searchNodes.hashData.end())
     {
-
       for (const uint32_t& baseIndex : baseIter->second)
       {
         if (doneBaseLines.size() > 0)
@@ -611,6 +610,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
   auto scanSnippedDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
+    return;
     if (!checkIndex(dbPath, nodes))
     {
       resultInter->incFinishedCount(1);
@@ -868,44 +868,54 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
         {
         }
 
-        if (!found)
+        // if (!found)
+        //{
+        switch (entry.type)
         {
-          switch (entry.type)
-          {
-          case TreeSearchResult::Github:
+        case TreeSearchResult::Github:
+        {
+          if (!found)
           {
             std::pair<std::string, std::string> fileData = getGitHubFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence, env);
             result.sourceFile = fileData.first;
-            result.sourceFileVis = result.sourceFile;
             result.cmpFile = fileData.second;
-            result.dbTree = scanner.scanDeep(result.sourceFile, result.cmpFile, result.resSize, result.sourceType);
-          }
-          break;
-          case TreeSearchResult::SourceForge:
-            result.cmpFile = getSourceForgeFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence);
-            result.sourceFile = std::to_string(entry.sourceInternalId);
-            result.sourceFileVis = result.sourceFile;
-            result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
-            break;
-          case TreeSearchResult::Stackexchange:
-            result.cmpFile = getStackexchangeFile(entry.sourceDb, entry.sourceInternalId, result.licence);
-            result.sourceFile = std::to_string(entry.sourceInternalId) + ".txt";
-            result.sourceFileVis = "https://stackoverflow.com/questions/" + std::to_string(entry.sourceInternalId);
-            result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
-            break;
           }
 
-          try
-          {
-            std::filesystem::path cacheFilePath = cachePath / result.sourceFile;
-            std::filesystem::create_directories(cacheFilePath.parent_path());
-            std::ofstream out(cacheFilePath, std::ios::binary);
-            out << result.cmpFile;
-          }
-          catch (const std::filesystem::filesystem_error&)
-          {
-          }
+          result.sourceFileVis = result.sourceFile;
+          result.dbTree = scanner.scanDeep(result.sourceFile, result.cmpFile, result.resSize, result.sourceType);
         }
+        break;
+        case TreeSearchResult::SourceForge:
+          if (!found)
+          {
+            result.cmpFile = getSourceForgeFile(entry.sourceDb, entry.sourceInternalId, entry.sourceRevision, result.licence);
+            result.sourceFile = std::to_string(entry.sourceInternalId);
+          }
+          result.sourceFileVis = result.sourceFile;
+          result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
+          break;
+        case TreeSearchResult::Stackexchange:
+          if (!found)
+          {
+            result.cmpFile = getStackexchangeFile(entry.sourceDb, entry.sourceInternalId, result.licence);
+            result.sourceFile = std::to_string(entry.sourceInternalId) + ".txt";
+          }
+          result.sourceFileVis = "https://stackoverflow.com/questions/" + std::to_string(entry.sourceInternalId);
+          result.dbTree = scanner.scanDeep(result.cmpFile, result.resSize, result.sourceType);
+          break;
+        }
+
+        try
+        {
+          std::filesystem::path cacheFilePath = cachePath / result.sourceFile;
+          std::filesystem::create_directories(cacheFilePath.parent_path());
+          std::ofstream out(cacheFilePath, std::ios::binary);
+          out << result.cmpFile;
+        }
+        catch (const std::filesystem::filesystem_error&)
+        {
+        }
+        //}
 
         ret.push_back(result);
       }
@@ -975,18 +985,16 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
         for (int outerIndex = 0; outerIndex < deepResult.size(); outerIndex++)
         {
-          const TreeSearchResultSet& outerSet = deepResult.at(outerIndex);
-          stiched.push_back(outerSet);
+          TreeSearchResultSet outerSetCpy = deepResult.at(outerIndex);
+          stiched.push_back(outerSetCpy);
 
           for (int innerIndex = outerIndex + 1; innerIndex < deepResult.size(); innerIndex++)
           {
             const TreeSearchResultSet innerSet = deepResult.at(innerIndex);
 
-            if ((outerSet.baseStart <= innerSet.baseStart) && (outerSet.baseEnd + 1 <= innerSet.baseStart) && (outerSet.searchStart <= innerSet.searchStart) &&
-                (outerSet.searchEnd + 1 <= innerSet.searchStart))
+            if (outerSetCpy.intersectsOrTouches(innerSet))
             {
-              deepResult[outerIndex].baseEnd = innerSet.baseEnd;
-              deepResult[outerIndex].searchEnd = innerSet.searchEnd;
+              outerSetCpy.merge(innerSet);
             }
             else
             {

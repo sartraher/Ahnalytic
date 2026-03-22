@@ -48,7 +48,7 @@ public:
   void setStatus(ScanDataStatusE nextStatus)
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex);
-    status = ScanDataStatusE::Running;
+    status = nextStatus;
   }
 
   void getData(std::string& path, std::string& rev, ScanDataTypeE& dataType)

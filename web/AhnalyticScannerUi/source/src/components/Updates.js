@@ -12,6 +12,9 @@ export const UpdatesList = () => {
     error,
   } = useScanner();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+
   useEffect(() => {
     // Check for updates on component mount
     checkForUpdates();
@@ -24,13 +27,29 @@ export const UpdatesList = () => {
     return () => clearInterval(interval);
   }, [checkForUpdates]);
 
+  // Calculate pagination
+  const totalPages = Math.ceil(updates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUpdates = updates.slice(startIndex, endIndex);
+
+  // Reset to page 1 if current page exceeds max pages
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [updates.length, currentPage, totalPages]);
+
   if (loading && updates.length === 0) {
     return <div className="loading">Loading updates...</div>;
   }
 
   return (
     <div className="component-container">
-      <h3>Available Updates</h3>
+      <div className="list-header">
+        <h3>Available Updates</h3>
+        <span className="update-count">({updates.length} total)</span>
+      </div>
       {error && <div className="error-message">{error}</div>}
       {updateQueuedWaiting && (
         <div className="warning-message">
@@ -41,24 +60,41 @@ export const UpdatesList = () => {
       {updates.length === 0 ? (
         <p className="empty-message">No updates available</p>
       ) : (
-        <div className="list-container">
-          {updates.map((update, index) => (
-            <div key={index} className="list-item">
-              <div className="list-item-header">
-                <span className="list-item-title">{update.name}</span>
-                <span className="update-badge">{update.type}</span>
+        <>
+          <div className="list-container compact">
+            {paginatedUpdates.map((update, index) => (
+              <div key={startIndex + index} className="list-item-compact">
+                <span className="update-name">{update.name}</span>
+                <span className="update-type-badge">{update.type}</span>
+                <span className="update-language">{update.language}</span>
+                <span className="update-sha" title={update.sha}>{update.sha?.substring(0, 8)}</span>
               </div>
-              <div className="update-details">
-                <div className="detail-row">
-                  <strong>Language:</strong> {update.language}
-                </div>
-                <div className="detail-row">
-                  <strong>SHA:</strong> {update.sha}
-                </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pagination-container">
+              <button
+                className="btn-pagination"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                ← Previous
+              </button>
+              <div className="pagination-info">
+                Page {currentPage} of {totalPages}
               </div>
+              <button
+                className="btn-pagination"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next →
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -18,6 +18,37 @@ struct TreeSearchResultSet
 
   uint32_t searchStart = 0;
   uint32_t searchEnd = 0;
+
+  bool intersectsOrTouches(const TreeSearchResultSet& other)
+  {
+    return intersectsOrTouches(*this, other);
+  }
+
+  static bool intersectsOrTouches(const TreeSearchResultSet& a, const TreeSearchResultSet& b)
+  {
+    bool baseOverlap = a.baseStart <= b.baseEnd && b.baseStart <= a.baseEnd;
+    bool searchOverlap = a.searchStart <= b.searchEnd && b.searchStart <= a.searchEnd;
+
+    return baseOverlap && searchOverlap;
+  }
+
+  void merge(const TreeSearchResultSet& other)
+  {
+    *this = merge(*this, other);
+  }
+
+  static TreeSearchResultSet merge(const TreeSearchResultSet& a, const TreeSearchResultSet& b)
+  {
+    TreeSearchResultSet result;
+
+    result.baseStart = std::min(a.baseStart, b.baseStart);
+    result.baseEnd = std::max(a.baseEnd, b.baseEnd);
+
+    result.searchStart = std::min(a.searchStart, b.searchStart);
+    result.searchEnd = std::max(a.searchEnd, b.searchEnd);
+
+    return result;
+  }
 };
 
 class TreeSearchResult : public std::vector<TreeSearchResultSet>

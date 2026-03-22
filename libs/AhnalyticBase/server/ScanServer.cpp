@@ -576,6 +576,7 @@ void ScanServer::updateScans()
 
         // Just for consistency
         nextData->setStatus(ScanDataStatusE::Finished);
+        priv->scanDatabase->save();
         LoggerC::LogInfo("Scan started finished");
       });
     }
