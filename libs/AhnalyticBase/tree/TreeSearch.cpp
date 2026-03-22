@@ -610,7 +610,6 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
 
   auto scanSnippedDb = [this, resultInter, env, &checkIndex](const std::filesystem::path& dbPath, const SearchNodeData& nodes)
   {
-    return;
     if (!checkIndex(dbPath, nodes))
     {
       resultInter->incFinishedCount(1);
