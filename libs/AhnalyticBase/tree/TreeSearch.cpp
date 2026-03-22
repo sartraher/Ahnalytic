@@ -930,7 +930,10 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
         return;
 
       if (data.dbTree == nullptr)
+      {
+        resultInter->incDeepFinishedCount(1);
         continue;
+      }
 
       auto iter = trees.find(data.entry.searchFile);
       if (iter == trees.end())
@@ -1012,7 +1015,7 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     }
   }
 
-  for(auto iter=trees.begin();iter!=trees.end(); iter++)
+  for (auto iter = trees.begin(); iter != trees.end(); iter++)
     delete iter->second.tree;
 }
 

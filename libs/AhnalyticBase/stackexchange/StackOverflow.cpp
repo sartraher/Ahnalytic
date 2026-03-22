@@ -30,7 +30,6 @@ void StackOverflowHandler::convertDataDump(const std::string& commentsXmlPath, c
 void StackOverflowHandler::importData(const std::string& stackDb, const std::string& outDb)
 {
   StackExchangeExtractDatabase db(DBType::SQLite, stackDb);
-  // SnippedDatabase snippedDB(DBType::SQLite, outDb);
 
   struct TreeData
   {
@@ -64,24 +63,10 @@ void StackOverflowHandler::importData(const std::string& stackDb, const std::str
     ahn::vector<char> result;
     SourceStructureTree::serialize(deduped, indexList, result, nullptr);
 
-    /*
-    std::vector<FlatNodeDeDupData> nodeListTestOut;
-    std::vector<uint32_t> indexListTestOut;
-    SourceStructureTree::deserialize(result, nodeListTestOut, indexListTestOut, nullptr);
-    root = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
-    */
-
-    // std::ofstream out("D:/source/Ahnalytic/db/stackoverflow/output.bin", std::ios::binary);
-    // out.write(result.data(), result.size());
-
     SnippedDatabase* db = dbs[sourceType];
 
     uint32_t dataId = db->createSourceTreeData(result);
     uint32_t index = 0;
-
-    // std::vector<char> resultTest;
-    // db->getSourceTreeData(dataId, resultTest);
-    // int bla = memcmp(result.data(), resultTest.data(), result.size());
 
     for (const TreeData& treeData : dataCollector[sourceType])
     {

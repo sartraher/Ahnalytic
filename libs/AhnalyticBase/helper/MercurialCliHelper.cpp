@@ -2,6 +2,7 @@
 #include "DataHelper.hpp"
 
 #include <ranges>
+#include <algorithm>
 
 std::string MercurialCliHelperC::getHeadChangeSet(const std::string& url, const std::string& tempPath)
 {
