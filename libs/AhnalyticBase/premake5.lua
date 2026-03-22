@@ -39,7 +39,8 @@ project "AhnalyticBase"
         "../../3rdParty/openssl-3.5.4/include",
         "../../3rdParty/libarchive/libarchive",
 		"../../3rdParty/magic_enum/include",
-		"../../3rdParty/mimalloc/include"
+		"../../3rdParty/mimalloc/include",
+		"../../3rdParty/spdlog/include"
     }
 	
 	defines {
@@ -80,7 +81,8 @@ project "AhnalyticBase"
             "zlibstatic",
             "libssl_static",
             "libcrypto_static",
-			"mimalloc"
+			"mimalloc",
+			"spdlog"
         }        
 
     filter "system:linux or system:macosx"
@@ -121,5 +123,12 @@ project "AhnalyticBase"
 
 	filter "system:linux"
 		buildoptions { "-mavx2" }
+		
+	filter "system:windows"
+		systemversion "latest"
+		buildoptions { "/utf-8" }
+		
+	filter "system:linux"
+		buildoptions { "-finput-charset=UTF-8", "-fexec-charset=UTF-8" }
 
     filter {}

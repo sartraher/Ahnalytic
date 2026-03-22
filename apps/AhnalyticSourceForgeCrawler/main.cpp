@@ -1,7 +1,7 @@
 
 #include "AhnalyticBase/database/GitHubRepoDatabase.hpp"
 #include "AhnalyticBase/github/RateLimit.hpp"
-#include "AhnalyticBase/helper/CliHelper.hpp"
+#include "AhnalyticBase/cli/CliHelper.hpp"
 #include "AhnalyticBase/helper/DataHelper.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
 #include "AhnalyticBase/helper/ThreadSafeQueue.hpp"

@@ -3,7 +3,7 @@
 #include "AhnalyticBase/github/RateLimit.hpp"
 #include "AhnalyticBase/helper/DataHelper.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
-#include "AhnalyticBase/helper/GitCliHelper.hpp"
+#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
 
 #include "BS_thread_pool.hpp"

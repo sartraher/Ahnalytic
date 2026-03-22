@@ -3,7 +3,7 @@
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
 #include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
 #include "AhnalyticBase/helper/DataHelper.hpp"
-#include "AhnalyticBase/helper/GitCliHelper.hpp"
+#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/helper/SSE2ASC2memcmp.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 

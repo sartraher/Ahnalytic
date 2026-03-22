@@ -1,6 +1,7 @@
 #include "ScanServer.hpp"
 #include "AhnalyticBase/database/ScanDatabase.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
+#include "AhnalyticBase/helper/Logger.hpp"
 #include "AhnalyticBase/server/UpdateManager.hpp"
 #include "AhnalyticBase/tree/TreeSearch.hpp"
 
@@ -56,8 +57,13 @@ std::string base64_encode(const std::string& input)
 class ScanServerPrivate
 {
 public:
+  ScanServerPrivate() : logger(env)
+  {
+  }
+
   httplib::Server server;
   EnviromentC env;
+  LoggerC logger;
   ScanDatabase* scanDatabase = nullptr;
   UpdateManager* updateManager = nullptr;
 
@@ -120,9 +126,15 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Group creation failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     size_t id = priv->scanDatabase->createGroup(body["name"]);
+
+    LoggerC::LogInfo(std::format("Group {} created", std::string(body["name"])));
+
     ok(res, {{"id", id}});
   });
 
@@ -138,15 +150,21 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Group renaming failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     priv->scanDatabase->editGroup(std::stoull(req.matches[1]), body["name"]);
+
+    LoggerC::LogInfo(std::format("Group named to {}", std::string(body["name"])));
     ok(res, {{"status", "updated"}});
   });
 
   priv->server.Delete(R"(/groups/(\d+))", [&](const httplib::Request& req, httplib::Response& res)
   {
     priv->scanDatabase->removeGroup(std::stoull(req.matches[1]));
+    LoggerC::LogInfo("Group deleted");
     ok(res, {{"status", "deleted"}});
   });
 
@@ -156,14 +174,23 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Project creation failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     size_t id = priv->scanDatabase->createProject(body["name"], std::stoull(req.matches[1]));
 
     if (id == -1)
+    {
+      LoggerC::LogError("Project creation failed: Error while resolving Ids");
       bad_request(res, "Error while resolving Ids");
+    }
     else
+    {
+      LoggerC::LogInfo(std::format("Project {} created", std::string(body["name"])));
       ok(res, {{"id", id}});
+    }
   });
 
   priv->server.Get(R"(/groups/(\d+)/projects)", [&](const httplib::Request& req, httplib::Response& res)
@@ -178,17 +205,21 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Project renaming failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     priv->scanDatabase->editProject(std::stoull(req.matches[2]), std::stoull(req.matches[1]), body["name"]);
 
+    LoggerC::LogInfo(std::format("Project {} renamed", std::string(body["name"])));
     ok(res, {{"status", "updated"}});
   });
 
   priv->server.Delete(R"(/groups/(\d+)/projects/(\d+))", [&](const httplib::Request& req, httplib::Response& res)
   {
     priv->scanDatabase->removeProject(std::stoull(req.matches[2]), std::stoull(req.matches[1]));
-
+    LoggerC::LogInfo("Project deleted");
     ok(res, {{"status", "deleted"}});
   });
 
@@ -198,14 +229,23 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Version creation failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     size_t id = priv->scanDatabase->createVersion(body["name"], std::stoull(req.matches[1]), std::stoull(req.matches[2]));
 
     if (id == -1)
+    {
+      LoggerC::LogError("Version creation failed: Error while resolving Ids");
       bad_request(res, "Error while resolving Ids");
+    }
     else
+    {
+      LoggerC::LogInfo(std::format("Version {} created", std::string(body["name"])));
       ok(res, {{"id", id}});
+    }
   });
 
   priv->server.Get(R"(/groups/(\d+)/projects/(\d+)/versions)", [&](const httplib::Request& req, httplib::Response& res)
@@ -221,17 +261,21 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Version renaming failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     priv->scanDatabase->editVersion(std::stoull(req.matches[3]), std::stoull(req.matches[1]), std::stoull(req.matches[2]), body["name"]);
 
+    LoggerC::LogInfo(std::format("Version {} renamed", std::string(body["name"])));
     ok(res, {{"status", "updated"}});
   });
 
   priv->server.Delete(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+))", [&](const httplib::Request& req, httplib::Response& res)
   {
     priv->scanDatabase->removeVersion(std::stoull(req.matches[3]), std::stoull(req.matches[1]), std::stoull(req.matches[2]));
-
+    LoggerC::LogInfo("Version deleted");
     ok(res, {{"status", "deleted"}});
   });
 
@@ -241,14 +285,23 @@ void ScanServer::init()
   {
     auto body = json::parse(req.body, nullptr, false);
     if (!body.contains("name"))
+    {
+      LoggerC::LogError("Scan creation failed: missing name");
       return bad_request(res, "Missing 'name'");
+    }
 
     size_t id = priv->scanDatabase->createScan(body["name"], std::stoull(req.matches[1]), std::stoull(req.matches[2]), std::stoull(req.matches[3]));
 
     if (id == -1)
+    {
+      LoggerC::LogError("Scan creation failed: Error while resolving Ids");
       bad_request(res, "Error while resolving Ids");
+    }
     else
+    {
+      LoggerC::LogInfo(std::format("Scan {} created", std::string(body["name"])));
       ok(res, {{"id", id}});
+    }
   });
 
   priv->server.Get(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans)", [&](const httplib::Request& req, httplib::Response& res)
@@ -267,7 +320,7 @@ void ScanServer::init()
     const size_t scanId = std::stoull(req.matches[4]);
 
     priv->scanDatabase->removeScan(groupId, projectId, versionId, scanId);
-
+    LoggerC::LogInfo("Scan deleted");
     ok(res, {{"status", "deleted"}});
   });
 
@@ -279,12 +332,18 @@ void ScanServer::init()
     const size_t scanId = std::stoull(req.matches[4]);
 
     if (!req.form.has_file("file"))
+    {
+      LoggerC::LogError("Error while Uploading: Missing 'file' in multipart form data");
       return bad_request(res, "Missing 'file' in multipart form data");
+    }
 
     httplib::FormData file = req.form.get_file("file");
 
     if (file.content.empty())
+    {
+      LoggerC::LogError("Error while Uploading: File content is empty");
       return bad_request(res, "File content is empty");
+    }
 
     try
     {
@@ -293,11 +352,12 @@ void ScanServer::init()
 
       // Add the zip data to the database
       priv->scanDatabase->addZipData(scanId, groupId, projectId, versionId, scanId, fileData);
-
+      LoggerC::LogInfo("File uploaded");
       ok(res, {{"status", "uploaded"}, {"filename", file.filename}, {"size", fileData.size()}});
     }
     catch (const std::exception& e)
     {
+      LoggerC::LogError(std::format("Error while Uploading: Error processing file: {}", e.what()));
       bad_request(res, std::string("Error processing file: ") + e.what());
     }
   });
@@ -310,7 +370,7 @@ void ScanServer::init()
     const size_t scanId = std::stoull(req.matches[4]);
 
     priv->scanDatabase->startScan(scanId, groupId, projectId, versionId, scanId);
-
+    LoggerC::LogInfo("Scan started");
     ok(res, {{"status", "started"}});
   });
 
@@ -322,7 +382,7 @@ void ScanServer::init()
     const size_t scanId = std::stoull(req.matches[4]);
 
     priv->scanDatabase->abortScan(scanId, groupId, projectId, versionId, scanId);
-
+    LoggerC::LogInfo("Scan aborted");
     ok(res, {{"status", "aborted"}});
   });
 
@@ -427,6 +487,7 @@ void ScanServer::init()
   priv->server.Post(R"(/updates/startupdate)", [&](const httplib::Request& req, httplib::Response& res)
   {
     priv->updateDatabase = true;
+    LoggerC::LogInfo("Database update started");
     ok(res, {{"status", "startupdate"}});
   });
 
@@ -469,6 +530,7 @@ void ScanServer::updateScans()
     {
       priv->pool.detach_task([this, nextData]()
       {
+        LoggerC::LogInfo("Scan started started");
         nextData->setStatus(ScanDataStatusE::Running);
 
         // Unzip/Checkout Data
@@ -514,6 +576,7 @@ void ScanServer::updateScans()
 
         // Just for consistency
         nextData->setStatus(ScanDataStatusE::Finished);
+        LoggerC::LogInfo("Scan started finished");
       });
     }
   }

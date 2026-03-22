@@ -3,7 +3,7 @@
 #include "AhnalyticBase/database/SnippedDatabase.hpp"
 #include "AhnalyticBase/github/Github.hpp"
 #include "AhnalyticBase/github/GithubCrawler.hpp"
-#include "AhnalyticBase/helper/GitCliHelper.hpp"
+#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/stackexchange/DataDump.hpp"
 #include "AhnalyticBase/tree/SourceScanner.hpp"
 

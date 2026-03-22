@@ -2,7 +2,7 @@
 
 #include "AhnalyticBase/database/FileDatabase.hpp"
 #include "AhnalyticBase/github/GithubCrawler.hpp"
-#include "AhnalyticBase/helper/GitCliHelper.hpp"
+#include "AhnalyticBase/cli/GitCliHelper.hpp"
 
 #include <algorithm>
 #include <atomic>
