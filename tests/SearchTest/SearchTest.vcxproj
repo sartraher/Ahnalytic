@@ -66,7 +66,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\unordered_dense\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\mimalloc\include;$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\unordered_dense\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -101,7 +101,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\unordered_dense\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\mimalloc\include;$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\unordered_dense\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>

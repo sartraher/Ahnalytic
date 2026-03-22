@@ -44,6 +44,7 @@ dofile("apps/AhnalyticScannerServer/premake5.lua")
 
 if os.host() == "windows" then
     dofile("apps/AhnalyticGitHubCrawler/premake5.lua")
+	dofile("apps/AhnalyticSourceForgeCrawler/premake5.lua")
     dofile("apps/AhnalyticUpdateRunner/premake5.lua")
     dofile("apps/AhnalyticDatabaseExporter/premake5.lua")
 end

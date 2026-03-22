@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     std::filesystem::path repoPath = tempPath / "mongotest";
     std::filesystem::path workPath = repoPath / "work";
 
-    std::vector<GitTagData> tagData = GitCliHelperC::getGitTagData(testUri, tempPath.string());
+    std::vector<TagData> tagData = GitCliHelperC::getGitTagData(testUri, tempPath.string());
 
     std::string lastSha = tagData.at(0).sha;
     std::string sha = tagData.at(1).sha;

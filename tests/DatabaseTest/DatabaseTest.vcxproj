@@ -66,7 +66,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\3rdParty\zlib\build;$(SolutionDir)\3rdParty\zlib;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\json\include;$(SolutionDir)\3rdParty\openssl-3.5.4\include;$(SolutionDir)\3rdParty\cpp-httplib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\mimalloc\include;$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\3rdParty\zlib\build;$(SolutionDir)\3rdParty\zlib;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\json\include;$(SolutionDir)\3rdParty\openssl-3.5.4\include;$(SolutionDir)\3rdParty\cpp-httplib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -102,7 +102,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\3rdParty\zlib\build;$(SolutionDir)\3rdParty\zlib;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\json\include;$(SolutionDir)\3rdParty\openssl-3.5.4\include;$(SolutionDir)\3rdParty\cpp-httplib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\3rdParty\mimalloc\include;$(SolutionDir)\3rdParty\unordered_dense\include;$(SolutionDir)\3rdParty\zlib\build;$(SolutionDir)\3rdParty\zlib;$(SolutionDir)\libs;$(SolutionDir);$(SolutionDir)\3rdParty\tree-sitter\lib\include;$(SolutionDir)\3rdParty\json\include;$(SolutionDir)\3rdParty\openssl-3.5.4\include;$(SolutionDir)\3rdParty\cpp-httplib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>

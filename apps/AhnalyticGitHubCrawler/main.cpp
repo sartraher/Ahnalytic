@@ -466,8 +466,8 @@ int main(int argc, char* argv[])
         // Tags
         if (info.tags.size() == 0)
         {
-          std::vector<GitTagData> tagData = GitCliHelperC::getGitTagData(info.htmlUrl, env.workFolder.string());
-          for (const GitTagData& tag : tagData)
+          std::vector<TagData> tagData = GitCliHelperC::getGitTagData(info.htmlUrl, env.workFolder.string());
+          for (const TagData& tag : tagData)
             info.tags.push_back({tag.name, tag.sha});
 
           if (info.tags.size() == 0)

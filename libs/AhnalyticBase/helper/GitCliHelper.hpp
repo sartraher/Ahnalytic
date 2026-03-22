@@ -2,22 +2,17 @@
 #define gitclihelper_hpp__
 
 #include "AhnalyticBase/Export.hpp"
+#include "AhnalyticBase/helper/CliHelper.hpp"
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <filesystem>
 
-struct DLLEXPORT GitTagData
-{
-  std::string sha;
-  std::string name;
-};
-
 class DLLEXPORT GitCliHelperC
 {
 public:
-  static std::vector<GitTagData> getGitTagData(const std::string& url, const std::string& tempPath);
+  static std::vector<TagData> getGitTagData(const std::string& url, const std::string& tempPath);
   static std::string getHeadSha(const std::string& url, const std::string& tempPath);
 
   static std::string getGitCloneShallow(const std::string& name, const std::string& url, const std::string& tempPath);
@@ -40,7 +35,7 @@ public:
 
 private:
 protected:
-  static std::vector<GitTagData> parseTags(const std::string& lines, bool isHead);
+  static std::vector<TagData> parseTags(const std::string& lines, bool isHead);
 };
 
 #endif

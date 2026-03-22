@@ -30,11 +30,14 @@ struct DLLEXPORT RepoInfo
   std::string name;
   std::string fullName;
   std::string htmlUrl;
+  std::string cloneUrl;
   std::string license;
   std::string language;
   std::string lastPushed;
   std::string headBranch;
   std::string headSha;
+
+  std::string repoType = "git";
 
   std::vector<TagInfo> tags;
   std::vector<BranchInfo> branches;
@@ -76,3 +79,5 @@ private:
   void insertTags(uint32_t repoId, const std::vector<TagInfo>& tags);
   void insertBranches(uint32_t repoId, const std::vector<BranchInfo>& branches);
 };
+
+using SourceForgeRepoDatabase = GitHubRepoDatabase;

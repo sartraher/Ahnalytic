@@ -1,3 +1,4 @@
+#include "CliHelper.hpp"
 #include "GitCliHelper.hpp"
 #include "DataHelper.hpp"
 
@@ -7,9 +8,9 @@
 #include <thread>
 #include <unordered_map>
 
-std::vector<GitTagData> GitCliHelperC::parseTags(const std::string& lines, bool isHead)
+std::vector<TagData> GitCliHelperC::parseTags(const std::string& lines, bool isHead)
 {
-  std::vector<GitTagData> ret;
+  std::vector<TagData> ret;
   std::unordered_map<std::string, size_t> lookUp;
 
   for (auto part : lines | std::views::split('\n'))
@@ -30,7 +31,7 @@ std::vector<GitTagData> GitCliHelperC::parseTags(const std::string& lines, bool 
       else
         name = segments[1].substr(10); // +10:refs/tags/
 
-      GitTagData tagData;
+      TagData tagData;
       tagData.sha = segments[0];
       if (name.ends_with("^{}"))
       {
@@ -57,9 +58,9 @@ std::vector<GitTagData> GitCliHelperC::parseTags(const std::string& lines, bool 
   return ret;
 }
 
-std::vector<GitTagData> GitCliHelperC::getGitTagData(const std::string& url, const std::string& tempPath)
+std::vector<TagData> GitCliHelperC::getGitTagData(const std::string& url, const std::string& tempPath)
 {
-  std::vector<GitTagData> ret;
+  std::vector<TagData> ret;
 
   std::string cloneCmd = "git ls-remote --tags " + url;
   ExecResult result = DataHelperC::execAndCapture(cloneCmd, tempPath);
@@ -83,7 +84,7 @@ std::string GitCliHelperC::getHeadSha(const std::string& url, const std::string&
 
   if (result.stdoutText.size() > 0)
   {
-    std::vector<GitTagData> tags = parseTags(result.stdoutText, true);
+    std::vector<TagData> tags = parseTags(result.stdoutText, true);
     if (tags.size() > 0)
       ret = tags[0].sha;
   }

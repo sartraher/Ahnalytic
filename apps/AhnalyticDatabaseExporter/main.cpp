@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     if (typeStr == "github")
     {
       nlohmann::json outJson;
+      nlohmann::json outJsonFull;
 
       BS::thread_pool pool;
       std::mutex mutex;
@@ -67,9 +68,11 @@ int main(int argc, char* argv[])
         {
           std::filesystem::path inPath = entry.path();
           std::filesystem::path outPathSub = outPath / entry.path().stem();
-          pool.detach_task([outPathSub, inPath, &outJson, &mutex]()
+          std::filesystem::path tagFile = outPathSub / "tags.json";
+          std::filesystem::path repoFile = outPathSub / "repo.json";
+          pool.detach_task([outPathSub, inPath, &outJson, &outJsonFull, &mutex, tagFile, repoFile]()
           {
-            if (!std::filesystem::exists(outPathSub))
+            if (!std::filesystem::exists(tagFile))
             {
               FileDatabase inDb(DBType::SQLite, inPath.string());
 
@@ -80,13 +83,26 @@ int main(int argc, char* argv[])
               std::cout << inPath << '\n';
             }
 
-            std::filesystem::path tagFile = outPathSub / "tags.json";
-
             if (std::filesystem::exists(tagFile))
             {
               std::ifstream tagStream(tagFile.string());
               nlohmann::json tagData;
               tagStream >> tagData;
+
+              std::ifstream repoStream(repoFile.string());
+              nlohmann::json repoData;
+              repoStream >> repoData;
+
+              repoData["type"] = "github";
+              repoData["language"] = "CPP";
+              repoData["version"] = "1";
+
+              repoData["tags"] = tagData;
+
+              {
+                std::lock_guard<std::mutex> lock(mutex);
+                outJsonFull.push_back(repoData);
+              }
 
               if (tagData.size() > 0)
               {
@@ -113,6 +129,11 @@ int main(int argc, char* argv[])
       std::ofstream repoOut(statusPath.native());
       repoOut << outJson.dump(2);
       repoOut.close();
+
+      std::filesystem::path statusFullPath = outPath / "statusFull.json";
+      std::ofstream fullOut(statusFullPath.native());
+      fullOut << outJsonFull.dump(2);
+      fullOut.close();
     }
     if (typeStr == "stackexchnage_base")
     {

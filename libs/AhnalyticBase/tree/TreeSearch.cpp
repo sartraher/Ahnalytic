@@ -940,7 +940,10 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
         std::ifstream in(data.entry.searchFile, std::ios::binary);
         if (!in.is_open())
+        {
+          resultInter->incDeepFinishedCount(1);
           continue;
+        }
 
         std::ostringstream ss;
         ss << in.rdbuf();
@@ -950,7 +953,10 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
         SourceStructureTreeDeep* tree = scanner.scanDeep(path, resSize, sourceType);
 
         if (tree == nullptr)
+        {
+          resultInter->incDeepFinishedCount(1);
           continue;
+        }
 
         trees[data.entry.searchFile] = {content, tree};
       }
@@ -1001,8 +1007,13 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
       }
 
       resultInter->incDeepFinishedCount(1);
+
+      delete data.dbTree;
     }
   }
+
+  for(auto iter=trees.begin();iter!=trees.end(); iter++)
+    delete iter->second.tree;
 }
 
 std::pair<std::string, std::string> TreeSearch::getGitHubFile(const std::string& sourceDb, const uint32_t& fileId, const std::string& sha, std::string& licence,

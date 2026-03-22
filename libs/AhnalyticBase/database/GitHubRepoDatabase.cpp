@@ -93,7 +93,9 @@ void GitHubRepoDatabase::initTables()
             "  Language TEXT,"
             "  LastPushed TEXT,"
             "  HeadBranch TEXT,"
-            "  HeadSha TEXT"
+            "  HeadSha TEXT,"
+            "  CloneUrl TEXT,"
+            "  RepoType TEXT"
             ")";
 
   // tags
@@ -133,12 +135,12 @@ uint32_t GitHubRepoDatabase::addRepo(const RepoInfo& repo)
 {
   const std::lock_guard<std::recursive_mutex> lock(mutex);
 
-  soci::rowset<int> rs = (sql->prepare << "INSERT INTO GitHubRepos (Name, FullName, HtmlUrl, License, Language, LastPushed, HeadBranch, HeadSha) "
-                                          "VALUES (:name, :fullName, :htmlUrl, :license, :language, :lastPushed, :headBranch, :headSha) "
+  soci::rowset<int> rs = (sql->prepare << "INSERT INTO GitHubRepos (Name, FullName, HtmlUrl, License, Language, LastPushed, HeadBranch, HeadSha, CloneUrl, RepoType) "
+                                          "VALUES (:name, :fullName, :htmlUrl, :license, :language, :lastPushed, :headBranch, :headSha, :cloneUrl, :repoType) "
                                           "RETURNING ID",
                           soci::use(repo.name, "name"), soci::use(repo.fullName, "fullName"), soci::use(repo.htmlUrl, "htmlUrl"),
-                          soci::use(repo.license, "license"), soci::use(repo.language, "language"), soci::use(repo.lastPushed, "lastPushed"),
-                          soci::use(repo.headBranch, "headBranch"), soci::use(repo.headSha, "headSha"));
+                          soci::use(repo.license, "license"), soci::use(repo.language, "language"), soci::use(repo.lastPushed, "lastPushed"), soci::use(repo.headBranch, "headBranch"),
+       soci::use(repo.headSha, "headSha"), soci::use(repo.cloneUrl, "cloneUrl"), soci::use(repo.repoType, "repoType"));
 
   uint32_t repoId = *rs.begin();
 
@@ -168,10 +170,11 @@ uint32_t GitHubRepoDatabase::upsertRepo(const RepoInfo& repo)
   // Update main row
   (*sql) << "UPDATE GitHubRepos SET "
             "Name = :name, HtmlUrl = :htmlUrl, License = :license, Language = :language, "
-            "LastPushed = :lastPushed, HeadBranch = :headBranch, HeadSha = :headSha "
+            "LastPushed = :lastPushed, HeadBranch = :headBranch, HeadSha = :headSha, CloneUrl = :cloneUrl, RepoType = :repoType "
             "WHERE ID = :id",
       soci::use(repo.name, "name"), soci::use(repo.htmlUrl, "htmlUrl"), soci::use(repo.license, "license"), soci::use(repo.language, "language"),
-      soci::use(repo.lastPushed, "lastPushed"), soci::use(repo.headBranch, "headBranch"), soci::use(repo.headSha, "headSha"), soci::use(repoId, "id");
+      soci::use(repo.lastPushed, "lastPushed"), soci::use(repo.headBranch, "headBranch"), soci::use(repo.headSha, "headSha"),
+      soci::use(repo.cloneUrl, "cloneUrl"), soci::use(repo.repoType, "repoType"), soci::use(repoId, "id");
 
   // Replace tags & branches: delete existing then insert new
   (*sql) << "DELETE FROM GitHubRepoTags WHERE RepoId = :repoId", soci::use(repoId, "repoId");
