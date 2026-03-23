@@ -846,7 +846,10 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
         std::string id = entry.searchFile + std::to_string(entry.sourceInternalId);
         if (std::find(doneList.begin(), doneList.end(), id) != doneList.end())
+        {
+          resultInter->incDeepFinishedCount(1);
           continue;
+        }
 
         FileData result;
 

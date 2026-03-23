@@ -131,7 +131,7 @@ const ProgressBarsSection = React.memo(({ status, results, finishedCount, maxCou
       {/* Progress Bars */}
       {maxCount > 0 && (
         <div className="progress-container">
-          <div className="progress-label">Files Scanned</div>
+          <div className="progress-label">Fingerprint databases Scanned</div>
           <div className="progress-bar-wrapper">
             <div className="progress-bar">
               <div className="progress-fill" style={{ width: `${progress}%` }}></div>
