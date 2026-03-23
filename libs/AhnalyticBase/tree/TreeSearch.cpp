@@ -795,9 +795,13 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
   resultInter->setDeepMaxCount(fastResults.size());
 
+  size_t counter = 0;
   std::unordered_map<std::string, std::vector<TreeSearchResult>> resultByCatalog;
-  for (const TreeSearchResult& entry : fastResults)
-    resultByCatalog[entry.sourceDb].push_back(entry);
+  for (TreeSearchResult entry : fastResults)
+  {
+    entry.elementIndex = counter++;
+    resultByCatalog[entry.sourceDb].push_back(std::move(entry));
+  }
 
   SourceScanner scanner;
   struct FileData
@@ -817,21 +821,32 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
   std::vector<std::string> doneList;
   std::unordered_map<TreeSearchResult::ResultSourceTypeE, std::unordered_map<std::string, FileData>> cache;
-  std::vector<std::future<ahn::vector<FileData>>> tasks;
+
+  struct DeepScanData
+  {
+    std::string content;
+    SourceStructureTreeDeep* tree;
+  };
+
+  std::unordered_map<std::string, DeepScanData> trees;
+  std::mutex mutex;
 
   for (auto iter = resultByCatalog.begin(); iter != resultByCatalog.end(); iter++)
   {
     std::vector<TreeSearchResult> entries = iter->second;
 
-    tasks.push_back(pool.submit_task([entries, &scanner, &env, this, &resultInter]() -> ahn::vector<FileData>
+    pool.detach_task([entries, &scanner, &env, this, &resultInter, &trees, &mutex, &path]()
     {
-      ahn::vector<FileData> ret;
-      ret.reserve(entries.size());
+      ahn::vector<std::string> doneList;
 
       for (const TreeSearchResult& entry : entries)
       {
         if (resultInter->isAborted())
-          return ret;
+          return;
+
+        std::string id = entry.searchFile + std::to_string(entry.sourceInternalId);
+        if (std::find(doneList.begin(), doneList.end(), id) != doneList.end())
+          continue;
 
         FileData result;
 
@@ -867,8 +882,6 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
         {
         }
 
-        // if (!found)
-        //{
         switch (entry.type)
         {
         case TreeSearchResult::Github:
@@ -914,113 +927,114 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
         catch (const std::filesystem::filesystem_error&)
         {
         }
-        //}
 
-        ret.push_back(result);
-      }
-      return ret;
-    }));
-  }
+        const FileData& data = result;
 
-  struct DeepScanData
-  {
-    std::string content;
-    SourceStructureTreeDeep* tree;
-  };
+        if (resultInter->isAborted())
+          return;
 
-  std::unordered_map<std::string, DeepScanData> trees;
-  for (int index = 0; index < tasks.size(); index++)
-  {
-    ahn::vector<FileData> datas = tasks[index].get();
-
-    for (const FileData& data : datas)
-    {
-      if (resultInter->isAborted())
-        return;
-
-      if (data.dbTree == nullptr)
-      {
-        resultInter->incDeepFinishedCount(1);
-        continue;
-      }
-
-      auto iter = trees.find(data.entry.searchFile);
-      if (iter == trees.end())
-      {
-        uint32_t resSize;
-        std::string sourceType;
-
-        std::ifstream in(data.entry.searchFile, std::ios::binary);
-        if (!in.is_open())
+        if (data.dbTree == nullptr)
         {
           resultInter->incDeepFinishedCount(1);
           continue;
         }
 
-        std::ostringstream ss;
-        ss << in.rdbuf();
-        std::string content = ss.str();
-
-        std::filesystem::path path = data.entry.searchFile;
-        SourceStructureTreeDeep* tree = scanner.scanDeep(path, resSize, sourceType);
-
-        if (tree == nullptr)
+        mutex.lock();
+        auto iter = trees.find(data.entry.searchFile);
+        if (iter == trees.end())
         {
-          resultInter->incDeepFinishedCount(1);
-          continue;
-        }
+          mutex.unlock();
 
-        trees[data.entry.searchFile] = {content, tree};
-      }
+          uint32_t resSize;
+          std::string sourceType;
 
-      SearchNodes dbNodes = initNodesDeep(data.dbTree, env.windowSize);
-      SearchNodes searchNodes = initNodesDeep(trees[data.entry.searchFile].tree, env.windowSize);
-
-      TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
-      if (deepResult)
-      {
-        // Stich the resultSets back together;
-        TreeSearchResult stiched;
-
-        for (int outerIndex = 0; outerIndex < deepResult.size(); outerIndex++)
-        {
-          TreeSearchResultSet outerSetCpy = deepResult.at(outerIndex);
-          stiched.push_back(outerSetCpy);
-
-          for (int innerIndex = outerIndex + 1; innerIndex < deepResult.size(); innerIndex++)
+          std::ifstream in(data.entry.searchFile, std::ios::binary);
+          if (!in.is_open())
           {
-            const TreeSearchResultSet innerSet = deepResult.at(innerIndex);
+            resultInter->incDeepFinishedCount(1);
+            continue;
+          }
 
-            if (outerSetCpy.intersectsOrTouches(innerSet))
+          std::ostringstream ss;
+          ss << in.rdbuf();
+          std::string content = ss.str();
+
+          std::filesystem::path path = data.entry.searchFile;
+          SourceStructureTreeDeep* tree = scanner.scanDeep(path, resSize, sourceType);
+
+          if (tree == nullptr)
+          {
+            resultInter->incDeepFinishedCount(1);
+            continue;
+          }
+
+          mutex.lock();
+          trees[data.entry.searchFile] = {content, tree};
+        }
+
+        SourceStructureTreeDeep* searchTree = trees[data.entry.searchFile].tree;
+        mutex.unlock();
+
+        SearchNodes dbNodes = initNodesDeep(data.dbTree, env.windowSize);
+        SearchNodes searchNodes = initNodesDeep(searchTree, env.windowSize);
+
+        TreeSearchResult deepResult = searchHash(dbNodes, searchNodes, env.windowSize);
+        if (deepResult)
+        {
+          doneList.push_back(id);
+
+          // Stich the resultSets back together;
+          TreeSearchResult stiched;
+
+          for (int outerIndex = 0; outerIndex < deepResult.size(); outerIndex++)
+          {
+            TreeSearchResultSet outerSetCpy = deepResult.at(outerIndex);
+            stiched.push_back(outerSetCpy);
+
+            for (int innerIndex = outerIndex + 1; innerIndex < deepResult.size(); innerIndex++)
             {
-              outerSetCpy.merge(innerSet);
-            }
-            else
-            {
-              outerIndex = innerIndex - 1;
-              break;
+              const TreeSearchResultSet innerSet = deepResult.at(innerIndex);
+
+              if (outerSetCpy.intersectsOrTouches(innerSet))
+              {
+                outerSetCpy.merge(innerSet);
+              }
+              else
+              {
+                outerIndex = innerIndex - 1;
+                break;
+              }
             }
           }
+
+          // copy fileData to scan folder
+          std::filesystem::path scanFolder = path.parent_path() / "found" / std::to_string(entry.elementIndex);
+          std::filesystem ::create_directories(scanFolder);
+          std::ofstream(scanFolder / "sourceContent", std::ios::out | std::ios::trunc) << data.cmpFile;
+          std::ofstream(scanFolder / "searchContent", std::ios::out | std::ios::trunc) << trees[data.entry.searchFile].content;
+
+          stiched.sourceDb = data.entry.sourceDb;
+          stiched.sourceFile = data.sourceFile;
+          stiched.sourceRevision = data.entry.sourceRevision;
+          stiched.sourceInternalId = deepResult.sourceInternalId;
+          stiched.searchFile = std::filesystem::relative(data.entry.searchFile, path).string();
+          stiched.type = deepResult.type;
+          stiched.elementIndex = entry.elementIndex;
+          // stiched.sourceContent = data.cmpFile;
+          // stiched.searchContent = trees[data.entry.searchFile].content;
+          stiched.licence = data.licence;
+
+          resultInter->addDeepResult(stiched);
         }
 
-        stiched.sourceDb = data.entry.sourceDb;
-        stiched.sourceFile = data.sourceFile;
-        stiched.sourceRevision = data.entry.sourceRevision;
-        stiched.sourceInternalId = deepResult.sourceInternalId;
-        stiched.searchFile = std::filesystem::relative(data.entry.searchFile, path).string();
-        stiched.type = deepResult.type;
-        stiched.sourceContent = data.cmpFile;
-        stiched.searchContent = trees[data.entry.searchFile].content;
-        stiched.licence = data.licence;
+        resultInter->incDeepFinishedCount(1);
 
-        resultInter->addDeepResult(stiched);
+        delete data.dbTree;
       }
-
-      resultInter->incDeepFinishedCount(1);
-
-      delete data.dbTree;
-    }
+    });
   }
+
+  pool.wait();
 
   for (auto iter = trees.begin(); iter != trees.end(); iter++)
     delete iter->second.tree;

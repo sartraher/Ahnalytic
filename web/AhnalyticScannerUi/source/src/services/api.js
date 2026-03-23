@@ -114,6 +114,11 @@ class ApiService {
     return this.request('GET', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/info`);
   }
 
+  // Get file content for a specific element by index
+  getFileContent(groupId, projectId, versionId, scanId, elementIndex) {
+    return this.request('GET', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/files/${elementIndex}`);
+  }
+
   deleteScan(groupId, projectId, versionId, scanId) {
     return this.request('DELETE', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}`);
   }

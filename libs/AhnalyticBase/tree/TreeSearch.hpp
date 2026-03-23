@@ -63,6 +63,8 @@ public:
 
   TreeSearchResult() {};
 
+  size_t elementIndex = 0;
+
   std::string sourceDb;
   std::string sourceFile;
   std::string sourceRevision;
@@ -72,8 +74,8 @@ public:
   std::string searchFile;
   ResultSourceTypeE type;
 
-  std::string sourceContent;
-  std::string searchContent;
+  //std::string sourceContent;
+  //std::string searchContent;
   std::string licence;
 
   operator bool() const

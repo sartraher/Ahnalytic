@@ -90,8 +90,9 @@ inline void to_json(nlohmann::json& j, const TreeSearchResult& r)
        {"sourceInternalId", r.sourceInternalId},
        {"searchFile", utf8_repair(r.searchFile)},
        {"type", static_cast<int>(r.type)},
-       {"sourceContent", utf8_repair(r.sourceContent)},
-       {"searchContent", utf8_repair(r.searchContent)},
+       {"elementIndex", r.elementIndex},
+       //{"sourceContent", utf8_repair(r.sourceContent)},
+       //{"searchContent", utf8_repair(r.searchContent)},
        {"licence", utf8_repair(r.licence)}};
 }
 
@@ -107,8 +108,9 @@ inline void from_json(const nlohmann::json& j, TreeSearchResult& r)
   j.at("sourceInternalId").get_to(r.sourceInternalId);
   j.at("searchFile").get_to(r.searchFile);
   j.at("type").get_to(r.type);
-  j.at("sourceContent").get_to(r.sourceContent);
-  j.at("searchContent").get_to(r.searchContent);
+  j.at("elementIndex").get_to(r.elementIndex);
+  // j.at("sourceContent").get_to(r.sourceContent);
+  // j.at("searchContent").get_to(r.searchContent);
   j.at("licence").get_to(r.licence);
 }
 
@@ -293,17 +295,26 @@ void ScanDatabase::save()
     for (const auto& [id, group] : priv->groups)
       j[std::to_string(id)] = group;
 
-    std::filesystem::path newFilename = priv->scanFolder / "status_new.json";
+    std::filesystem::path origFilename = priv->scanFolder / "status.json";
+
+    if (std::filesystem::exists(origFilename))
     {
-      std::ofstream ofs(newFilename.string(), std::ios::out | std::ios::trunc);
+      std::filesystem::path newFilename = priv->scanFolder / "status_new.json";
+      {
+        std::ofstream ofs(newFilename.string(), std::ios::out | std::ios::trunc);
+        ofs << j.dump(2);
+      }
+      std::filesystem::path oldFilename = priv->scanFolder / "status_old.json";
+
+      std::filesystem::rename(origFilename, oldFilename);
+      std::filesystem::rename(newFilename, origFilename);
+      std::filesystem::remove(oldFilename);
+    }
+    else
+    {
+      std::ofstream ofs(origFilename.string(), std::ios::out | std::ios::trunc);
       ofs << j.dump(2);
     }
-
-    std::filesystem::path origFilename = priv->scanFolder / "status.json";
-    std::filesystem::path oldFilename = priv->scanFolder / "status_old.json";
-    std::filesystem::rename(origFilename, oldFilename);
-    std::filesystem::rename(newFilename, origFilename);
-    std::filesystem::remove(oldFilename);
   }
   catch (...)
   {

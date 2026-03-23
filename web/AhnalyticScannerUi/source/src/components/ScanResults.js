@@ -172,7 +172,11 @@ const ResultsListSection = React.memo(({
   onToggleExpand, 
   onSelectFile, 
   onToggleResultExpand,
-  scrollContainerRef 
+  scrollContainerRef,
+  groupId,
+  projectId,
+  versionId,
+  scanId
 }) => {
   const getSeverityColor = (matchCount) => {
     if (matchCount === 0) return 'green';
@@ -285,13 +289,16 @@ const ResultsListSection = React.memo(({
                       <div className="detail-section">
                         <h5>Match Locations ({result.resultSets.length})</h5>
                         
-                        {/* Show Diff Viewer if content is available */}
-                        {result.searchContent && result.sourceContent && (
+                        {/* Show Diff Viewer with lazy-loaded content */}
+                        {result.elementIndex !== undefined && (
                           <div className="detail-subsection">
                             <DiffViewer
-                              searchContent={result.searchContent}
-                              sourceContent={result.sourceContent}
+                              elementIndex={result.elementIndex}
                               resultSets={result.resultSets}
+                              groupId={groupId}
+                              projectId={projectId}
+                              versionId={versionId}
+                              scanId={scanId}
                             />
                           </div>
                         )}
@@ -529,6 +536,10 @@ export const ScanResults = () => {
           onSelectFile={handleSelectFile}
           onToggleResultExpand={toggleExpanded}
           scrollContainerRef={scrollContainerRef}
+          groupId={currentGroup}
+          projectId={currentProject}
+          versionId={currentVersion}
+          scanId={currentScan}
         />
       )}
     </div>

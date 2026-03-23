@@ -426,8 +426,9 @@ void ScanServer::init()
           result["sourceInternalId"] = searchResult.sourceInternalId;
           result["searchFile"] = searchResult.searchFile;
 
-          result["searchContent"] = base64_encode(searchResult.searchContent);
-          result["sourceContent"] = base64_encode(searchResult.sourceContent);
+          result["elementIndex"] = searchResult.elementIndex;
+          // result["searchContent"] = base64_encode(searchResult.searchContent);
+          // result["sourceContent"] = base64_encode(searchResult.sourceContent);
           result["licence"] = searchResult.licence;
 
           for (const TreeSearchResultSet& searchResultSet : searchResult)
@@ -452,6 +453,36 @@ void ScanServer::init()
     }
 
     bad_request(res, "Scan not found");
+  });
+
+  priv->server.Get(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/files/(\d+))", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    const size_t groupId = std::stoull(req.matches[1]);
+    const size_t projectId = std::stoull(req.matches[2]);
+    const size_t versionId = std::stoull(req.matches[3]);
+    const size_t scanId = std::stoull(req.matches[4]);
+    const size_t elementId = std::stoull(req.matches[5]);
+
+    auto scanData = priv->scanDatabase->getScan(scanId, groupId, projectId, versionId, scanId);
+
+    if (scanData != nullptr)
+    {
+      json ret;
+
+      std::filesystem::path outPath = std::filesystem::path(scanData->dataPath).parent_path() / "found";
+
+      std::ifstream sourceContentStream(outPath / std::to_string(elementId) / "sourceContent");
+      std::ifstream searchContentStream(outPath / std::to_string(elementId) / "searchContent");
+
+      std::string sourceContent((std::istreambuf_iterator<char>(sourceContentStream)), std::istreambuf_iterator<char>());
+
+      std::string searchContent((std::istreambuf_iterator<char>(searchContentStream)), std::istreambuf_iterator<char>());
+
+      ret["searchContent"] = base64_encode(searchContent);
+      ret["sourceContent"] = base64_encode(sourceContent);
+
+      ok(res, ret);
+    }
   });
 
   priv->server.Get(R"(/updates/check)", [&](const httplib::Request& req, httplib::Response& res)
