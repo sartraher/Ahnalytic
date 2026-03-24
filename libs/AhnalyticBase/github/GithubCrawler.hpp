@@ -40,7 +40,7 @@ private:
   void fillBasicRepoInfo(const json& r, RepoInfo& info);
   void fillBasicRepoInfoMetadataOnly(const json& r, RepoInfo& info);
 
-  void parseRefsArray(const json& refsArray, RepoInfo& info, std::vector<std::pair<std::string, std::string>>& unresolvedTagObjects);
+  void parseRefsArray(const json& refsArray, RepoInfo& info, ahn::vector<std::pair<std::string, std::string>>& unresolvedTagObjects);
   void fetchRefsAndHead(RepoInfo& info);
 
   // fast filter

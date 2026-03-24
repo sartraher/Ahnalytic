@@ -74,17 +74,17 @@ std::string IniReader::getValue(const std::string& name, const std::string& bloc
   return def;
 }
 
-std::vector<std::string> IniReader::getBlocks() const
+ahn::vector<std::string> IniReader::getBlocks() const
 {
-  std::vector<std::string> blocks;
+  ahn::vector<std::string> blocks;
   for (const auto& kv : data)
     blocks.push_back(kv.first);
   return blocks;
 }
 
-std::vector<std::string> IniReader::getItems(const std::string& block) const
+ahn::vector<std::string> IniReader::getItems(const std::string& block) const
 {
-  std::vector<std::string> items;
+  ahn::vector<std::string> items;
   auto it = data.find(block);
   if (it != data.end())
   {

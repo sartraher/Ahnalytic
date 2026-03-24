@@ -348,7 +348,7 @@ void ScanServer::init()
     try
     {
       // Convert file content to vector<char>
-      std::vector<char> fileData(file.content.begin(), file.content.end());
+      ahn::vector<char> fileData(file.content.begin(), file.content.end());
 
       // Add the zip data to the database
       priv->scanDatabase->addZipData(scanId, groupId, projectId, versionId, scanId, fileData);
@@ -397,7 +397,7 @@ void ScanServer::init()
 
     if (scanData != nullptr)
     {
-      std::vector<TreeSearchResult> searchResults = scanData->getDeepResult();
+      ahn::vector<TreeSearchResult> searchResults = scanData->getDeepResult();
 
       // TODO: move inside of scandata
       const std::lock_guard<std::recursive_mutex> lock(scanData->mutex);
@@ -488,7 +488,7 @@ void ScanServer::init()
   priv->server.Get(R"(/updates/check)", [&](const httplib::Request& req, httplib::Response& res)
   {
     json ret;
-    std::vector<UpdateInfo> updates = priv->updateManager->checkUpdates();
+    ahn::vector<UpdateInfo> updates = priv->updateManager->checkUpdates();
     for (const UpdateInfo& info : updates)
     {
       json element;

@@ -29,9 +29,9 @@ UpdateManager::~UpdateManager()
 {
 }
 
-std::vector<UpdateInfo> UpdateManager::checkUpdates() const
+ahn::vector<UpdateInfo> UpdateManager::checkUpdates() const
 {
-  std::vector<UpdateInfo> ret;
+  ahn::vector<UpdateInfo> ret;
 
   // Create HTTP client
   httplib::Client cli("http://www.ahnalytic.org");
@@ -52,15 +52,12 @@ std::vector<UpdateInfo> UpdateManager::checkUpdates() const
   return ret;
 }
 
-// std::vector<UpdateDiffInfo> UpdateManager::checkUpdateDiff() const
 void UpdateManager::checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) const
 {
-  // std::vector<UpdateDiffInfo> ret;
-
   httplib::Client cli("http://www.ahnalytic.org");
   cli.set_follow_location(true);
 
-  std::vector<UpdateInfo> changedGithub = checkUpdates();
+  ahn::vector<UpdateInfo> changedGithub = checkUpdates();
 
   for (const UpdateInfo& info : changedGithub)
   {
@@ -229,11 +226,11 @@ void UpdateManager::startUpdates()
 
         db.importPathesData(pathesPath);
 
-        std::vector<std::string> doneList;
+        ahn::vector<std::string> doneList;
         for (const auto& sha : update.existingShas)
           doneList.push_back(sha.second);
 
-        ankerl::unordered_dense::set<uint32_t> hashes;
+        ahn::set<uint32_t> hashes;
         std::filesystem::path filePath = (env->dbFolder / "CPP" / "github" / (update.name + "." + std::to_string(env->windowSize))).string();
 
         if (std::filesystem ::exists(filePath))
@@ -241,7 +238,7 @@ void UpdateManager::startUpdates()
           std::ifstream file(filePath, std::ios::binary | std::ios::ate);
           std::streamsize size = file.tellg();
           file.seekg(0, std::ios::beg);
-          std::vector<uint32_t> data(size / sizeof(uint32_t));
+          ahn::vector<uint32_t> data(size / sizeof(uint32_t));
 
           if (file.read(reinterpret_cast<char*>(data.data()), size))
           {
@@ -267,7 +264,7 @@ void UpdateManager::startUpdates()
           }
         }
 
-        std::vector<uint32_t> vec;
+        ahn::vector<uint32_t> vec;
         vec.reserve(hashes.size());
         vec.insert(vec.end(), hashes.begin(), hashes.end());
 

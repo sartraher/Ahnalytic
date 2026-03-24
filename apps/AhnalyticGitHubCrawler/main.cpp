@@ -238,7 +238,7 @@ public:
     // --- Heuristic mirror detection (GitHub does NOT flag these) ---
 
     // common mirror org names
-    static const std::vector<std::string> mirrorOwners = {"aosp-mirror",   "llvm-mirror",  "gcc-mirror", "linux-mirror",
+    static const ahn::vector<std::string> mirrorOwners = {"aosp-mirror",   "llvm-mirror",  "gcc-mirror", "linux-mirror",
                                                           "webkit-mirror", "gnome-mirror", "kde-mirror"};
 
     // owner/name based detection
@@ -320,7 +320,7 @@ public:
     if (out.empty())
       out = "_";
 
-    static const std::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
+    static const ahn::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
                                                       "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
     std::string upper;
@@ -466,7 +466,7 @@ int main(int argc, char* argv[])
         // Tags
         if (info.tags.size() == 0)
         {
-          std::vector<TagData> tagData = GitCliHelperC::getGitTagData(info.htmlUrl, env.workFolder.string());
+          ahn::vector<TagData> tagData = GitCliHelperC::getGitTagData(info.htmlUrl, env.workFolder.string());
           for (const TagData& tag : tagData)
             info.tags.push_back({tag.name, tag.sha});
 
@@ -475,7 +475,7 @@ int main(int argc, char* argv[])
         }
 
         std::string repoPath;
-        std::vector<std::string> files;
+        ahn::vector<std::string> files;
 
         // Language
         if (info.language == "")
@@ -487,7 +487,7 @@ int main(int argc, char* argv[])
           if (files.size() == 0)
             return;
 
-          std::unordered_map<std::string, int> langCount;
+          ahn::map<std::string, int> langCount;
           for (const std::string& file : files)
           {
             std::string lang = DataHelperC::getFormatName(std::filesystem::path(file).extension().string());
@@ -557,7 +557,7 @@ int main(int argc, char* argv[])
 
           if (license != "")
           {
-            std::unordered_map<std::string, std::string> fileData = GitCliHelperC::getFilesWithContent(repoPath, headSha, {license});
+            ahn::map<std::string, std::string> fileData = GitCliHelperC::getFilesWithContent(repoPath, headSha, {license});
             info.license = DataHelperC::getLicenceName(fileData[license], env.workFolder.string());
           }
         }

@@ -110,7 +110,7 @@
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>AhnalyticBase.lib;libssl_static.lib;libcrypto_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mimalloc.lib;AhnalyticBase.lib;libssl_static.lib;libcrypto_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\out\bin\$(Platform)\$(Configuration)\;$(SolutionDir)\out\lib\$(Platform)\$(Configuration)\;$(SolutionDir)\3rdParty\openssl-3.5.4;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>10</StackReserveSize>
     </Link>

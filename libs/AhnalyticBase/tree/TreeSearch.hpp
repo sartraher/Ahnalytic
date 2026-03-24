@@ -51,7 +51,7 @@ struct TreeSearchResultSet
   }
 };
 
-class TreeSearchResult : public std::vector<TreeSearchResultSet>
+class TreeSearchResult : public ahn::vector<TreeSearchResultSet>
 {
 public:
   enum ResultSourceTypeE
@@ -90,10 +90,10 @@ public:
   virtual bool isAborted() = 0;
 
   virtual void addResult(const TreeSearchResult& result) = 0;
-  virtual std::vector<TreeSearchResult> getResult() = 0;
+  virtual ahn::vector<TreeSearchResult> getResult() = 0;
 
   virtual void addDeepResult(const TreeSearchResult& result) = 0;
-  virtual std::vector<TreeSearchResult> getDeepResult() = 0;
+  virtual ahn::vector<TreeSearchResult> getDeepResult() = 0;
 
   virtual void setMaxCount(int count) = 0;
   virtual void incFinishedCount(int count) = 0;
@@ -104,11 +104,11 @@ public:
 
 struct SearchNodes
 {
-  ankerl::unordered_dense::map<uint32_t, std::vector<uint32_t>> hashData;
+  ahn::map<uint32_t, ahn::vector<uint32_t>> hashData;
 
-  std::vector<uint32_t> nodeData;
-  std::vector<std::string> nameData;
-  std::vector<uint32_t> lineNrs;
+  ahn::vector<uint32_t> nodeData;
+  ahn::vector<std::string> nameData;
+  ahn::vector<uint32_t> lineNrs;
 
   std::filesystem::path filePath;
 };
@@ -116,13 +116,11 @@ struct SearchNodes
 struct SearchNodeData
 {
   ahn::vector<uint32_t> nodeData;
-  // std::vector<uint32_t> lineNrs;
 
-  ankerl::unordered_dense::map<uint32_t, ankerl::unordered_dense::map<size_t, ahn::vector<uint32_t>>> searchData;
+  ahn::map<uint32_t, ahn::map<size_t, ahn::vector<uint32_t>>> searchData;
 
-  ankerl::unordered_dense::map<std::filesystem::path, size_t> pathLookup;
-  ankerl::unordered_dense::map<size_t, std::filesystem::path> pathLookupReverse;
-  // ankerl::unordered_dense::set<uint32_t> searchLookup;
+  ahn::map<std::filesystem::path, size_t> pathLookup;
+  ahn::map<size_t, std::filesystem::path> pathLookupReverse;
 };
 
 class DLLEXPORT TreeSearch
@@ -131,7 +129,7 @@ public:
   TreeSearch();
   ~TreeSearch();
 
-  void collectHashData(ankerl::unordered_dense::set<uint32_t> &hashes, SourceStructureTree* tree, uint32_t windowSize);
+  void collectHashData(ahn::set<uint32_t>& hashes, SourceStructureTree* tree, uint32_t windowSize);
   void initNodeData(SearchNodeData& searchData, SourceStructureTree* tree, const std::filesystem::path& path, uint32_t windowSize);
 
   std::set<std::filesystem::path> searchRawHash(const SearchNodeData& dbNodes, SourceStructureTree* tree, const std::filesystem::path& path,

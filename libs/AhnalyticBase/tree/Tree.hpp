@@ -190,22 +190,17 @@ template <typename T>
 void reduceTree(Tree<T>* root, ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, ahn::vector<uint32_t>& indexList)
 {
   ahn::vector<FlatNode<T>*> flatList;
-  // std::vector<Tree<T>*> cmpList;
 
   std::function<uint32_t(Tree<T>*)> dedupTree = nullptr;
 
-  // std::unordered_map<CompareContainer<Tree<T>*>, size_t> posList;
-  ankerl::unordered_dense::map<CompareContainer<Tree<T>*>, size_t> posList;
-  // posList[root] = 123;
+  ahn::map<CompareContainer<Tree<T>*>, size_t> posList;
 
   dedupTree = [&dedupTree, &flatList, &posList](Tree<T>* node)
   {
     uint32_t ret = 0;
 
-    // auto iter = std::find_if(cmpList.begin(), cmpList.end(), [&](Tree<T>* n) { return *n == *node; });
     auto iter = posList.find(node);
     if (iter != posList.end())
-      // ret = iter - cmpList.begin();
       ret = (uint32_t)iter->second;
     else
     {
@@ -216,7 +211,7 @@ void reduceTree(Tree<T>* root, ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, ahn:
 
       ret = (uint32_t)flatList.size();
       posList[node] = ret;
-      // cmpList.push_back(node);
+
       flatList.push_back(flatNode);
 
       for (Tree<T>* child : node->children)
@@ -257,7 +252,7 @@ Tree<T>* rebuildTree(const ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, const ah
   }
 
   std::function<Tree<T>*(int)> dubTree = nullptr;
-  std::unordered_map<int, Tree<T>*> treeLookup;
+  ahn::map<int, Tree<T>*> treeLookup;
 
   dubTree = [&dubTree, &flatList, &treeLookup](int index) -> Tree<T>*
   {
@@ -289,7 +284,7 @@ Tree<T>* rebuildTree(const ahn::vector<FlatNodeDeDup<T>>& dedupedNodes, const ah
 }
 
 template <typename T>
-void flattenTree(Tree<T>* root, ahn::vector<FlatNode<T>>& flatVec, std::unordered_map<Tree<T>*, uint32_t>& nodeToIndex)
+void flattenTree(Tree<T>* root, ahn::vector<FlatNode<T>>& flatVec, ahn::map<Tree<T>*, uint32_t>& nodeToIndex)
 {
   if (!root)
     return;
@@ -309,7 +304,7 @@ template <typename T>
 ahn::vector<FlatNode<T>> treeToFlat(Tree<T>* root)
 {
   ahn::vector<FlatNode<T>> flatVec;
-  std::unordered_map<Tree<T>*, uint32_t> nodeToIndex;
+  ahn::map<Tree<T>*, uint32_t> nodeToIndex;
   flattenTree(root, flatVec, nodeToIndex);
   return flatVec;
 }
@@ -319,7 +314,7 @@ void flattenAndDedupFlatNodes(const ahn::vector<FlatNode<T>>& flatNodes, ahn::ve
 {
   dedupedNodes.clear();
   indexList.clear();
-  std::unordered_map<FlatNode<T>, uint32_t> dedupMap;
+  ahn::map<FlatNode<T>, uint32_t> dedupMap;
   ahn::vector<uint32_t> nodeToDedupedIndex(flatNodes.size());
 
   // Deduplicate and assign deduped indices

@@ -44,7 +44,7 @@ public:
         break;
       }
 
-      std::vector<std::string> projectNames = parseProjectsFromHtml(res->body);
+      ahn::vector<std::string> projectNames = parseProjectsFromHtml(res->body);
       if (projectNames.empty())
       {
         std::cout << "[SF] no more projects on page " << page << "\n";
@@ -74,9 +74,9 @@ private:
   // -------------------------
   // HTML parsing
   // -------------------------
-  std::vector<std::string> parseProjectsFromHtml(const std::string& html)
+  ahn::vector<std::string> parseProjectsFromHtml(const std::string& html)
   {
-    std::vector<std::string> out;
+    ahn::vector<std::string> out;
     // look for href="/projects/{project}/"
     std::regex re(R"(<a[^>]+href=\"/projects/([a-zA-Z0-9_\-]+)/\")");
     auto begin = std::sregex_iterator(html.begin(), html.end(), re);
@@ -213,7 +213,7 @@ public:
     // Tags
     if (info.tags.size() == 0)
     {
-      std::vector<TagData> tagData = cliHelper.getTagData(info.cloneUrl, env.workFolder.string());
+      ahn::vector<TagData> tagData = cliHelper.getTagData(info.cloneUrl, env.workFolder.string());
 
       for (const TagData& tag : tagData)
         info.tags.push_back({tag.name, tag.sha});
@@ -223,7 +223,7 @@ public:
     }
 
     // std::string repoPath;
-    std::vector<std::string> files;
+    ahn::vector<std::string> files;
 
     std::string name = DataHelperC::cleanFileName(info.name);
     files = cliHelper.getFiles(name, info.cloneUrl, env.workFolder.string());
@@ -237,7 +237,7 @@ public:
     // Language
     if (info.language == "")
     {
-      std::unordered_map<std::string, int> langCount;
+      ahn::map<std::string, int> langCount;
       for (const std::string& file : files)
       {
         std::string lang = DataHelperC::getFormatName(std::filesystem::path(file).extension().string());
@@ -300,7 +300,7 @@ public:
 
       if (license != "")
       {
-        std::unordered_map<std::string, std::string> fileData =
+        ahn::map<std::string, std::string> fileData =
             cliHelper.getFilesWithContent(cliHelper.repoPath, info.cloneUrl, headId, {license}, env.workFolder.string());
         info.license = DataHelperC::getLicenceName(fileData[license], env.workFolder.string());
       }

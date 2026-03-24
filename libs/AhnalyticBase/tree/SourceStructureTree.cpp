@@ -34,15 +34,15 @@ void SourceStructureTree::serialize(const ahn::vector<FlatNodeDeDupData>& nodeLi
 
   CompressionManager compressionManager;
 
-  CompressData compressedIndexList = compressionManager.compress(indexList, labeledDia("Index"), std::vector<ModAlgosE>{ModAlgosE::None},
-                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA});
+  CompressData compressedIndexList = compressionManager.compress(indexList, labeledDia("Index"), ahn::vector<ModAlgosE>{ModAlgosE::None},
+                                                                 ahn::vector<CompressionAlgosE>{CompressionAlgosE::LZMA});
 
-  CompressData symbolListCompressed = compressionManager.compress(symbolList, labeledDia("Symbols"), std::vector<ModAlgosE>{ModAlgosE::None},
-                                                                  std::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
-  CompressData fieldListCompressed = compressionManager.compress(fieldList, labeledDia("Fields"), std::vector<ModAlgosE>{ModAlgosE::None},
-                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
-  CompressData amountListCompressed = compressionManager.compress(amountList, labeledDia("Amount"), std::vector<ModAlgosE>{ModAlgosE::None},
-                                                                  std::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
+  CompressData symbolListCompressed = compressionManager.compress(symbolList, labeledDia("Symbols"), ahn::vector<ModAlgosE>{ModAlgosE::None},
+                                                                  ahn::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
+  CompressData fieldListCompressed = compressionManager.compress(fieldList, labeledDia("Fields"), ahn::vector<ModAlgosE>{ModAlgosE::None},
+                                                                 ahn::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
+  CompressData amountListCompressed = compressionManager.compress(amountList, labeledDia("Amount"), ahn::vector<ModAlgosE>{ModAlgosE::None},
+                                                                  ahn::vector<CompressionAlgosE>{CompressionAlgosE::BSC});
 
   // Build final buffer with sizes prepended
   ahn::vector<uint32_t> ret;

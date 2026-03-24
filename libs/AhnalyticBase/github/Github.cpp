@@ -34,16 +34,15 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
   if (exitGracefull)
     return;
 
-  std::unordered_map<std::string, FileDatabase*> dbs;
+  ahn::map<std::string, FileDatabase*> dbs;
 
-  // std::unordered_map<std::string, std::string> lastFileData;
   std::string lastSha;
-  std::unordered_map<std::string, ScanTreeData> lastFiles;
+  ahn::map<std::string, ScanTreeData> lastFiles;
 
   bool hasData = false;
   if (info.tags.size() > 0)
   {
-    std::vector<std::string> doneList;
+    ahn::vector<std::string> doneList;
 
     for (const TagInfo& tag : info.tags)
     {
@@ -97,9 +96,9 @@ void GitHubHandler::scanRepo(const RepoInfo& info) const
   }
 }
 
-bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
+bool GitHubHandler::scanTag(ahn::map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
                             const std::string& lastSha,
-                            std::unordered_map<std::string, ScanTreeData>& lastFiles /*, std::unordered_map<std::string, std::string>& lastFileData*/) const
+                            ahn::map<std::string, ScanTreeData>& lastFiles) const
 {
   bool ret = false;
   std::string url = info.htmlUrl;
@@ -127,7 +126,7 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
   std::list<std::string> supportedExt = scanner.getFileTypes();
   std::list<std::string> groups = scanner.getFileGroups();
 
-  std::unordered_map<std::string, uint32_t> tagIds;
+  ahn::map<std::string, uint32_t> tagIds;
   for (const std::string& group : groups)
   {
     std::filesystem::path resPath = basePath;
@@ -138,17 +137,17 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
     tagIds[group] = tagId;
   }
 
-  std::unordered_map<std::string, std::string> fileData = getGitFiles(supportedExt, url, sha, lastSha);
+  ahn::map<std::string, std::string> fileData = getGitFiles(supportedExt, url, sha, lastSha);
 
   if (fileData.size() == 0)
     return ret;
 
   ret = true;
 
-  std::unordered_map<std::string, std::vector<ScanTreeData>> buffers = scanner.scanBuffer(fileData);
+  ahn::map<std::string, ahn::vector<ScanTreeData>> buffers = scanner.scanBuffer(fileData);
 
-  std::unordered_map<std::string, uint32_t> sizes;
-  std::unordered_map<std::string, std::vector<ScanTreeData>> datas;
+  ahn::map<std::string, uint32_t> sizes;
+  ahn::map<std::string, ahn::vector<ScanTreeData>> datas;
 
   auto processData = [&sizes, &datas, &dbs, tagName, sha, &tagIds](const std::string& type, FileDatabase* db)
   {
@@ -167,18 +166,9 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
     ahn::vector<char> result;
     SourceStructureTree::serialize(deduped, indexList, result, nullptr);
 
-    // TEST
-    /*
-    std::vector<FlatNodeDeDupData> nodeListTestOut;
-    std::vector<uint32_t> indexListTestOut;
-    SourceStructureTree::deserialize(result, nodeListTestOut, indexListTestOut, nullptr);
-    SourceStructureTree* rootTest = (SourceStructureTree*)rebuildTree(nodeListTestOut, indexListTestOut);
-    */
-    // TEST
-
     // FileDatabase* db = dbs[type];
     uint32_t dataId = db->createSourceTreeData(result);
-    std::unordered_map<std::string, uint32_t> pathIds = db->insertNames(names);
+    ahn::map<std::string, uint32_t> pathIds = db->insertNames(names);
 
     ahn::vector<uint32_t> vecPathId;
     ahn::vector<uint32_t> indices;
@@ -239,7 +229,7 @@ bool GitHubHandler::scanTag(std::unordered_map<std::string, FileDatabase*>& dbs,
       processData(iter->first, db);
     }
 
-  std::unordered_map<std::string, ScanTreeData> resFiles;
+  ahn::map<std::string, ScanTreeData> resFiles;
   for (auto iter = buffers.begin(); iter != buffers.end(); iter++)
     for (const ScanTreeData& data : iter->second)
       resFiles[data.path.string()] = lastFiles[data.path.string()];
@@ -335,7 +325,7 @@ std::string GitHubHandler::cleanFileName(const std::string& name)
   if (out.empty())
     out = "_";
 
-  static const std::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
+  static const ahn::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
                                                     "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
   std::string upper;
@@ -347,10 +337,10 @@ std::string GitHubHandler::cleanFileName(const std::string& name)
   return out;
 }
 
-std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl,
+ahn::map<std::string, std::string> GitHubHandler::getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl,
                                                                         const std::string& sha, const std::string& lastSha) const
 {
-  std::unordered_map<std::string, std::string> result;
+  ahn::map<std::string, std::string> result;
 
   std::string repoKey = cleanFileName(extractOwnerRepo(repoUrl));
   if (repoKey.empty())
@@ -374,16 +364,16 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
   std::error_code ec;
   std::filesystem::create_directories(workPath, ec);
 
-  std::vector<std::string> files;
+  ahn::vector<std::string> files;
   if (lastSha.size() == 0)
     files = GitCliHelperC::getGitFiles(repoKey, repoUrl, sha, tempPath);
   else
     files = GitCliHelperC::getGitFiles(repoKey, repoUrl, sha, lastSha, tempPath);
 
-  static const std::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
+  static const ahn::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
                                                     "externals",   "deps",     "dep",    "node_modules", ".git"};
 
-  std::vector<std::string> filesFilteres;
+  ahn::vector<std::string> filesFilteres;
   for (const std::string& file : files)
   {
     if (hasSupportedExtension(file, supportedExt))
@@ -404,93 +394,6 @@ std::unordered_map<std::string, std::string> GitHubHandler::getGitFiles(const st
   }
 
   result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, filesFilteres);
-
-  // ExecResult checkout = execAndCapture("git -C \"" + repoPath.string() + "\" --work-tree=\"" + workPath.string() + "\" checkout --force " + sha);
-  // if (checkout.exitCode != 0)
-  // return result;
-
-  /*
-  std::unordered_set<std::string> submodules;
-  {
-    std::filesystem::path gm = repoPath / ".gitmodules";
-    if (std::filesystem::exists(gm))
-    {
-      std::ifstream in(gm);
-      std::string line;
-      while (std::getline(in, line))
-      {
-        auto pos = line.find("path =");
-        if (pos != std::string::npos)
-        {
-          std::string p = line.substr(pos + 6);
-          p.erase(std::remove_if(p.begin(), p.end(), ::isspace), p.end());
-          if (!p.empty())
-            submodules.insert(p);
-        }
-      }
-    }
-  }
-
-  static const std::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
-                                                    "externals",   "deps",     "dep",    "node_modules", ".git"};
-
-  auto shouldSkipPath = [&](const std::filesystem::path& rel) -> bool
-  {
-    for (const auto& part : rel)
-    {
-      std::string s = part.string();
-      std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-
-      for (const auto& bad : denyDirs)
-        if (s == bad)
-          return true;
-    }
-
-    std::string relStr = rel.string();
-    for (const auto& sm : submodules)
-      if (relStr == sm || relStr.starts_with(sm + "/"))
-        return true;
-
-    return false;
-  };
-
-  for (auto it = std::filesystem::recursive_directory_iterator(workPath.native(), std::filesystem::directory_options::skip_permission_denied);
-       it != std::filesystem::recursive_directory_iterator(); ++it)
-  {
-    const auto& entry = *it;
-
-    if (entry.is_symlink())
-      continue;
-
-    if (!entry.is_regular_file())
-      continue;
-
-    std::filesystem::path relPath;
-    try
-    {
-      //relPath = std::filesystem::relative(entry.path(), workPath);
-      relPath = entry.path().lexically_relative(workPath);
-    }
-    catch (...)
-    {
-      continue;
-    }
-
-    if (shouldSkipPath(relPath))
-      continue;
-
-    if (!hasSupportedExtension(relPath.string(), supportedExt))
-      continue;
-
-    std::ifstream in(entry.path(), std::ios::binary);
-    if (!in.is_open())
-      continue;
-
-    std::ostringstream ss;
-    ss << in.rdbuf();
-    result[relPath.string()] = ss.str();
-  }
-  */
 
   safeDelete(workPath);
 

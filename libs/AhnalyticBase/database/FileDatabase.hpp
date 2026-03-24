@@ -23,7 +23,7 @@ public:
   uint32_t createRepoData(const std::string& name, const std::string& url, const std::string& license);
   uint32_t createTag(const std::string& tagName, const std::string& sha);
 
-  std::unordered_map<std::string, std::string> getTags() const;
+  ahn::map<std::string, std::string> getTags() const;
   std::string getTagSha(uint32_t id) const;
 
   void iterateSourceTrees(std::function<void(SourceStructureTree*)> callback);
@@ -33,7 +33,7 @@ public:
 
   void importPathesData(std::filesystem::path& pathesPath);
   void importData(const std::string& tagName, const std::string& sha, std::filesystem::path& tarPath, std::filesystem::path& pathesPath, bool tagOnly,
-                  const EnviromentC& env, ankerl::unordered_dense::set<uint32_t>& hashes);
+                  const EnviromentC& env, ahn::set<uint32_t>& hashes);
 
   std::string getRepoUrl();
   std::string getRepoLicence();

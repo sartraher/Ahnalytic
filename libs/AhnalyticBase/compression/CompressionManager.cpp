@@ -70,15 +70,15 @@ CompressionManager::~CompressionManager()
 {
 }
 
-CompressData CompressionManager::compress(const CompressData& data, Diagnostic* dia, std::vector<ModAlgosE> modFilter, std::vector<CompressionAlgosE> cmpFilter,
+CompressData CompressionManager::compress(const CompressData& data, Diagnostic* dia, ahn::vector<ModAlgosE> modFilter, ahn::vector<CompressionAlgosE> cmpFilter,
                                           bool force)
 {
   CompressData ret = data;
 
   // uint32_t amount = 0;
-  std::vector<CompressDataHeader> modComps;
-  std::vector<CompressionAlgosE> alternatives;
-  std::vector<CompressDataHeader> headers;
+  ahn::vector<CompressDataHeader> modComps;
+  ahn::vector<CompressionAlgosE> alternatives;
+  ahn::vector<CompressDataHeader> headers;
 
   bool first = false;
   bool compressed = false;
@@ -133,16 +133,6 @@ CompressData CompressionManager::compress(const CompressData& data, Diagnostic* 
     }
   } while (compressed);
 
-  /*
-  std::vector<uint32_t> header;
-  header.push_back(amount);
-  header.insert(header.end(), modComps.begin(), modComps.end());
-
-  std::vector<char> ret1(header.size() * sizeof(uint32_t));
-  memcpy(ret1.data(), header.data(), header.size() * sizeof(uint32_t));
-  ret1.insert(ret1.end(), ret.begin(), ret.end());
-  */
-
   if (dia != nullptr)
   {
     std::string compression;
@@ -172,29 +162,6 @@ CompressData CompressionManager::decompress(const CompressData& input, Diagnosti
 {
   CompressData ret = input;
 
-  // const uint32_t* header = reinterpret_cast<const uint32_t*>(input.data());
-  // uint32_t amount = header[0];
-  /*
-  struct CompressionStep
-  {
-    ModAlgosE modId;
-    CompressionAlgosE compId;
-    uint32_t dataSize;
-  };
-
-  std::vector<CompressionStep> steps;
-  for (uint32_t i = 0; i < amount; ++i) {
-    ModAlgosE mod = static_cast<ModAlgosE>(header[1 + i * 2]);
-    CompressionAlgosE comp = static_cast<CompressionAlgosE>(header[1 + i * 2 + 1]);
-    uint32_t dataSize = header[1 + i * 2 + 2];
-    steps.push_back({ mod, comp, dataSize });
-  }
-  */
-
-  // Extract compressed payload after the header
-  // size_t headerSize = sizeof(uint32_t) * (1 + amount * 3);
-  // std::vector<char> data(input.begin() + headerSize, input.end());
-
   // Reverse the compression steps (from last to first)
   // for (int i = amount - 1; i >= 0; --i) {
   while (ret.getHeader().algo != CompressionAlgosE::None)
@@ -211,8 +178,6 @@ CompressData CompressionManager::decompress(const CompressData& input, Diagnosti
     CompressorI* comp = compIt->second;
     ModifierI* mod = modIt->second;
 
-    // ret.resize(steps[i].dataSize);
-
     CompressDataHeader header = ret.getHeader();
     header.algo = CompressionAlgosE::None;
     ret.setHeader(header);
@@ -220,97 +185,9 @@ CompressData CompressionManager::decompress(const CompressData& input, Diagnosti
     ret = comp->decompress(ret);
     ret = mod->unmodify(ret);
   }
-  //}
-
-  /*
-  if (dia != nullptr) {
-    std::string compression;
-    for (uint32_t i = 0; i < amount; ++i) {
-      if (i > 0)
-        compression += ", ";
-      compression += getModifierName(steps[i].modId) + "<->" + getCompressorName(steps[i].compId);
-    }
-
-    //dia->setDecompression(input.size(), data.size(), compression);
-  }
-  */
 
   return ret;
 }
-
-/*
-std::vector<uint32_t> CompressionManager::decompress(const std::vector<uint32_t>& input, Diagnostic* dia)
-{
-  std::vector<char> data(input.size() * sizeof(uint32_t));
-  memcpy(data.data(), input.data(), input.size() * sizeof(uint32_t));
-
-  std::vector<char> decompressed = decompress(data, dia);
-
-  std::vector<uint32_t> output;
-  size_t outputSize = decompressed.size() / sizeof(uint32_t);
-  if (decompressed.size() % sizeof(uint32_t) != 0)
-    outputSize++;
-
-  output.resize(outputSize);
-  memcpy(output.data(), decompressed.data(), decompressed.size());
-
-  return output;
-}
-
-std::vector<uint16_t> CompressionManager::decompress(const std::vector<uint16_t>& input, Diagnostic* dia)
-{
-  std::vector<char> data(input.size() * sizeof(uint16_t));
-  memcpy(data.data(), input.data(), input.size() * sizeof(uint16_t));
-
-  std::vector<char> decompressed = decompress(data, dia);
-
-  std::vector<uint16_t> output;
-  size_t outputSize = decompressed.size() / sizeof(uint16_t);
-  if (decompressed.size() % sizeof(uint16_t) != 0)
-    outputSize++;
-
-  output.resize(outputSize);
-  memcpy(output.data(), decompressed.data(), decompressed.size());
-
-  return output;
-}
-
-std::vector<uint32_t> CompressionManager::compress(std::vector<uint32_t> data, Diagnostic* dia, std::vector<ModAlgosE> modFilter, std::vector<CompressionAlgosE>
-cmpFilter)
-{
-  std::vector<char> data4(data.size() * sizeof(uint32_t));
-  memcpy(data4.data(), data.data(), data.size() * sizeof(uint32_t));
-
-  std::vector<char> ret1 = compress(data4, dia, modFilter, cmpFilter);
-
-  std::vector<uint32_t> ret4;
-
-  size_t resSize = ret1.size() / sizeof(uint32_t) + ((ret1.size() % sizeof(uint32_t)) > 0 ? 1 : 0);
-
-  ret4.resize(resSize);
-  memcpy(ret4.data(), ret1.data(), ret1.size());
-
-  return ret4;
-}
-
-std::vector<uint16_t> CompressionManager::compress(std::vector<uint16_t> data, Diagnostic* dia, std::vector<ModAlgosE> modFilter, std::vector<CompressionAlgosE>
-cmpFilter)
-{
-  std::vector<char> data2(data.size() * sizeof(uint16_t));
-  memcpy(data2.data(), data.data(), data.size() * sizeof(uint16_t));
-
-  std::vector<char> ret1 = compress(data2, dia, modFilter, cmpFilter);
-
-  std::vector<uint16_t> ret2;
-
-  size_t resSize = ret1.size() / sizeof(uint16_t) + ((ret1.size() % sizeof(uint16_t)) > 0 ? 1 : 0);
-
-  ret2.resize(resSize);
-  memcpy(ret2.data(), ret1.data(), ret1.size());
-
-  return ret2;
-}
-*/
 
 std::string CompressionManager::getModifierName(ModAlgosE id)
 {

@@ -10,7 +10,7 @@
 #include <nlohmann/json.hpp>
 
 // Generated from https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml
-const std::unordered_map<std::string, std::string> formatNames = {{".1", "Roff Manpage"},
+const ahn::map<std::string, std::string> formatNames = {{".1", "Roff Manpage"},
                                                                   {".1in", "Roff Manpage"},
                                                                   {".1m", "Roff Manpage"},
                                                                   {".1x", "Roff Manpage"},
@@ -1639,7 +1639,7 @@ std::string DataHelperC::cleanFileName(const std::string& name)
   if (out.empty())
     out = "_";
 
-  static const std::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
+  static const ahn::vector<std::string> reserved = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
                                                     "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
   std::string upper;

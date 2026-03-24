@@ -14,7 +14,7 @@ public:
 
 private:
 protected:
-  static std::vector<unsigned char> readFile(const std::string& path);
+  static ahn::vector<unsigned char> readFile(const std::string& path);
 };
 
 #endif

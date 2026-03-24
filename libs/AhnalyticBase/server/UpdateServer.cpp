@@ -125,7 +125,7 @@ void UpdateServer::scanGitHubRepos()
     {
       FileDatabase* db = new FileDatabase(DBType::SQLite, resPath.string());
 
-      std::unordered_map<std::string, std::string> tags = db->getTags();
+      ahn::map<std::string, std::string> tags = db->getTags();
 
       std::vector<TagInfo> resTags;
       info.tags.reserve(info.tags.size());

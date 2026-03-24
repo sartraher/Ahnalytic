@@ -149,7 +149,7 @@ void TreeSearch::initNodeData(SearchNodeData& searchData, SourceStructureTree* t
   }
 }
 
-void TreeSearch::collectHashData(ankerl::unordered_dense::set<uint32_t>& hashes, SourceStructureTree* tree, uint32_t windowSize)
+void TreeSearch::collectHashData(ahn::set<uint32_t>& hashes, SourceStructureTree* tree, uint32_t windowSize)
 {
   ahn::vector<uint32_t> nodeData;
 
@@ -516,9 +516,9 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
   // first lets convert out input data
   SourceScanner scanner;
 
-  std::unordered_map<std::string, std::vector<ScanTreeData>> trees = scanner.scanPath(path);
+  ahn::map<std::string, ahn::vector<ScanTreeData>> trees = scanner.scanPath(path);
 
-  ankerl::unordered_dense::map<std::string, SearchNodeData> searchData;
+  ahn::map<std::string, SearchNodeData> searchData;
 
   for (auto iter = trees.begin(); iter != trees.end(); iter++)
   {
@@ -566,7 +566,7 @@ void TreeSearch::search(std::filesystem::path& path, const EnviromentC& env, Tre
       // TODO: create missing index
     }
 
-    ankerl::unordered_dense::set<uint32_t> hashes;
+    ahn::set<uint32_t> hashes;
 
     if (std::filesystem ::exists(indexPath))
     {
@@ -791,12 +791,12 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
   if (resultInter->isAborted())
     return;
 
-  std::vector<TreeSearchResult> fastResults = resultInter->getResult();
+  ahn::vector<TreeSearchResult> fastResults = resultInter->getResult();
 
   resultInter->setDeepMaxCount(fastResults.size());
 
   size_t counter = 0;
-  std::unordered_map<std::string, std::vector<TreeSearchResult>> resultByCatalog;
+  ahn::map<std::string, ahn::vector<TreeSearchResult>> resultByCatalog;
   for (TreeSearchResult entry : fastResults)
   {
     entry.elementIndex = counter++;
@@ -819,8 +819,8 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
 
   BS::thread_pool pool;
 
-  std::vector<std::string> doneList;
-  std::unordered_map<TreeSearchResult::ResultSourceTypeE, std::unordered_map<std::string, FileData>> cache;
+  ahn::vector<std::string> doneList;
+  ahn::map<TreeSearchResult::ResultSourceTypeE, ahn::map<std::string, FileData>> cache;
 
   struct DeepScanData
   {
@@ -828,12 +828,12 @@ void TreeSearch::searchDeep(std::filesystem::path& path, const EnviromentC& env,
     SourceStructureTreeDeep* tree;
   };
 
-  std::unordered_map<std::string, DeepScanData> trees;
+  ahn::map<std::string, DeepScanData> trees;
   std::mutex mutex;
 
   for (auto iter = resultByCatalog.begin(); iter != resultByCatalog.end(); iter++)
   {
-    std::vector<TreeSearchResult> entries = iter->second;
+    ahn::vector<TreeSearchResult> entries = iter->second;
 
     pool.detach_task([entries, &scanner, &env, this, &resultInter, &trees, &mutex, &path]()
     {
@@ -1053,7 +1053,7 @@ std::pair<std::string, std::string> TreeSearch::getGitHubFile(const std::string&
   std::string fileName = fileDb.getName(fileId);
   std::string repoUrl = fileDb.getRepoUrl();
 
-  std::unordered_map<std::string, std::string> result;
+  ahn::map<std::string, std::string> result;
   if (repoUrl.find("github") != std::string::npos)
   {
     auto downloadFromGithub = [](const std::string& repoUrl, const std::string& sha, const std::string& relPath, std::string& outputFile)
@@ -1103,7 +1103,7 @@ std::pair<std::string, std::string> TreeSearch::getGitHubFile(const std::string&
 
     GitCliHelperC::fetchTag(repoPath.string(), sha, env.workFolder.string());
 
-    std::vector<std::string> files;
+    ahn::vector<std::string> files;
     files.push_back(fileName);
     result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, files);
 

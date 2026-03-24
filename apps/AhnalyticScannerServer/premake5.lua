@@ -24,6 +24,7 @@ project "AhnalyticScannerServer"
         "../../libs",
         "../../3rdParty/SrvLib",
         "../../3rdParty",		
+		"../../3rdParty/unordered_dense/include",
 		"../../3rdParty/mimalloc/include"
     }
 	

@@ -8,16 +8,16 @@
 #include <thread>
 #include <unordered_map>
 
-std::vector<TagData> GitCliHelperC::parseTags(const std::string& lines, bool isHead)
+ahn::vector<TagData> GitCliHelperC::parseTags(const std::string& lines, bool isHead)
 {
-  std::vector<TagData> ret;
-  std::unordered_map<std::string, size_t> lookUp;
+  ahn::vector<TagData> ret;
+  ahn::map<std::string, size_t> lookUp;
 
   for (auto part : lines | std::views::split('\n'))
   {
     std::string line(part.begin(), part.end());
 
-    std::vector<std::string> segments;
+    ahn::vector<std::string> segments;
     for (auto segment : line | std::views::split('\t'))
       segments.push_back(std::string(segment.begin(), segment.end()));
 
@@ -58,9 +58,9 @@ std::vector<TagData> GitCliHelperC::parseTags(const std::string& lines, bool isH
   return ret;
 }
 
-std::vector<TagData> GitCliHelperC::getGitTagData(const std::string& url, const std::string& tempPath)
+ahn::vector<TagData> GitCliHelperC::getGitTagData(const std::string& url, const std::string& tempPath)
 {
-  std::vector<TagData> ret;
+  ahn::vector<TagData> ret;
 
   std::string cloneCmd = "git ls-remote --tags " + url;
   ExecResult result = DataHelperC::execAndCapture(cloneCmd, tempPath);
@@ -84,7 +84,7 @@ std::string GitCliHelperC::getHeadSha(const std::string& url, const std::string&
 
   if (result.stdoutText.size() > 0)
   {
-    std::vector<TagData> tags = parseTags(result.stdoutText, true);
+    ahn::vector<TagData> tags = parseTags(result.stdoutText, true);
     if (tags.size() > 0)
       ret = tags[0].sha;
   }
@@ -126,9 +126,9 @@ void GitCliHelperC::fetchTag(const std::string& repoPath, const std::string& sha
   ExecResult result = DataHelperC::execAndCapture(cloneCmd, tempPath);
 }
 
-std::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, const std::string& url, const std::string& tempPath)
+ahn::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, const std::string& url, const std::string& tempPath)
 {
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
 
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / name;
 
@@ -146,9 +146,9 @@ std::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, con
   return ret;
 }
 
-std::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& tempPath)
+ahn::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& tempPath)
 {
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
 
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / name;
 
@@ -166,10 +166,10 @@ std::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, con
   return ret;
 }
 
-std::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& lastSha,
+ahn::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& lastSha,
                                                     const std::string& tempPath)
 {
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
 
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / name;
 
@@ -187,10 +187,10 @@ std::vector<std::string> GitCliHelperC::getGitFiles(const std::string& name, con
   return ret;
 }
 
-std::unordered_map<std::string, std::string> GitCliHelperC::getFilesWithContent(const std::string& repoPath, const std::string& sha,
-                                                                                const std::vector<std::string>& files)
+ahn::map<std::string, std::string> GitCliHelperC::getFilesWithContent(const std::string& repoPath, const std::string& sha,
+                                                                      const ahn::vector<std::string>& files)
 {
-  std::unordered_map<std::string, std::string> ret;
+  ahn::map<std::string, std::string> ret;
 
   std::filesystem::path workPath = std::filesystem::path(repoPath) / "work";
   std::filesystem::create_directories(workPath);

@@ -56,6 +56,36 @@ inline std::string utf8_repair(const std::string& input)
   return result;
 }
 
+namespace nlohmann
+{
+template <typename K, typename V>
+void from_json(const json& j, ahn::map<K, V>& m)
+{
+  std::unordered_map<K, V> tmp = j.get<std::unordered_map<K, V>>();
+  m.clear();
+  m.reserve(tmp.size());
+
+  for (auto& [k, v] : tmp)
+  {
+    m.emplace(std::move(k), std::move(v));
+  }
+}
+
+template <typename K, typename V>
+void to_json(json& j, const ahn::map<K, V>& m)
+{
+  std::unordered_map<K, V> tmp;
+  tmp.reserve(m.size());
+
+  for (auto const& [k, v] : m)
+  {
+    tmp.emplace(k, v);
+  }
+
+  j = std::move(tmp);
+}
+} // namespace nlohmann
+
 NLOHMANN_JSON_SERIALIZE_ENUM(ScanDataTypeE, {{ScanDataTypeE::Git, "Git"}, {ScanDataTypeE::Svn, "Svn"}, {ScanDataTypeE::Archive, "Archive"}})
 
 NLOHMANN_JSON_SERIALIZE_ENUM(ScanDataStatusE, {{ScanDataStatusE::Idle, "Idle"},
@@ -83,7 +113,7 @@ inline void from_json(const nlohmann::json& j, TreeSearchResultSet& v)
 
 inline void to_json(nlohmann::json& j, const TreeSearchResult& r)
 {
-  j = {{"sets", static_cast<const std::vector<TreeSearchResultSet>&>(r)},
+  j = {{"sets", static_cast<const ahn::vector<TreeSearchResultSet>&>(r)},
        {"sourceDb", utf8_repair(r.sourceDb)},
        {"sourceFile", utf8_repair(r.sourceFile)},
        {"sourceRevision", utf8_repair(r.sourceRevision)},
@@ -211,7 +241,7 @@ inline void from_json(const nlohmann::json& j, GroupData& g)
 class ScanDatabasePrivate
 {
 public:
-  std::unordered_map<size_t, GroupData> groups;
+  ahn::map<size_t, GroupData> groups;
   std::filesystem::path scanFolder;
   std::recursive_mutex mutex;
 
@@ -355,7 +385,7 @@ void ScanDatabase::removeGroup(size_t id)
   auto groupIter = priv->groups.find(id);
   if (groupIter != priv->groups.end())
   {
-    std::unordered_map<size_t, ProjectData> projects = groupIter->second.projects;
+    ahn::map<size_t, ProjectData> projects = groupIter->second.projects;
 
     for (auto projectIter = projects.begin(); projectIter != projects.end(); projectIter++)
       removeProject(projectIter->first, id);
@@ -368,9 +398,9 @@ void ScanDatabase::removeGroup(size_t id)
   }
 }
 
-std::unordered_map<size_t, std::string> ScanDatabase::getGroups()
+ahn::map<size_t, std::string> ScanDatabase::getGroups()
 {
-  std::unordered_map<size_t, std::string> ret;
+  ahn::map<size_t, std::string> ret;
 
   for (auto iter = priv->groups.begin(); iter != priv->groups.end(); iter++)
     ret[iter->first] = iter->second.name;
@@ -430,7 +460,7 @@ void ScanDatabase::removeProject(size_t id, size_t groupId)
     auto projectIter = groupIter->second.projects.find(groupId);
     if (projectIter != groupIter->second.projects.end())
     {
-      std::unordered_map<size_t, VersionData> versions = projectIter->second.versions;
+      ahn::map<size_t, VersionData> versions = projectIter->second.versions;
 
       for (auto versionIter = versions.begin(); versionIter != versions.end(); versionIter++)
         removeVersion(versionIter->first, groupId, id);
@@ -444,9 +474,9 @@ void ScanDatabase::removeProject(size_t id, size_t groupId)
   }
 }
 
-std::unordered_map<size_t, std::string> ScanDatabase::getProjects(size_t groupId)
+ahn::map<size_t, std::string> ScanDatabase::getProjects(size_t groupId)
 {
-  std::unordered_map<size_t, std::string> ret;
+  ahn::map<size_t, std::string> ret;
   const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
 
   auto groupIter = priv->groups.find(groupId);
@@ -519,7 +549,7 @@ void ScanDatabase::removeVersion(size_t id, size_t groupId, size_t projectId)
       auto versionIter = projectIter->second.versions.find(id);
       if (versionIter != projectIter->second.versions.end())
       {
-        std::unordered_map<size_t, std::shared_ptr<ScanData>> scans = versionIter->second.scans;
+        ahn::map<size_t, std::shared_ptr<ScanData>> scans = versionIter->second.scans;
 
         for (auto scanIter = scans.begin(); scanIter != scans.end(); scanIter++)
           removeScan(scanIter->first, groupId, projectId, id);
@@ -534,9 +564,9 @@ void ScanDatabase::removeVersion(size_t id, size_t groupId, size_t projectId)
   }
 }
 
-std::unordered_map<size_t, std::string> ScanDatabase::getVersions(size_t groupId, size_t projectId)
+ahn::map<size_t, std::string> ScanDatabase::getVersions(size_t groupId, size_t projectId)
 {
-  std::unordered_map<size_t, std::string> ret;
+  ahn::map<size_t, std::string> ret;
   const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
 
   auto groupIter = priv->groups.find(groupId);
@@ -635,9 +665,9 @@ void ScanDatabase::removeScan(size_t id, size_t groupId, size_t projectId, size_
   }
 }
 
-std::unordered_map<size_t, std::string> ScanDatabase::getScans(size_t groupId, size_t projectId, size_t versionId)
+ahn::map<size_t, std::string> ScanDatabase::getScans(size_t groupId, size_t projectId, size_t versionId)
 {
-  std::unordered_map<size_t, std::string> ret;
+  ahn::map<size_t, std::string> ret;
   const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
 
   auto groupIter = priv->groups.find(groupId);
@@ -659,7 +689,7 @@ std::unordered_map<size_t, std::string> ScanDatabase::getScans(size_t groupId, s
   return ret;
 }
 
-void ScanDatabase::addZipData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::vector<char>& data)
+void ScanDatabase::addZipData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const ahn::vector<char>& data)
 {
   const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
 

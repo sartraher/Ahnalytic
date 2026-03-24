@@ -6,7 +6,7 @@ template <typename T> void cmpData(T inData, ModAlgosE mod, CompressionAlgosE al
   CompressionManager manager;
   CompressData data(inData, false);
 
-  CompressData cmpData = manager.compress(data, nullptr, std::vector<ModAlgosE>{mod}, std::vector<CompressionAlgosE>{algo}, true);
+  CompressData cmpData = manager.compress(data, nullptr, ahn::vector<ModAlgosE>{mod}, ahn::vector<CompressionAlgosE>{algo}, true);
   CompressData outData = manager.decompress(cmpData);
 
   ahn::vector<char> inCharData = data.getCharData(CompressData::Auto);

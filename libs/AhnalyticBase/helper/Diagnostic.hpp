@@ -23,7 +23,7 @@ protected:
   size_t fileSize;
   std::string curLabel;
   size_t dupReduceSize;
-  std::vector<std::string> compressions;
+  ahn::vector<std::string> compressions;
   size_t resultSize;
 };
 

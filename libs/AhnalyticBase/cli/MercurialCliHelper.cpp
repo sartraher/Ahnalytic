@@ -17,9 +17,9 @@ std::string MercurialCliHelperC::getHeadChangeSet(const std::string& url, const 
   return out;
 }
 
-std::vector<TagData> MercurialCliHelperC::getMercurialTagData(const std::string& url, const std::string& tempPath)
+ahn::vector<TagData> MercurialCliHelperC::getMercurialTagData(const std::string& url, const std::string& tempPath)
 {
-  std::vector<TagData> ret;
+  ahn::vector<TagData> ret;
 
   std::string cmd = "hg tags " + url;
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
@@ -67,14 +67,14 @@ std::string MercurialCliHelperC::getMercurialCloneShallow(const std::filesystem:
   return repoPath.string();
 }
 
-std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::string& name, const std::string& url, const std::string& tempPath)
+ahn::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::string& name, const std::string& url, const std::string& tempPath)
 {
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / name;
 
   std::string cmd = "hg -R \"" + repoPath.string() + "\" manifest";
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
 
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
   if (result.exitCode != 0)
     return ret;
 
@@ -84,7 +84,7 @@ std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::strin
   return ret;
 }
 
-std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::string& name, const std::string& url, const std::string& sha,
+ahn::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::string& name, const std::string& url, const std::string& sha,
                                                                 const std::string& tempPath)
 {
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / name;
@@ -92,7 +92,7 @@ std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::strin
   std::string cmd = "hg -R \"" + repoPath.string() + "\" manifest -r " + sha;
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
 
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
   if (result.exitCode != 0)
     return ret;
 
@@ -102,7 +102,7 @@ std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::strin
   return ret;
 }
 
-std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::string& name, const std::string& url, const std::string& sha,
+ahn::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::string& name, const std::string& url, const std::string& sha,
                                                                 const std::string& lastSha, const std::string& tempPath)
 {
   std::filesystem::path repoPath = std::filesystem::path(tempPath) / name;
@@ -110,7 +110,7 @@ std::vector<std::string> MercurialCliHelperC::getMercurialFiles(const std::strin
   std::string cmd = "hg -R \"" + repoPath.string() + "\" status --rev " + lastSha + " --rev " + sha + " -man";
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
 
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
   if (result.exitCode != 0)
     return ret;
 
@@ -131,10 +131,10 @@ std::string MercurialCliHelperC::getCreationDate(const std::string& url, const s
   return result.stdoutText;
 }
 
-std::unordered_map<std::string, std::string> MercurialCliHelperC::getFilesWithContent(const std::string& repoPath, const std::string& sha,
-                                                                                      const std::vector<std::string>& files)
+ahn::map<std::string, std::string> MercurialCliHelperC::getFilesWithContent(const std::string& repoPath, const std::string& sha,
+                                                                            const ahn::vector<std::string>& files)
 {
-  std::unordered_map<std::string, std::string> ret;
+  ahn::map<std::string, std::string> ret;
 
   for (const auto& file : files)
   {

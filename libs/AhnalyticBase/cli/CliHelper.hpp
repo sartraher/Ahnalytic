@@ -30,11 +30,11 @@ public:
 
   CliHelperWrapper(const std::string& typeName);
   std::string getHeadId(const std::string& url, const std::string& tempPath);
-  std::vector<TagData> getTagData(const std::string& url, const std::string& tempPath);
-  std::vector<std::string> getFiles(const std::string& name, const std::string& url, const std::string& tempPath);
+  ahn::vector<TagData> getTagData(const std::string& url, const std::string& tempPath);
+  ahn::vector<std::string> getFiles(const std::string& name, const std::string& url, const std::string& tempPath);
   std::string getCreationDate(const std::string& url, const std::string& tempPath);
-  std::unordered_map<std::string, std::string> getFilesWithContent(const std::string& repoPath, const std::string& repoUrl, const std::string& sha,
-                                                                   const std::vector<std::string>& files, const std::string& tempPath);
+  ahn::map<std::string, std::string> getFilesWithContent(const std::string& repoPath, const std::string& repoUrl, const std::string& sha,
+                                                         const ahn::vector<std::string>& files, const std::string& tempPath);
 };
 
 

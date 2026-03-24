@@ -57,10 +57,10 @@ EVP_PKEY* loadPublicKey(const std::string& path)
   return pkey;
 }
 
-std::vector<unsigned char> SignHelper::readFile(const std::string& path)
+ahn::vector<unsigned char> SignHelper::readFile(const std::string& path)
 {
   std::ifstream file(path, std::ios::binary);
-  return std::vector<unsigned char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+  return ahn::vector<unsigned char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
 void SignHelper::signFile(const std::string& tarPath, const std::string& privateKeyPath, const std::string& sigPath)
@@ -80,7 +80,7 @@ void SignHelper::signFile(const std::string& tarPath, const std::string& private
   size_t sigLen = 0;
   EVP_DigestSignFinal(ctx, nullptr, &sigLen);
 
-  std::vector<unsigned char> signature(sigLen);
+  ahn::vector<unsigned char> signature(sigLen);
 
   EVP_DigestSignFinal(ctx, signature.data(), &sigLen);
 

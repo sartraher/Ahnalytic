@@ -55,9 +55,9 @@ TEST(TestCaseGitHub, Serialize)
 
   dbout.importPathesData(pathesPath);
 
-  std::vector<std::string> doneList;
+  ahn::vector<std::string> doneList;
 
-  ankerl::unordered_dense::set<uint32_t> hashes;
+  ahn::set<uint32_t> hashes;
 
   // for (const auto& entry : std::filesystem::directory_iterator(workPath))
   for (int index = 0; index < tagData.size(); index++)
@@ -76,7 +76,7 @@ TEST(TestCaseGitHub, Serialize)
     //}
   }
 
-  std::vector<uint32_t> vec;
+  ahn::vector<uint32_t> vec;
   vec.reserve(hashes.size());
   vec.insert(vec.end(), hashes.begin(), hashes.end());
 

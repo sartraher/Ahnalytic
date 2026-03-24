@@ -38,16 +38,16 @@ void StackOverflowHandler::importData(const std::string& stackDb, const std::str
     SnippedData snipped;
   };
 
-  std::unordered_map<std::string, std::list<TreeData>> dataCollector;
-  std::unordered_map<std::string, uint32_t> sizes;
-  std::unordered_map<std::string, SnippedDatabase*> dbs;
+  ahn::map<std::string, std::list<TreeData>> dataCollector;
+  ahn::map<std::string, uint32_t> sizes;
+  ahn::map<std::string, SnippedDatabase*> dbs;
 
-  std::unordered_map<std::string, uint32_t> licenceLookup;
+  ahn::map<std::string, uint32_t> licenceLookup;
 
   BS::thread_pool pool;
   std::recursive_mutex mutex;
 
-  auto processData = [&dbs, &mutex, &licenceLookup, outDb](std::string sourceType, std::unordered_map<std::string, std::list<TreeData>> dataCollector)
+  auto processData = [&dbs, &mutex, &licenceLookup, outDb](std::string sourceType, ahn::map<std::string, std::list<TreeData>> dataCollector)
   {
     if (!dbs.contains(sourceType))
       dbs[sourceType] = new SnippedDatabase(DBType::SQLite, outDb + "_" + sourceType + ".db");

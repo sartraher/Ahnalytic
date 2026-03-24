@@ -95,7 +95,7 @@ void SnippedDatabase::iterateSnippeds(std::function<void(uint32_t, const std::st
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT InternalID,LicenceId,SourceTreeDataID,SourceTreeDataIndex FROM Snipped");
 
-  std::unordered_map<uint32_t, std::string> licenceLookup;
+  ahn::map<uint32_t, std::string> licenceLookup;
 
   uint32_t lastSourceTreeId = std::numeric_limits<uint32_t>::max();
   SourceStructureTree* root = nullptr;

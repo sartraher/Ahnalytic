@@ -28,8 +28,8 @@ public:
   IniReader(const std::string& fileName);
 
   std::string getValue(const std::string& name, const std::string& block, const std::string& def) const;
-  std::vector<std::string> getBlocks() const;
-  std::vector<std::string> getItems(const std::string& block) const;
+  ahn::vector<std::string> getBlocks() const;
+  ahn::vector<std::string> getItems(const std::string& block) const;
 };
 
 #endif

@@ -13,20 +13,20 @@ class DLLEXPORT SvnCliHelperC
 {
 public:
   static std::string getHeadRevision(const std::string& url, const std::string& tempPath);
-  static std::vector<TagData> getSvnTagData(const std::string& url, const std::string& tempPath);
+  static ahn::vector<TagData> getSvnTagData(const std::string& url, const std::string& tempPath);
 
   static std::string getSvnCloneShallow(const std::string& name, const std::string& url, const std::string& tempPath);
   static std::string getSvnCloneShallow(const std::filesystem::path& repoPath, const std::string& url, const std::string& tempPath);
 
-  static std::vector<std::string> getSvnFiles(const std::string& name, const std::string& url, const std::string& tempPath);
-  static std::vector<std::string> getSvnFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& tempPath);
-  static std::vector<std::string> getSvnFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& lastSha,
+  static ahn::vector<std::string> getSvnFiles(const std::string& name, const std::string& url, const std::string& tempPath);
+  static ahn::vector<std::string> getSvnFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& tempPath);
+  static ahn::vector<std::string> getSvnFiles(const std::string& name, const std::string& url, const std::string& sha, const std::string& lastSha,
                                                     const std::string& tempPath);
 
   static std::string getCreationDate(const std::string& url, const std::string& tempPath);
 
-  static std::unordered_map<std::string, std::string> getFilesWithContent(const std::string& repoPath, const std::string& sha,
-                                                                          const std::vector<std::string>& files, const std::string& tempPath);
+  static ahn::map<std::string, std::string> getFilesWithContent(const std::string& repoPath, const std::string& sha, const ahn::vector<std::string>& files,
+                                                                const std::string& tempPath);
 
 private:
 protected:

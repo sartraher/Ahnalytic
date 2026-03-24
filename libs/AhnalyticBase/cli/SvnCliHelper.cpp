@@ -35,9 +35,9 @@ std::string SvnCliHelperC::getHeadRevision(const std::string& url, const std::st
   return "";
 }
 
-std::vector<TagData> SvnCliHelperC::getSvnTagData(const std::string& url, const std::string& tempPath)
+ahn::vector<TagData> SvnCliHelperC::getSvnTagData(const std::string& url, const std::string& tempPath)
 {
-  std::vector<TagData> ret;
+  ahn::vector<TagData> ret;
 
   std::string tagsUrl = url + "/tags/";
   std::string cmd = "svn list " + tagsUrl;
@@ -93,12 +93,12 @@ std::string SvnCliHelperC::getSvnCloneShallow(const std::filesystem::path& repoP
   return repoPath.string();
 }
 
-std::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const std::string& url, const std::string& tempPath)
+ahn::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const std::string& url, const std::string& tempPath)
 {
   std::string cmd = "svn list -R " + url;
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
 
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
   if (result.exitCode != 0)
     return ret;
 
@@ -114,12 +114,12 @@ std::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const st
   return ret;
 }
 
-std::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const std::string& url, const std::string& sha, const std::string& tempPath)
+ahn::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const std::string& url, const std::string& sha, const std::string& tempPath)
 {
   std::string cmd = "svn list -R -r " + sha + " " + url;
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
 
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
   if (result.exitCode != 0)
     return ret;
 
@@ -135,13 +135,13 @@ std::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const st
   return ret;
 }
 
-std::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const std::string& url, const std::string& sha, const std::string& lastSha,
+ahn::vector<std::string> SvnCliHelperC::getSvnFiles(const std::string&, const std::string& url, const std::string& sha, const std::string& lastSha,
                                                     const std::string& tempPath)
 {
   std::string cmd = "svn diff --summarize -r " + lastSha + ":" + sha + " " + url;
   ExecResult result = DataHelperC::execAndCapture(cmd, tempPath);
 
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
   if (result.exitCode != 0)
     return ret;
 
@@ -171,10 +171,10 @@ std::string SvnCliHelperC::getCreationDate(const std::string& url, const std::st
   return out;
 }
 
-std::unordered_map<std::string, std::string> SvnCliHelperC::getFilesWithContent(const std::string& repoUrl, const std::string& sha,
-                                                                                const std::vector<std::string>& files, const std::string& tempPath)
+ahn::map<std::string, std::string> SvnCliHelperC::getFilesWithContent(const std::string& repoUrl, const std::string& sha, const ahn::vector<std::string>& files,
+                                                                      const std::string& tempPath)
 {
-  std::unordered_map<std::string, std::string> ret;
+  ahn::map<std::string, std::string> ret;
 
   for (const auto& file : files)
   {

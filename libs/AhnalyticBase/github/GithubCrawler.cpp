@@ -467,7 +467,7 @@ bool GitHubCrawler::passesFilters(json& r)
   // --- Heuristic mirror detection (GitHub does NOT flag these) ---
 
   // common mirror org names
-  static const std::vector<std::string> mirrorOwners = {"aosp-mirror",   "llvm-mirror",  "gcc-mirror", "linux-mirror",
+  static const ahn::vector<std::string> mirrorOwners = {"aosp-mirror",   "llvm-mirror",  "gcc-mirror", "linux-mirror",
                                                         "webkit-mirror", "gnome-mirror", "kde-mirror"};
 
   // owner/name based detection
@@ -612,7 +612,7 @@ void GitHubCrawler::fillBasicRepoInfoMetadataOnly(const json& r, RepoInfo& info)
 // Parse refs array returned by /git/refs and populate info.tags/info.branches.
 // -----------------------------------------------------------------------------
 
-void GitHubCrawler::parseRefsArray(const json& refsArray, RepoInfo& info, std::vector<pair<std::string, std::string>>& unresolvedTagObjects)
+void GitHubCrawler::parseRefsArray(const json& refsArray, RepoInfo& info, ahn::vector<pair<std::string, std::string>>& unresolvedTagObjects)
 {
   if (!refsArray.is_array())
     return;
@@ -714,7 +714,7 @@ void GitHubCrawler::fetchRefsAndHead(RepoInfo& info)
   std::string path = "/repos/" + owner + "/" + name + "/git/refs?per_page=100";
 
   // We'll collect annotated tag objects that need resolution: pair(tagObjectSha, tagName)
-  std::vector<std::pair<std::string, std::string>> unresolvedTagObjects;
+  ahn::vector<std::pair<std::string, std::string>> unresolvedTagObjects;
 
   while (!path.empty())
   {

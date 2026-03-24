@@ -40,7 +40,7 @@ void StackExchangeExtractDatabase::processSnippeds(std::function<void(const Snip
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT StackExId,Date,Licence,Code FROM StackExSnipped");
 
-  std::unordered_map<std::string, uint32_t> ret;
+  ahn::map<std::string, uint32_t> ret;
   for (const soci::row& r : rowSet)
     callback({r.get<int>("StackExId"), r.get<std::string>("Code"), r.get<std::string>("Licence"), r.get<std::string>("Date")});
 }
@@ -63,7 +63,7 @@ void StackExchangeExtractDatabase::getSnipped(const std::string& stackExId, std:
 
 void StackExchangeExtractDatabase::splitDatabase(const std::string& outFolder, const std::string& prefix)
 {
-  std::unordered_map<std::string, StackExchangeExtractDatabase*> dbs;
+  ahn::map<std::string, StackExchangeExtractDatabase*> dbs;
 
   processSnippeds([&dbs, prefix, outFolder](const SnippedData& data)
   {

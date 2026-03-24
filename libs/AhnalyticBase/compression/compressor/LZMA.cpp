@@ -10,10 +10,10 @@
 void compress_memory(const ahn::vector<char>& input, ahn::vector<char>& out_data)
 {
   const size_t propsSize = LZMA_PROPS_SIZE;
-  std::vector<unsigned char> props(propsSize);
+  ahn::vector<unsigned char> props(propsSize);
 
   size_t destLen = input.size() + input.size() / 3 + 128; // estimated size
-  std::vector<unsigned char> compressed(destLen);
+  ahn::vector<unsigned char> compressed(destLen);
 
   size_t outPropsSize = propsSize;
 
@@ -49,7 +49,7 @@ void decompress_lzma(const ahn::vector<char>& in_data, ahn::vector<char>& out_da
   {
   }
 
-  std::vector<unsigned char> props(LZMA_PROPS_SIZE);
+  ahn::vector<unsigned char> props(LZMA_PROPS_SIZE);
   memcpy(props.data(), in_data.data(), LZMA_PROPS_SIZE);
   const unsigned char* compressedData = reinterpret_cast<const unsigned char*>(in_data.data() + LZMA_PROPS_SIZE);
   size_t compSize = in_data.size() - LZMA_PROPS_SIZE;

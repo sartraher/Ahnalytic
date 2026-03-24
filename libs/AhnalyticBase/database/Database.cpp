@@ -85,18 +85,18 @@ std::string Database::getName(uint32_t id)
   return ret;
 }
 
-std::unordered_map<std::string, uint32_t> Database::getNames()
+ahn::map<std::string, uint32_t> Database::getNames()
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT ID,Name FROM Name");
 
-  std::unordered_map<std::string, uint32_t> ret;
+  ahn::map<std::string, uint32_t> ret;
   for (const soci::row& r : rowSet)
     ret[r.get<std::string>("Name")] = r.get<uint32_t>("ID");
 
   return ret;
 }
 
-std::unordered_map<std::string, uint32_t> Database::insertNames(std::vector<std::string> names)
+ahn::map<std::string, uint32_t> Database::insertNames(std::vector<std::string> names)
 {
   sql->begin();
   soci::statement statement = (sql->prepare << "INSERT OR IGNORE INTO Name (Name) VALUES (:name)", soci::use(names, "name"));
@@ -107,18 +107,18 @@ std::unordered_map<std::string, uint32_t> Database::insertNames(std::vector<std:
   return getNames();
 }
 
-std::unordered_map<std::string, uint32_t> Database::getTypes()
+ahn::map<std::string, uint32_t> Database::getTypes()
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT ID,Type FROM Type");
 
-  std::unordered_map<std::string, uint32_t> ret;
+  ahn::map<std::string, uint32_t> ret;
   for (const soci::row& r : rowSet)
     ret[r.get<std::string>("Type")] = r.get<uint32_t>("ID");
 
   return ret;
 }
 
-std::unordered_map<std::string, uint32_t> Database::insertTypes(std::vector<std::string> types)
+ahn::map<std::string, uint32_t> Database::insertTypes(std::vector<std::string> types)
 {
   sql->begin();
   soci::statement statement = (sql->prepare << "INSERT OR IGNORE INTO Type (Type) VALUES (:type)", soci::use(types, "type"));
@@ -129,18 +129,18 @@ std::unordered_map<std::string, uint32_t> Database::insertTypes(std::vector<std:
   return getTypes();
 }
 
-std::unordered_map<std::string, uint32_t> Database::getSourceTypes()
+ahn::map<std::string, uint32_t> Database::getSourceTypes()
 {
   soci::rowset<soci::row> rowSet = (sql->prepare << "SELECT ID,SourceType FROM SourceType");
 
-  std::unordered_map<std::string, uint32_t> ret;
+  ahn::map<std::string, uint32_t> ret;
   for (const soci::row& r : rowSet)
     ret[r.get<std::string>("SourceType")] = r.get<uint32_t>("ID");
 
   return ret;
 }
 
-std::unordered_map<std::string, uint32_t> Database::insertSourceTypes(std::vector<std::string> sourceTypes)
+ahn::map<std::string, uint32_t> Database::insertSourceTypes(std::vector<std::string> sourceTypes)
 {
   sql->begin();
   soci::statement statement = (sql->prepare << "INSERT OR IGNORE INTO SourceType (SourceType) VALUES (:sourceType)", soci::use(sourceTypes, "sourceType"));

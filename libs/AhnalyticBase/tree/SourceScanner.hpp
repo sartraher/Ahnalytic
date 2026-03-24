@@ -51,16 +51,17 @@ public:
 
   int countErrorNodes(const TSTree* tree) const;
   void printTree(SourceStructureTree* node, const std::string& prefix = "");
-  // std::list<std::vector<char>> scanFolder(const std::filesystem::path& path);
 
-  std::unordered_map<std::string, std::vector<ScanTreeData>> scanPath(const std::filesystem::path& path);
-  std::unordered_map<std::string, std::vector<ScanTreeData>> scanBuffer(std::unordered_map<std::string, std::string> buffers);
+  ahn::map<std::string, ahn::vector<ScanTreeData>> scanPath(const std::filesystem::path& path);
+  ahn::map<std::string, ahn::vector<ScanTreeData>> scanBuffer(ahn::map<std::string, std::string> buffers);
   std::list<std::string> getFileTypes();
   std::list<std::string> getFileGroups();
 
+  static void initTreeSitterAllocator();
+
 private:
-  std::vector<SourceHandlerI*> handlerList;
-  std::unordered_map<std::string, SourceHandlerI*> handlers;
+  ahn::vector<SourceHandlerI*> handlerList;
+  ahn::map<std::string, SourceHandlerI*> handlers;
 
 protected:
 };

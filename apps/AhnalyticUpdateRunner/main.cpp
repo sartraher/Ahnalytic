@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     std::filesystem::path repoPath = tempPath / "mongotest";
     std::filesystem::path workPath = repoPath / "work";
 
-    std::vector<TagData> tagData = GitCliHelperC::getGitTagData(testUri, tempPath.string());
+    ahn::vector<TagData> tagData = GitCliHelperC::getGitTagData(testUri, tempPath.string());
 
     std::string lastSha = tagData.at(0).sha;
     std::string sha = tagData.at(1).sha;
@@ -64,9 +64,9 @@ int main(int argc, char* argv[])
     GitCliHelperC::getGitClone(repoPath, testUri, tempPath.string());
     GitCliHelperC::fetchTag(repoPath.string(), lastSha, tempPath.string());
     GitCliHelperC::fetchTag(repoPath.string(), sha, tempPath.string());
-    std::vector<std::string> files = GitCliHelperC::getGitFiles("mongotest", testUri, sha, lastSha, tempPath.string());
+    ahn::vector<std::string> files = GitCliHelperC::getGitFiles("mongotest", testUri, sha, lastSha, tempPath.string());
 
-    static const std::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
+    static const ahn::vector<std::string> denyDirs = {"third_party", "3rdparty", "vendor", "vendors",      "external",
                                                       "externals",   "deps",     "dep",    "node_modules", ".git"};
 
     auto hasSupportedExtension = [](const std::string& path, const std::list<std::string>& exts)
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
     std::list<std::string> supportedExt = {".cpp", ".c", ".cxx", ".hpp", ".h", ".hxx"};
 
-    std::vector<std::string> filesFilteres;
+    ahn::vector<std::string> filesFilteres;
     for (const std::string& file : files)
     {
       if (hasSupportedExtension(file, supportedExt))
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
       }
     }
 
-    std::unordered_map<std::string, std::string> result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, filesFilteres);
+    ahn::map<std::string, std::string> result = GitCliHelperC::getFilesWithContent(repoPath.string(), sha, filesFilteres);
   }
   else if (input)
   {
@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
       {
         FileDatabase* db = new FileDatabase(DBType::SQLite, resPath.string());
 
-        std::unordered_map<std::string, std::string> tags = db->getTags();
+        ahn::map<std::string, std::string> tags = db->getTags();
 
         std::vector<TagInfo> resTags;
         info.tags.reserve(info.tags.size());

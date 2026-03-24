@@ -65,8 +65,8 @@ public:
 
   AhnalyticFileTypeE getType() const;
   ThirdPartyConfig getThirdPartyConfig() const;
-  std::vector<ResultFilter> getResultFilters() const;
-  std::vector<CVEConfig> getCVEConfigs() const;
+  ahn::vector<ResultFilter> getResultFilters() const;
+  ahn::vector<CVEConfig> getCVEConfigs() const;
 
 private:
   AhnalyticFilePrivate* priv = nullptr;

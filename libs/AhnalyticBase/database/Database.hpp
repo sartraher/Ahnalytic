@@ -40,6 +40,27 @@ struct VectorEqual
   }
 };
 
+struct AhnVectorHash
+{
+  std::size_t operator()(const ahn::vector<uint32_t>& v) const
+  {
+    std::size_t seed = v.size();
+    for (uint32_t i : v)
+    {
+      seed ^= std::hash<uint32_t>()(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2); // from boost::hash_combine
+    }
+    return seed;
+  }
+};
+
+struct AhnVectorEqual
+{
+  bool operator()(const ahn::vector<uint32_t>& a, const ahn::vector<uint32_t>& b) const
+  {
+    return a == b;
+  }
+};
+
 class DLLEXPORT Database
 {
 public:
@@ -50,14 +71,14 @@ public:
   void getSourceTreeData(uint32_t id, ahn::vector<char>& data);
 
   std::string getName(uint32_t id);
-  std::unordered_map<std::string, uint32_t> getNames();
-  std::unordered_map<std::string, uint32_t> insertNames(std::vector<std::string> types);
+  ahn::map<std::string, uint32_t> getNames();
+  ahn::map<std::string, uint32_t> insertNames(std::vector<std::string> types);
 
-  std::unordered_map<std::string, uint32_t> getTypes();
-  std::unordered_map<std::string, uint32_t> insertTypes(std::vector<std::string> types);
+  ahn::map<std::string, uint32_t> getTypes();
+  ahn::map<std::string, uint32_t> insertTypes(std::vector<std::string> types);
 
-  std::unordered_map<std::string, uint32_t> getSourceTypes();
-  std::unordered_map<std::string, uint32_t> insertSourceTypes(std::vector<std::string> types);
+  ahn::map<std::string, uint32_t> getSourceTypes();
+  ahn::map<std::string, uint32_t> insertSourceTypes(std::vector<std::string> types);
 
 private:
 protected:

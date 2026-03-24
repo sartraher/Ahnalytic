@@ -13,10 +13,10 @@ struct AhnalyticFilePrivate
   // ThirdParty
   ThirdPartyConfig thirdPartyConfig;
 
-  std::vector<CVEConfig> cveConfigs;
+  ahn::vector<CVEConfig> cveConfigs;
 
   // Content
-  std::vector<ResultFilter> resultFilter;
+  ahn::vector<ResultFilter> resultFilter;
 };
 
 AhnalyticFile::AhnalyticFile(const std::string& path) : priv(new AhnalyticFilePrivate())
@@ -32,7 +32,7 @@ AhnalyticFile::~AhnalyticFile()
 
 void AhnalyticFile::load()
 {
-  std::vector<std::string> blocks = priv->iniReader->getBlocks();
+  ahn::vector<std::string> blocks = priv->iniReader->getBlocks();
   for (const std::string& block : blocks)
   {
     std::string type = priv->iniReader->getValue("type", block, "Content");
@@ -101,12 +101,12 @@ ThirdPartyConfig AhnalyticFile::getThirdPartyConfig() const
   return priv->thirdPartyConfig;
 }
 
-std::vector<ResultFilter> AhnalyticFile::getResultFilters() const
+ahn::vector<ResultFilter> AhnalyticFile::getResultFilters() const
 {
   return priv->resultFilter;
 }
 
-std::vector<CVEConfig> AhnalyticFile::getCVEConfigs() const
+ahn::vector<CVEConfig> AhnalyticFile::getCVEConfigs() const
 {
   return priv->cveConfigs;
 }

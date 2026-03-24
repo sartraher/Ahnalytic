@@ -71,7 +71,7 @@ public:
     results.push_back(result);
   }
 
-  virtual std::vector<TreeSearchResult> getResult()
+  virtual ahn::vector<TreeSearchResult> getResult()
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex);
     return results;
@@ -83,7 +83,7 @@ public:
     deepResults.push_back(result);
   }
 
-  virtual std::vector<TreeSearchResult> getDeepResult()
+  virtual ahn::vector<TreeSearchResult> getDeepResult()
   {
     const std::lock_guard<std::recursive_mutex> lock(mutex);
     return deepResults;
@@ -145,8 +145,8 @@ public:
 
   ScanDataStatusE status;
 
-  std::vector<TreeSearchResult> results;
-  std::vector<TreeSearchResult> deepResults;
+  ahn::vector<TreeSearchResult> results;
+  ahn::vector<TreeSearchResult> deepResults;
 
   int maxCount = 0;
   int finishedCount = 0;
@@ -161,7 +161,7 @@ protected:
 class DLLEXPORT VersionData : public BaseData
 {
 public:
-  std::unordered_map<size_t, std::shared_ptr<ScanData>> scans;
+  ahn::map<size_t, std::shared_ptr<ScanData>> scans;
 
 private:
 protected:
@@ -170,7 +170,7 @@ protected:
 class DLLEXPORT ProjectData : public BaseData
 {
 public:
-  std::unordered_map<size_t, VersionData> versions;
+  ahn::map<size_t, VersionData> versions;
 
 private:
 protected:
@@ -179,7 +179,7 @@ protected:
 class DLLEXPORT GroupData : public BaseData
 {
 public:
-  std::unordered_map<size_t, ProjectData> projects;
+  ahn::map<size_t, ProjectData> projects;
 
 private:
 protected:
@@ -199,27 +199,27 @@ public:
   size_t createGroup(const std::string& name);
   void editGroup(size_t id, const std::string& name);
   void removeGroup(size_t id);
-  std::unordered_map<size_t, std::string> getGroups();
+  ahn::map<size_t, std::string> getGroups();
 
   // Projects
   size_t createProject(const std::string& name, size_t groupId);
   void editProject(size_t id, size_t groupId, const std::string& name);
   void removeProject(size_t id, size_t groupId);
-  std::unordered_map<size_t, std::string> getProjects(size_t groupId);
+  ahn::map<size_t, std::string> getProjects(size_t groupId);
 
   // Versions
   size_t createVersion(const std::string& name, size_t groupId, size_t projectId);
   void editVersion(size_t id, size_t groupId, size_t projectId, const std::string& name);
   void removeVersion(size_t id, size_t groupId, size_t projectId);
-  std::unordered_map<size_t, std::string> getVersions(size_t groupId, size_t projectId);
+  ahn::map<size_t, std::string> getVersions(size_t groupId, size_t projectId);
 
   // Scans
   size_t createScan(const std::string& name, size_t groupId, size_t projectId, size_t versionId);
   void editScan(size_t id, size_t groupId, size_t projectId, size_t versionId, const std::string& name);
   void removeScan(size_t id, size_t groupId, size_t projectId, size_t versionId);
-  std::unordered_map<size_t, std::string> getScans(size_t groupId, size_t projectId, size_t versionId);
+  ahn::map<size_t, std::string> getScans(size_t groupId, size_t projectId, size_t versionId);
 
-  void addZipData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::vector<char>& data);
+  void addZipData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const ahn::vector<char>& data);
   void addGitData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::string& url, const std::string& sha);
   void addSvnData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::string& url, const std::string& revision);
 

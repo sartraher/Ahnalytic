@@ -37,7 +37,7 @@ public:
   
   static std::string getString(const nlohmann::json& data, const std::string& name);
 
-  std::vector<UpdateInfo> infos;
+  ahn::vector<UpdateInfo> infos;
 
 private:
 protected:

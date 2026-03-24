@@ -166,9 +166,9 @@ uint32_t FileDatabase::createTag(const std::string& tagName, const std::string& 
   return *rs.begin();
 }
 
-std::unordered_map<std::string, std::string> FileDatabase::getTags() const
+ahn::map<std::string, std::string> FileDatabase::getTags() const
 {
-  std::unordered_map<std::string, std::string> ret;
+  ahn::map<std::string, std::string> ret;
 
   soci::rowset<soci::row> rows = (sql->prepare << "SELECT TagName, Sha FROM Tag");
 
@@ -260,7 +260,7 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
 {
   EnviromentC env;
 
-  std::unordered_map<std::string, std::string> ret;
+  ahn::map<std::string, std::string> ret;
 
   CompressionManager compressionManager;
 
@@ -329,15 +329,15 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
       return dia;
     };
 
-    CompressData compressedFileIds = compressionManager.compress(fileIds, labeledDia("fileIds"), std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
-                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
-    CompressData compressedDataIds = compressionManager.compress(dataIds, labeledDia("dataIds"), std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
-                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
+    CompressData compressedFileIds = compressionManager.compress(fileIds, labeledDia("fileIds"), ahn::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
+                                                                 ahn::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
+    CompressData compressedDataIds = compressionManager.compress(dataIds, labeledDia("dataIds"), ahn::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
+                                                                 ahn::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
     CompressData compressedFileIndices =
-        compressionManager.compress(fileIndices, labeledDia("fileIndices"), std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
-                                    std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
-    CompressData compressedPathIds = compressionManager.compress(pathIds, labeledDia("pathIds"), std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
-                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
+        compressionManager.compress(fileIndices, labeledDia("fileIndices"), ahn::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
+                                    ahn::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
+    CompressData compressedPathIds = compressionManager.compress(pathIds, labeledDia("pathIds"), ahn::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
+                                                                 ahn::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
 
     std::filesystem::path filePath = shaPath;
     filePath = filePath.concat("/").concat("file.dat");
@@ -431,8 +431,8 @@ void FileDatabase::exportData(std::filesystem::path& outPath)
     Diagnostic diagonstic(joinedData.size());
 
     ahn::vector<char> data(joinedData.begin(), joinedData.end());
-    CompressData compressedFileIds = compressionManager.compress(data, &diagonstic, std::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
-                                                                 std::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
+    CompressData compressedFileIds = compressionManager.compress(data, &diagonstic, ahn::vector<ModAlgosE>{ModAlgosE::None, ModAlgosE::Delta},
+                                                                 ahn::vector<CompressionAlgosE>{CompressionAlgosE::LZMA, CompressionAlgosE::BSC});
 
     std::filesystem::path pathesPath = outPath;
     pathesPath = pathesPath.concat("/").concat("pathes.dat");
@@ -487,7 +487,7 @@ void FileDatabase::importPathesData(std::filesystem::path& pathesPath)
 }
 
 void FileDatabase::importData(const std::string& tagName, const std::string& sha, std::filesystem::path& tarPath, std::filesystem::path& pathesPath,
-                              bool tagOnly, const EnviromentC& env, ankerl::unordered_dense::set<uint32_t>& hashes)
+                              bool tagOnly, const EnviromentC& env, ahn::set<uint32_t>& hashes)
 {
   uint32_t tagId = createTag(tagName, sha);
 

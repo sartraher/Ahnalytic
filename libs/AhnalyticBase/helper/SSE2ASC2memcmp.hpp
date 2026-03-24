@@ -191,7 +191,7 @@ bool searchSubArray(const uint32_t* array1, int array1Size, const uint32_t* arra
     return false;
 
   // Precompute fingerprints for array1 windows
-  std::vector<uint32_t> array1Hashes(array1Size - windowSize + 1);
+  ahn::vector<uint32_t> array1Hashes(array1Size - windowSize + 1);
   for (int i = 0; i <= array1Size - windowSize; i++)
     array1Hashes[i] = fingerprint32(array1 + i, windowSize);
 

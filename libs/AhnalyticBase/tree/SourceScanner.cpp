@@ -14,6 +14,16 @@
 
 #include <chrono>
 
+struct InitHelper
+{
+  InitHelper()
+  {
+    ts_set_allocator(mi_malloc, mi_calloc, mi_realloc, mi_free);
+  }
+};
+
+static InitHelper initHelper;
+
 typedef struct TSLanguage TSLanguage;
 
 #ifdef __cplusplus
@@ -492,11 +502,11 @@ void SourceScanner::printTree(SourceStructureTree* node, const std::string& pref
   }
 }
 
-std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPath(const std::filesystem::path& path)
+ahn::map<std::string, ahn::vector<ScanTreeData>> SourceScanner::scanPath(const std::filesystem::path& path)
 {
-  std::unordered_map<std::string, std::vector<ScanTreeData>> ret;
+  ahn::map<std::string, ahn::vector<ScanTreeData>> ret;
 
-  std::vector<std::filesystem::path> scanPathes;
+  ahn::vector<std::filesystem::path> scanPathes;
   scanPathes.push_back(path);
 
   std::list<std::string> supportedExt = getFileTypes();
@@ -586,7 +596,7 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanPa
   return ret;
 }
 
-std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanBuffer(std::unordered_map<std::string, std::string> buffers)
+ahn::map<std::string, ahn::vector<ScanTreeData>> SourceScanner::scanBuffer(ahn::map<std::string, std::string> buffers)
 {
   struct ResData
   {
@@ -596,7 +606,7 @@ std::unordered_map<std::string, std::vector<ScanTreeData>> SourceScanner::scanBu
     SourceStructureTree* tree = nullptr;
   };
 
-  std::unordered_map<std::string, std::vector<ScanTreeData>> ret;
+  ahn::map<std::string, ahn::vector<ScanTreeData>> ret;
 
   BS::thread_pool pool(2);
 

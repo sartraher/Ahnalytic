@@ -1,8 +1,8 @@
 #include "CliHelper.hpp"
 
 #include "AhnalyticBase/cli/GitCliHelper.hpp"
-#include "AhnalyticBase/cli/SvnCliHelper.hpp"
 #include "AhnalyticBase/cli/MercurialCliHelper.hpp"
+#include "AhnalyticBase/cli/SvnCliHelper.hpp"
 
 CliHelperWrapper::CliHelperWrapper(const std::string& typeName)
 {
@@ -34,9 +34,9 @@ std::string CliHelperWrapper::getHeadId(const std::string& url, const std::strin
   return ret;
 }
 
-std::vector<TagData> CliHelperWrapper::getTagData(const std::string& url, const std::string& tempPath)
+ahn::vector<TagData> CliHelperWrapper::getTagData(const std::string& url, const std::string& tempPath)
 {
-  std::vector<TagData> ret;
+  ahn::vector<TagData> ret;
 
   switch (type)
   {
@@ -54,9 +54,9 @@ std::vector<TagData> CliHelperWrapper::getTagData(const std::string& url, const 
   return ret;
 }
 
-std::vector<std::string> CliHelperWrapper::getFiles(const std::string& name, const std::string& url, const std::string& tempPath)
+ahn::vector<std::string> CliHelperWrapper::getFiles(const std::string& name, const std::string& url, const std::string& tempPath)
 {
-  std::vector<std::string> ret;
+  ahn::vector<std::string> ret;
 
   switch (type)
   {
@@ -67,8 +67,8 @@ std::vector<std::string> CliHelperWrapper::getFiles(const std::string& name, con
     ret = GitCliHelperC::getGitFiles(name, url, tempPath);
     break;
   case Svn:
-    //if (repoPath.size() == 0)
-      //repoPath = SvnCliHelperC::getSvnCloneShallow(name, url, tempPath);
+    // if (repoPath.size() == 0)
+    // repoPath = SvnCliHelperC::getSvnCloneShallow(name, url, tempPath);
     ret = SvnCliHelperC::getSvnFiles(name, url, tempPath);
     break;
   case Mercurial:
@@ -101,11 +101,10 @@ std::string CliHelperWrapper::getCreationDate(const std::string& url, const std:
   return ret;
 }
 
-std::unordered_map<std::string, std::string> CliHelperWrapper::getFilesWithContent(const std::string& repoPath, const std::string& repoUrl,
-                                                                                   const std::string& sha, const std::vector<std::string>& files,
-                                                                                   const std::string& tempPath)
+ahn::map<std::string, std::string> CliHelperWrapper::getFilesWithContent(const std::string& repoPath, const std::string& repoUrl, const std::string& sha,
+                                                                         const ahn::vector<std::string>& files, const std::string& tempPath)
 {
-  std::unordered_map<std::string, std::string> ret;
+  ahn::map<std::string, std::string> ret;
 
   switch (type)
   {

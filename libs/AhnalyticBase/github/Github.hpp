@@ -36,9 +36,9 @@ public:
   GitHubHandler(const std::string& basePath, const std::string& tempPath);
 
   void scanRepo(const RepoInfo& info) const;
-  bool scanTag(std::unordered_map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
+  bool scanTag(ahn::map<std::string, FileDatabase*>& dbs, const RepoInfo& info, const std::string& tagName, const std::string& sha,
                const std::string& lastSha,
-               std::unordered_map<std::string, ScanTreeData>& lastFiles/*, std::unordered_map<std::string, std::string>& lastFileData*/) const;
+               ahn::map<std::string, ScanTreeData>& lastFiles) const;
 
   static std::string cleanFileName(const std::string& name);
 
@@ -47,7 +47,7 @@ private:
   std::string tempPath;
 
 protected:
-  std::unordered_map<std::string, std::string> getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl, const std::string& sha,
+  ahn::map<std::string, std::string> getGitFiles(const std::list<std::string>& supportedExt, const std::string& repoUrl, const std::string& sha,
                                                            const std::string& lastSha) const;
 
   static bool hasSupportedExtension(const std::string& path, const std::list<std::string>& exts);

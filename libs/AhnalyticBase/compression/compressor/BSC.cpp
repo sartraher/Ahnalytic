@@ -21,7 +21,6 @@ void compress_bsc(const ahn::vector<char>& input, ahn::vector<char>& out_data)
   const int inputSize = static_cast<int>(input.size());
   const int maxCompressedSize = inputSize + inputSize / 10 + 1024;
 
-  // std::vector<unsigned char> tempOut(maxCompressedSize);
   out_data.resize(maxCompressedSize);
 
   int compressedSize =
@@ -54,7 +53,7 @@ void decompress_bsc(const ahn::vector<char>& in_data, ahn::vector<char>& out_dat
   // uint32_t originalSize;
   // std::memcpy(&originalSize, in_data.data(), sizeof(uint32_t));  // Read original size
 
-  std::vector<unsigned char> tempOut(originalSize);
+  ahn::vector<unsigned char> tempOut(originalSize);
 
   int status = bsc_decompress(reinterpret_cast<const unsigned char*>(in_data.data()), static_cast<int>(in_data.size()), tempOut.data(),
                               static_cast<int>(originalSize), LIBBSC_DEFAULT_FEATURES);
