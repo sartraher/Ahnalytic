@@ -794,11 +794,13 @@ void ScanDatabase::startScan(size_t id, size_t groupId, size_t projectId, size_t
 
         if (scanIter != versionIter->second.scans.end())
         {
-          std::unique_lock lock(scanIter->second->sharedMutex);
-          scanIter->second->results.clear();
-          scanIter->second->deepResults.clear();
-          scanIter->second->status = ScanDataStatusE::Started;
-          scanIter->second->finishedCount = 0;
+          {
+            std::unique_lock lock(scanIter->second->sharedMutex);
+            scanIter->second->results.clear();
+            scanIter->second->deepResults.clear();
+            scanIter->second->status = ScanDataStatusE::Started;
+            scanIter->second->finishedCount = 0;
+          }
 
           save();
         }
