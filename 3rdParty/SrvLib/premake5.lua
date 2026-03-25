@@ -14,6 +14,13 @@ project "SrvLib"
         "Service.h",
         "SrvCtrl.h"
     }
+	
+	includedirs {
+		"../../3rdParty/mimalloc/include"
+    }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
     filter "system:windows"
         systemversion "10.0"

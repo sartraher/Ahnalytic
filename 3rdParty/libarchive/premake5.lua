@@ -189,7 +189,8 @@ project "archive_static"
         "./libarchive",
         "./libarchive/.",
 		"../zlib",
-		"../zlib/build"
+		"../zlib/build",
+		"../../3rdParty/mimalloc/include"
     }
 	
 	libdirs {
@@ -202,6 +203,9 @@ project "archive_static"
     }   
 	
 	defines { "LIBARCHIVE_STATIC", "HAVE_CONFIG_H" }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
 	filter "system:windows"
 		includedirs {			

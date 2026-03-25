@@ -1,7 +1,3 @@
-
-#include <mimalloc.h>
-#include <new>
-
 #include "AhnalyticBase/server/ScanServer.hpp"
 
 #include "Service.h"

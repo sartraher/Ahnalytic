@@ -18,6 +18,7 @@ project "AhnalyticBase"
         "**.cpp",
         "**.hpp",
         "**.h",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {
@@ -40,7 +41,8 @@ project "AhnalyticBase"
         "../../3rdParty/libarchive/libarchive",
 		"../../3rdParty/magic_enum/include",
 		"../../3rdParty/mimalloc/include",
-		"../../3rdParty/spdlog/include"
+		"../../3rdParty/spdlog/include",
+		"../../3rdParty/mimalloc/include"		
     }
 	
 	defines {

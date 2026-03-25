@@ -21,11 +21,19 @@ project "soci_core"
         "./include/soci/private",
         "./build/include"
     }
+	
+	libdirs {
+        "../../out/lib/%{cfg.platform}/%{cfg.buildcfg}",
+        "../../out/bin/%{cfg.platform}/%{cfg.buildcfg}"
+    }
 
-      defines {
+    defines {
         "SOCI_CORE",
         [[SOCI_ABI_VERSION="4_1"]]
     }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
 	filter "system:windows"
 		includedirs {
@@ -103,14 +111,20 @@ project "soci_core"
     files {
         "src/backends/sqlite3/**.cpp",
         "3rdparty/sqlite3/sqlite3.c",
-        "include/soci/sqlite3/**.h"
+        "include/soci/sqlite3/**.h",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {
         "./include",
         "./include/private",
-        "./3rdparty/sqlite3"
-    }
+        "./3rdparty/sqlite3",
+		"../../3rdParty/mimalloc/include"
+		}
+
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
     -- Windows-specific defines and includes
     filter "system:windows"

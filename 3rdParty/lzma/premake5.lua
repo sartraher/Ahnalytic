@@ -15,19 +15,29 @@ project "LzmaLib"
         "./C/LzmaDec.c",
         "./C/LzmaEnc.c",
         "./C/LzmaLib.c",
-        "./C/Threads.c"
+        "./C/Threads.c",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {
         ".",
         "./C",
-        "./C/Util/LzmaLib"
+        "./C/Util/LzmaLib",
+		"../../3rdParty/mimalloc/include"
+    }
+	
+	libdirs {
+        "../../out/lib/%{cfg.platform}/%{cfg.buildcfg}",
+        "../../out/bin/%{cfg.platform}/%{cfg.buildcfg}"
     }
 
     defines {
         "LZMALIB_EXPORTS",
         "COMPRESS_MF_MT"
     }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
     -- Windows-only
     filter "system:windows"

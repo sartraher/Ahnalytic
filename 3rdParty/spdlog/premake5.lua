@@ -12,12 +12,16 @@ project "spdlog"
     }
 
     includedirs {
-        "include"
+        "include",
+		"../../3rdParty/mimalloc/include"
     }
 
     defines {
         "SPDLOG_COMPILED_LIB"
     }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
     filter "system:windows"
         systemversion "latest"

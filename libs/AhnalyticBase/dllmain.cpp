@@ -1,7 +1,5 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 
-#include <mimalloc.h>
-
 #define WIN32_LEAN_AND_MEAN
 
 #include "windows.h"

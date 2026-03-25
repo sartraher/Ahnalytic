@@ -20,8 +20,15 @@ project "libbsc"
         "./libbsc/platform/platform.cpp",
         "./libbsc/st/st.cpp"
     }
+	
+	includedirs {
+        "../../3rdParty/mimalloc/include"
+    }
 
     vectorextensions "AVX2"
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
     filter "system:windows"
         systemversion "10.0"

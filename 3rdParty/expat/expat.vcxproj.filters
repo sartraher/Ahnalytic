@@ -10,8 +10,14 @@
     <Filter Include="lib">
       <UniqueIdentifier>{3C8C880B-A895-887C-3111-9F7C9D19947C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mimalloc">
+      <UniqueIdentifier>{7381B8AB-5F4E-13B7-8867-015F74934845}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\mimalloc\miforce.cpp">
+      <Filter>mimalloc</Filter>
+    </ClCompile>
     <ClCompile Include="lib\xmlparse.c">
       <Filter>lib</Filter>
     </ClCompile>

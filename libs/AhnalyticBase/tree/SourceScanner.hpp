@@ -57,8 +57,6 @@ public:
   std::list<std::string> getFileTypes();
   std::list<std::string> getFileGroups();
 
-  static void initTreeSitterAllocator();
-
 private:
   ahn::vector<SourceHandlerI*> handlerList;
   ahn::map<std::string, SourceHandlerI*> handlers;

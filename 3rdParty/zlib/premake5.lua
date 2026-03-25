@@ -37,8 +37,12 @@ project "zlibstatic"
 
     includedirs {
         "%{wks.location}/3rdParty/zlib",
-        "%{wks.location}/3rdParty/zlib/build"
+        "%{wks.location}/3rdParty/zlib/build",
+        "../../3rdParty/mimalloc/include"
     }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
     defines {
         "WIN32",

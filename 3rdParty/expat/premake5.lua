@@ -13,13 +13,23 @@ project "expat"
 		"./lib/xmlparse.c",		
 		"./lib/xmlrole.c",
 		"./lib/xmltok.c",
-		"./build/lib/libexpat.def"
+		"./build/lib/libexpat.def",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 	
 	includedirs {
         "./lib",
-        "./build"
+        "./build",
+		"../../3rdParty/mimalloc/include"
     }
+	
+	libdirs {
+        "%{wks.location}/out/lib/%{cfg.platform}/%{cfg.buildcfg}",
+        "%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}"
+    }
+	
+	links { "mimalloc" }
+	defines { "MI_MALLOC_OVERRIDE" }
 
 	filter "system:windows"
         defines { 
