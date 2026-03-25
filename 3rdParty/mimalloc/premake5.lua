@@ -1,8 +1,3 @@
-workspace "Ahnalytic"
-   configurations { "Debug", "Release" }
-   platforms { "x64" }
-   location "build"
-
 project "mimalloc"
    kind "SharedLib"           -- DLL on Windows, SO on Linux
    language "C"
