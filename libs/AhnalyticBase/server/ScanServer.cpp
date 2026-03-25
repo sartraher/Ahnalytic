@@ -399,13 +399,17 @@ void ScanServer::init()
     {
       ahn::vector<TreeSearchResult> searchResults = scanData->getDeepResult();
 
-      // TODO: move inside of scandata
-      const std::lock_guard<std::recursive_mutex> lock(scanData->mutex);
-
       json ret;
-      ret["status"] = scanData->status;
-      ret["id"] = scanData->id;
-      ret["name"] = scanData->name;
+
+      ScanDataStatusE status;
+      size_t id;
+      std::string name;
+
+      scanData->getBaseData(status, id, name);
+
+      ret["status"] = status;
+      ret["id"] = id;
+      ret["name"] = name;
 
       ret["maxCount"] = scanData->getMaxCount();
       ret["finishedCount"] = scanData->getFinishedCount();

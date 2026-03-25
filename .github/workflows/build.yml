@@ -42,7 +42,13 @@ jobs:
         run: |
           mkdir -p env/bin
           rm -rf env/bin/*
-          cp out/bin/x64/Release/* env/bin/
+          # Copy only executables and shared libraries (.so)
+          shopt -s nullglob
+          for f in out/bin/x64/Release/*; do
+              if [[ -x "$f" ]] || [[ "$f" == *.so ]]; then
+                  cp "$f" env/bin/
+              fi
+          done
 
       - name: Remove placeholder .stub files
         run: |
@@ -57,7 +63,6 @@ jobs:
         with:
           name: ahnalytic-linux
           path: ahnalytic_nightly_linux_${{ env.BUILD_NUMBER }}.tar.gz
-
 
   build-windows:
     name: Windows Build
@@ -85,7 +90,11 @@ jobs:
               New-Item -ItemType Directory -Path 'env/bin' | Out-Null
             }
             Remove-Item 'env/bin/*' -Recurse -Force -ErrorAction SilentlyContinue
-            Copy-Item -Path 'out/bin/x64/Release/*' -Destination 'env/bin/' -Recurse -Force
+
+            # Copy only .exe and .dll files
+            Get-ChildItem -Path 'out/bin/x64/Release/' -File | 
+              Where-Object { $_.Extension -in '.exe', '.dll' } | 
+              ForEach-Object { Copy-Item $_.FullName -Destination 'env/bin/' }
           "
 
       - name: Remove placeholder .stub files

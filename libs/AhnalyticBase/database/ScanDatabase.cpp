@@ -146,7 +146,7 @@ inline void from_json(const nlohmann::json& j, TreeSearchResult& r)
 
 inline void to_json(nlohmann::json& j, const ScanData& s)
 {
-  const std::lock_guard<std::recursive_mutex> lock(s.mutex);
+  std::shared_lock lock(s.sharedMutex);
 
   j = {{"id", s.id},
        {"name", s.name},
@@ -164,7 +164,7 @@ inline void to_json(nlohmann::json& j, const ScanData& s)
 
 inline void from_json(const nlohmann::json& j, ScanData& s)
 {
-  const std::lock_guard<std::recursive_mutex> lock(s.mutex);
+  std::unique_lock lock(s.sharedMutex);
 
   j.at("id").get_to(s.id);
   j.at("name").get_to(s.name);
@@ -794,7 +794,7 @@ void ScanDatabase::startScan(size_t id, size_t groupId, size_t projectId, size_t
 
         if (scanIter != versionIter->second.scans.end())
         {
-          const std::lock_guard<std::recursive_mutex> lock(scanIter->second->mutex);
+          std::unique_lock lock(scanIter->second->sharedMutex);
           scanIter->second->results.clear();
           scanIter->second->deepResults.clear();
           scanIter->second->status = ScanDataStatusE::Started;
@@ -825,7 +825,7 @@ void ScanDatabase::abortScan(size_t id, size_t groupId, size_t projectId, size_t
 
         if (scanIter != versionIter->second.scans.end())
         {
-          const std::lock_guard<std::recursive_mutex> lock(scanIter->second->mutex);
+          std::unique_lock lock(scanIter->second->sharedMutex);
           scanIter->second->status = ScanDataStatusE::Aborted;
 
           save();

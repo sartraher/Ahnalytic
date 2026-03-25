@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <variant>
+#include <shared_mutex>
 
 class ScanDatabasePrivate;
 
@@ -47,98 +48,108 @@ public:
 
   void setStatus(ScanDataStatusE nextStatus)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     status = nextStatus;
   }
 
   void getData(std::string& path, std::string& rev, ScanDataTypeE& dataType)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     path = dataPath;
     rev = revision;
     dataType = type;
   }
+
+  void getBaseData(ScanDataStatusE& statusRev, size_t& idRev, std::string& nameRev)
+  {
+    std::shared_lock lock(sharedMutex);
+    statusRev = status;
+    idRev = id;
+    nameRev = name;
+  }
+
   // Interface from TreeResultInterface
   virtual bool isAborted()
-  {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+  {    
+    std::shared_lock lock(sharedMutex);
     return status == ScanDataStatusE::Aborted;
   }
 
   virtual void addResult(const TreeSearchResult& result)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     results.push_back(result);
   }
 
   virtual ahn::vector<TreeSearchResult> getResult()
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     return results;
   }
 
   virtual void addDeepResult(const TreeSearchResult& result)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     deepResults.push_back(result);
   }
 
   virtual ahn::vector<TreeSearchResult> getDeepResult()
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     return deepResults;
   }
 
   virtual void setMaxCount(int count)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     maxCount = count;
   }
 
   virtual void incFinishedCount(int count)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     finishedCount += count;
   }
 
   virtual void setDeepMaxCount(int count)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     deepMaxCount = count;
   }
 
   virtual void incDeepFinishedCount(int count)
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::unique_lock lock(sharedMutex);
     deepFinishedCount += count;
   }
 
   virtual int getMaxCount()
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     return maxCount;
   }
 
   virtual int getFinishedCount()
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     return finishedCount;
   }
 
   virtual int getDeepMaxCount()
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     return deepMaxCount;
   }
 
   virtual int getDeepFinishedCount()
   {
-    const std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::shared_lock lock(sharedMutex);
     return deepFinishedCount;
   }
 
-  mutable std::recursive_mutex mutex;
-
+  //mutable std::recursive_mutex mutex;
+  mutable std::shared_mutex sharedMutex;
+  
   ScanDataTypeE type;
   std::string dataPath;
   std::string revision;

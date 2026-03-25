@@ -59,13 +59,6 @@ project "AhnalyticScannerServer"
         "MI_MALLOC_OVERRIDE"
     }
 
-    -- 🔥 CRITICAL: force mimalloc symbols + avoid static CRT conflicts
-    linkoptions {
-        "/INCLUDE:mi_version",
-        "/NODEFAULTLIB:libcpmt.lib",
-        "/NODEFAULTLIB:libcmt.lib"
-    }
-
     ------------------------------------------------------
     -- Windows
     ------------------------------------------------------
