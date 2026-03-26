@@ -3,8 +3,8 @@ project "mimalloc"
    language "C"
 
    -- Output directories
-   targetdir ("%{wks.location}/../out/bin/%{cfg.platform}/%{cfg.buildcfg}")
-   objdir    ("%{wks.location}/../out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
+   targetdir ("%{wks.location}/out/bin/%{cfg.platform}/%{cfg.buildcfg}")
+   objdir    ("%{wks.location}/out/obj/%{cfg.platform}/%{cfg.buildcfg}/%{prj.name}")
 
    -- Preprocessor defines
    defines { "WIN32", "_WINDOWS", "MI_SHARED_LIB_EXPORT", "MI_BUILD_RELEASE",
