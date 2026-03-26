@@ -11,7 +11,8 @@ project "soci_core"
     files {
         "./src/core/**.cpp",
         "./include/soci/**.h",
-        "./build/include/soci/soci-config.h"
+        "./build/include/soci/soci-config.h",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {
@@ -19,7 +20,8 @@ project "soci_core"
 		"./include/private",
         "./include/soci",
         "./include/soci/private",
-        "./build/include"
+        "./build/include",
+		"../../3rdParty/mimalloc/include"
     }
 	
 	libdirs {

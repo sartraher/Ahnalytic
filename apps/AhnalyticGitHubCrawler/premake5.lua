@@ -16,7 +16,8 @@ project "AhnalyticGitHubCrawler"
     files {
         "*.cpp",
         "*.hpp",
-        "*.h"
+        "*.h",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {
