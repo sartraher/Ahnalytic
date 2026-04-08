@@ -4,10 +4,16 @@
 #include <string>
 #include <vector>
 
-#include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
 #include "AhnalyticBase/file/UpdateStatusFile.hpp"
+#include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
+#include "AhnalyticBase/file/UpdateRepoFile.hpp"
 
 class EnviromentC;
+
+namespace httplib
+{
+class Client;
+};
 
 struct UpdateDiffInfo
 {
@@ -29,15 +35,22 @@ public:
   ~UpdateManager();
 
   ahn::vector<UpdateInfo> checkUpdates() const;
+  void startUpdates(const ahn::vector<std::string>& filter);
 
-  void checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) const;
-  void startUpdates();
+  ahn::vector<UpdateRepoData> getUpdateRepoData(const ahn::vector<std::string>& filter);
+
+  bool updateGitHub(const UpdateRepoData& repoData, const std::string& lastSha);
+  bool updateStackExchange(const UpdateRepoData& repoData, const std::string& lastSha);
+  bool updateSourceForge(const UpdateRepoData& repoData, const std::string& lastSha);
+
+  // void checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) const;
 
 private:
   EnviromentC* env;
   UpdateStatusFile installedUpdates;
 
 protected:
+  bool downloadFile(httplib::Client* cli, const std::string& path, const std::filesystem::path& outPath);
 };
 
 #endif

@@ -17,7 +17,8 @@ project "AhnalyticUpdateServer"
         "*.cpp",
         "*.hpp",
         "*.h",		
-		"../../images/update.ico"
+		"../../images/update.ico",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {

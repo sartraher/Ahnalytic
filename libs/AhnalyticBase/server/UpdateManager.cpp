@@ -1,8 +1,11 @@
 #include "UpdateManager.hpp"
 
 #include "AhnalyticBase/database/FileDatabase.hpp"
+#include "AhnalyticBase/database/StackExchangeExtractDatabase.hpp"
+#include "AhnalyticBase/helper/ArchiveHelper.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
 #include "AhnalyticBase/helper/SignHelper.hpp"
+#include "AhnalyticBase/stackexchange/StackOverflow.hpp"
 
 #include "BS_thread_pool.hpp"
 
@@ -28,6 +31,260 @@ UpdateManager::UpdateManager(EnviromentC* enviroment)
 UpdateManager::~UpdateManager()
 {
 }
+
+bool UpdateManager::downloadFile(httplib::Client* cli, const std::string& path, const std::filesystem::path& outPath)
+{
+  bool ret = false;
+  auto res = cli->Get(path);
+  if (res && res->status == 200)
+  {
+    std::filesystem::create_directories(outPath.parent_path());
+    std::ofstream out(outPath.string(), std::ios::binary);
+    out.write(res->body.data(), res->body.size());
+    out.close();
+
+    ret = true;
+  }
+
+  return ret;
+}
+
+ahn::vector<UpdateInfo> UpdateManager::checkUpdates() const
+{
+  ahn::vector<UpdateInfo> ret;
+
+  httplib::Client cli("http://www.ahnalytic.org");
+  httplib::Result res = cli.Get("/data/db/status.json");
+
+  if (res && res->status == 200)
+  {
+    UpdateStatusFile updateFile;
+    updateFile.readBuffer(res->body);
+
+    ret.reserve(updateFile.infos.size());
+    for (const UpdateInfo& info : updateFile.infos)
+      if (std::find(installedUpdates.infos.begin(), installedUpdates.infos.end(), info) == installedUpdates.infos.end())
+        ret.push_back(info);
+  }
+
+  return ret;
+}
+
+void UpdateManager::startUpdates(const ahn::vector<std::string>& filter)
+{
+  ahn::vector<UpdateRepoData> repoDatas = getUpdateRepoData(filter);
+
+  BS::thread_pool pool;
+
+  ThreadSafeQueue<UpdateRepoData> finishedQueue;
+
+  for (const UpdateRepoData& repoData : repoDatas)
+  {
+    pool.detach_task([&finishedQueue, repoData, this]()
+    {
+      bool ret = false;
+
+      std::string lastSha = "";
+      auto iter =
+          std::find_if(installedUpdates.infos.begin(), installedUpdates.infos.end(), [repoData](const UpdateInfo& info) { return info.name == repoData.name; });
+
+      if (iter != installedUpdates.infos.end())
+        lastSha = iter->sha;
+
+      if (repoData.type == "github")
+        ;
+      //ret = updateGitHub(repoData, lastSha);
+      else if (repoData.type == "stackexchange")
+        ret = updateStackExchange(repoData, lastSha);
+      else if (repoData.type == "sourceforge")
+        ret = updateSourceForge(repoData, lastSha);
+
+      if (ret)
+        finishedQueue.push(repoData);
+    });
+  }
+
+  while (pool.get_tasks_total() > 0 || finishedQueue.size() > 0)
+  {
+    if (finishedQueue.size() == 0)
+      std::this_thread::sleep_for(std::chrono::seconds{1});
+    else
+    {
+      UpdateRepoData repoData = finishedQueue.wait_and_pop();
+
+      // Check if we need to update or add;
+      auto iter =
+          std::find_if(installedUpdates.infos.begin(), installedUpdates.infos.end(), [repoData](const UpdateInfo& info) { return info.name == repoData.name; });
+
+      if (iter == installedUpdates.infos.end())
+        iter->sha = repoData.tags[repoData.tags.size() - 1].sha;
+      else
+      {
+        UpdateInfo info;
+        info.name = repoData.name;
+        info.sha = repoData.tags[repoData.tags.size() - 1].sha;
+        info.type = repoData.type;
+        info.language = repoData.language;
+        info.version = repoData.version;
+        installedUpdates.infos.push_back(info);
+      }
+    }
+  }
+}
+
+bool UpdateManager::updateGitHub(const UpdateRepoData& repoData, const std::string& lastSha)
+{
+  httplib::Client cli("http://www.ahnalytic.org");
+
+  FileDatabase db(DBType::SQLite, (env->dbFolder / "CPP" / "github" / (repoData.name + ".db")).string());
+
+  if (lastSha == "")
+    db.createRepoData(repoData.name, repoData.url, repoData.licence);
+
+  std::error_code ec;
+  std::filesystem::path pathesPath = env->workFolder / "db" / "CPP" / repoData.name / "pathes.dat";
+  std::filesystem::create_directories(pathesPath.parent_path());
+  downloadFile(&cli, "/data/db/CPP/github/" + repoData.name + "/pathes.dat", pathesPath);
+
+  if (!std::filesystem::exists(pathesPath))
+    return false;
+
+  db.importPathesData(pathesPath);
+
+  ahn::set<uint32_t> hashes;
+  std::filesystem::path filePath = (env->dbFolder / "CPP" / "github" / (repoData.name + "." + std::to_string(env->windowSize))).string();
+
+  if (std::filesystem ::exists(filePath))
+  {
+    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+    ahn::vector<uint32_t> data(size / sizeof(uint32_t));
+
+    if (file.read(reinterpret_cast<char*>(data.data()), size))
+    {
+      hashes.reserve(data.size());
+      hashes.insert(data.begin(), data.end());
+    }
+  }
+
+  // We ned this one since some sha are tagged under different names
+  std::vector<std::string> doneList;
+
+  bool shaFound = false;
+  for (const UpdateRepoTagData& tag : repoData.tags)
+  {
+    if (!shaFound)
+    {
+      if (tag.sha == lastSha || lastSha == "")
+        shaFound = true;
+    }
+    else
+    {
+      std::filesystem::path tarPath = env->workFolder / "db" / "CPP" / repoData.name / (tag.sha + ".tar");
+      std::filesystem::path sigPath = env->workFolder / "db" / "CPP" / repoData.name / (tag.sha + ".tar.sig");
+
+      downloadFile(&cli, "/data/db/CPP/github/" + repoData.name + "/" + tag.sha + ".tar", tarPath);
+      downloadFile(&cli, "/data/db/CPP/github/" + repoData.name + "/" + tag.sha + ".tar.sig", sigPath);
+
+      if (SignHelper::verifyFile(tarPath.string(), env->publicPath.string(), sigPath.string()))
+      {
+        db.importData(tag.tagName, tag.sha, tarPath, pathesPath, std::find(doneList.begin(), doneList.end(), tag.sha) != doneList.end(), *env, hashes);
+
+        std::filesystem::remove_all(tarPath, ec);
+        std::filesystem::remove_all(sigPath, ec);
+      }
+    }
+
+    doneList.push_back(tag.sha);
+  }
+
+  ahn::vector<uint32_t> vec;
+  vec.reserve(hashes.size());
+  vec.insert(vec.end(), hashes.begin(), hashes.end());
+
+  std::ofstream fileOut(filePath.native(), std::ios::binary);
+  fileOut.write((char*)vec.data(), static_cast<std::streamsize>(vec.size() * sizeof(uint32_t)));
+
+  std::filesystem::remove_all(pathesPath, ec);
+  std::filesystem::remove_all(pathesPath.parent_path(), ec);
+
+  return false;
+}
+
+bool UpdateManager::updateStackExchange(const UpdateRepoData& repoData, const std::string& lastSha)
+{
+  httplib::Client cli("http://www.ahnalytic.org");
+
+  StackOverflowHandler handler;
+  StackExchangeExtractDatabase db(DBType::SQLite, (env->dbFolder / "base" / "stackexchange" / (repoData.name + ".db")).string());
+  std::error_code ec;
+
+  bool shaFound = false;
+  for (const UpdateRepoTagData& tag : repoData.tags)
+  {
+    if (!shaFound)
+    {
+      if (tag.sha == lastSha || lastSha == "")
+        shaFound = true;
+    }
+    else
+    {
+      std::filesystem::path tarPath = env->workFolder / "db" / "base" / "stackexchange" / (tag.sha + ".tar.gz");
+      std::filesystem::path sigPath = env->workFolder / "db" / "base" / "stackexchange" / (tag.sha + ".tar.gz.sig");
+
+      std::filesystem::create_directories(tarPath.parent_path());
+
+      downloadFile(&cli, "/data/db/base/stackexchange/" + tag.sha + ".tar.gz", tarPath);
+      downloadFile(&cli, "/data/db/base/stackexchange/" + tag.sha + ".tar.gz.sig", sigPath);
+
+      if (SignHelper::verifyFile(tarPath.string(), env->publicPath.string(), sigPath.string()))
+      {
+        std::filesystem::path baseDbPath = tarPath.parent_path() / (tag.sha + ".db");
+
+        ArchiveHelper::extractTar(tarPath, baseDbPath.parent_path());
+
+        handler.importData(baseDbPath.string(), (env->dbFolder / "CPP" / "stackexchange" / (repoData.name + ".db")).string());
+
+        StackExchangeExtractDatabase segmentDb(DBType::SQLite, baseDbPath.string());
+
+        segmentDb.processSnippeds([&db](const SnippedData& data) { db.addSnipped(data.id, data.date, data.licence, data.code); });
+      }
+    }
+  }
+
+  std::filesystem::remove_all((env->workFolder / "db" / "base" / "stackexchange"), ec);
+
+  return false;
+}
+
+bool UpdateManager::updateSourceForge(const UpdateRepoData& repoData, const std::string& lastSha)
+{
+  return updateGitHub(repoData, lastSha);
+}
+
+ahn::vector<UpdateRepoData> UpdateManager::getUpdateRepoData(const ahn::vector<std::string>& filter)
+{
+  ahn::vector<UpdateRepoData> ret;
+
+  httplib::Client cli("http://www.ahnalytic.org");
+  httplib::Result res = cli.Get("/data/db/statusFull.json");
+
+  if (res && res->status == 200)
+  {
+    UpdateRepoFile updateFile;
+    updateFile.readBuffer(res->body);
+
+    ret.reserve(updateFile.updateRepoData.size());
+    for (const UpdateRepoData& repoData : updateFile.updateRepoData)
+      if (filter.size() == 0 || std::find(filter.begin(), filter.end(), repoData.name) == filter.end())
+        ret.push_back(repoData);
+  }
+
+  return ret;
+}
+
+/*
 
 ahn::vector<UpdateInfo> UpdateManager::checkUpdates() const
 {
@@ -286,3 +543,4 @@ void UpdateManager::startUpdates()
 
   installedUpdates = resUpdates;
 }
+*/

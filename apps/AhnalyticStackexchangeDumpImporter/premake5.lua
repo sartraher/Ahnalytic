@@ -17,7 +17,8 @@ project "AhnalyticStackexchangeDumpImporter"
         "*.cpp",
         "*.hpp",
         "*.h",
-		"../../images/logo.ico"
+		"../../images/logo.ico",
+		"../../3rdParty/mimalloc/miforce.cpp"
     }
 
     includedirs {

@@ -49,12 +49,11 @@ void UpdateStatusFile::write(const std::filesystem::path& path)
   for (const UpdateInfo& info : infos)
   {
     nlohmann::json infoData;
-    infoData["name"] = info.name;
-    infoData["baseName"] = info.baseName;
-    infoData["sha"] = info.sha;
-    infoData["maxVersion"] = info.maxVersion;
-    infoData["type"] = info.type;
-    infoData["language"] = info.language;
+    infoData["Name"] = info.name;
+    infoData["Sha"] = info.sha;
+    infoData["Version"] = info.version;
+    infoData["Type"] = info.type;
+    infoData["Language"] = info.language;
 
     statusData.push_back(infoData);
   }
@@ -76,17 +75,13 @@ void UpdateStatusFile::readBuffer(const std::string& buffer)
     for (int index = 0; index < statusData.size(); index++)
     {
       UpdateInfo info;
-      info.name = getString(statusData[index], "name");
-      info.baseName = getString(statusData[index], "baseName");
-      info.sha = getString(statusData[index], "sha");
-      info.maxVersion = getString(statusData[index], "maxVersion");
-      info.type = getString(statusData[index], "type");
-      info.language = getString(statusData[index], "language");
+      info.name = getString(statusData[index], "Name");
+      info.sha = getString(statusData[index], "Sha");
+      info.version = getString(statusData[index], "Version");
+      info.type = getString(statusData[index], "Type");
+      info.language = getString(statusData[index], "Language");
 
       infos.push_back(info);
-
-      // if (std::find(installedUpdates.begin(), installedUpdates.end(), info) == installedUpdates.end())
-      // ret.push_back(info);
     }
   }
   catch (const std::exception& e)

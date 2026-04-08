@@ -93,11 +93,11 @@ int main(int argc, char* argv[])
               nlohmann::json repoData;
               repoStream >> repoData;
 
-              repoData["type"] = "github";
-              repoData["language"] = "CPP";
-              repoData["version"] = "1";
+              repoData["Type"] = "github";
+              repoData["Language"] = "CPP";
+              repoData["Version"] = "1";
 
-              repoData["tags"] = tagData;
+              repoData["Tags"] = tagData;
 
               {
                 std::lock_guard<std::mutex> lock(mutex);
@@ -109,11 +109,11 @@ int main(int argc, char* argv[])
                 std::string sha = tagData.at(tagData.size() - 1)["Sha"].get<std::string>();
 
                 nlohmann::json entryJson;
-                entryJson["name"] = inPath.stem().string();
-                entryJson["sha"] = sha;
-                entryJson["type"] = "github";
-                entryJson["language"] = "CPP";
-                entryJson["version"] = "1";
+                entryJson["Name"] = inPath.stem().string();
+                entryJson["Sha"] = sha;
+                entryJson["Type"] = "github";
+                entryJson["Language"] = "CPP";
+                entryJson["Version"] = "1";
 
                 std::lock_guard<std::mutex> lock(mutex);
                 outJson.push_back(entryJson);

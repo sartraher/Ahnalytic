@@ -8,23 +8,21 @@
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-struct UpdateInfo
+struct DLLEXPORT UpdateInfo
 {
   std::string name;
-  std::string baseName;
   std::string sha;
-  std::string maxVersion;
   std::string type;
   std::string language;
+  std::string version;
 
   bool operator==(const UpdateInfo& other) const
   {
-    return name == other.name && sha == other.sha && type == other.type && language == other.language && baseName == other.baseName &&
-           maxVersion == other.maxVersion;
+    return name == other.name && sha == other.sha && type == other.type && language == other.language && version == other.version;
   }
 };
 
-class UpdateStatusFile
+class DLLEXPORT UpdateStatusFile
 {
 public:
   UpdateStatusFile();
@@ -34,7 +32,7 @@ public:
   void write(const std::filesystem::path& path);
 
   void readBuffer(const std::string& buffer);
-  
+
   static std::string getString(const nlohmann::json& data, const std::string& name);
 
   ahn::vector<UpdateInfo> infos;

@@ -555,7 +555,8 @@ void ScanServer::updateScans()
     {
       priv->pool.detach_task([this]()
       {
-        priv->updateManager->startUpdates();
+        ahn::vector<std::string> filter;
+        priv->updateManager->startUpdates(filter);
         priv->updateDatabase = false;
       });
     }
