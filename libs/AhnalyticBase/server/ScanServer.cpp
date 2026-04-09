@@ -513,7 +513,7 @@ void ScanServer::init()
   {
     json ret;
 
-    ret["inUpdate"] = (bool)priv->inUpdate;
+    ret["inUpdate"] = (bool)priv->updateDatabase;
 
     ret["amountFinished"] = priv->updateManager->getUpdateAmountFinished();
     ret["amountMax"] = priv->updateManager->getUpdateAmountMax();

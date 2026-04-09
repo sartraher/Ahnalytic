@@ -108,30 +108,34 @@ export const UpdateControls = () => {
     startExistingUpdate,
     fetchUpdateStatus,
   } = useScanner();
-  const [polling, setPolling] = useState(false);
+  const [polling, setPolling] = useState(true); // Start polling immediately
 
-  // Auto-poll for update status while updating
+  // Fetch update status on component mount to get fresh data from backend
+  useEffect(() => {
+    fetchUpdateStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-poll for update status continuously
   useEffect(() => {
     if (!polling) return;
+
+    // Fetch immediately
+    fetchUpdateStatus();
 
     const interval = setInterval(() => {
       fetchUpdateStatus();
     }, 2000); // Poll every 2 seconds
 
     return () => clearInterval(interval);
-  }, [polling, fetchUpdateStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [polling]);
 
-  // Stop polling if update is complete
-  useEffect(() => {
-    if (updateStatus?.inUpdate === false) {
-      setPolling(false);
-    }
-  }, [updateStatus?.inUpdate]);
-
+  // Stop polling only if update is complete AND we manually stopped it
   const handleStart = async () => {
     try {
       await startExistingUpdate();
-      setPolling(true);
+      // Keep polling active
     } catch (err) {
       console.error('Start update failed:', err);
     }
