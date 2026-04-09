@@ -147,11 +147,13 @@ int main(int argc, char* argv[])
         {
           std::filesystem::path tarGzPath = entry.path();
           tarGzPath = tarGzPath.concat(".tar.gz");
-          ArchiveHelper::createTarGz(entry.path(), tarGzPath);
+
+          if (!std::filesystem::exists(tarGzPath))
+            ArchiveHelper::createTarGz(entry.path(), tarGzPath);
 
           std::filesystem::path signPath = tarGzPath;
           signPath = signPath.concat(".sig");
-          SignHelper::signFile(entry.path().string(), env.privatePath.string(), signPath.string());
+          SignHelper::signFile(tarGzPath.string(), env.privatePath.string(), signPath.string());
 
           std::error_code ec;
           std::filesystem::remove_all(entry.path(), ec);

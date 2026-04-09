@@ -16,6 +16,7 @@ public:
   void getSnipped(const std::string& stackExId, std::string& date, std::string& licence, std::string& code);
 
   void splitDatabase(const std::string& outFolder, const std::string& prefix);
+  void mergeDatabase(const StackExchangeExtractDatabase& db);
 
 private:
 protected:

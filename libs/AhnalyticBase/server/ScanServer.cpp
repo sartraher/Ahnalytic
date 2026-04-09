@@ -538,7 +538,7 @@ void ScanServer::init()
       // Only do it the last one is not still running
       if (!priv->inUpdate)
         updateScans();
-      std::this_thread::sleep_for(1min);
+      std::this_thread::sleep_for(5s);
     }
   });
 }

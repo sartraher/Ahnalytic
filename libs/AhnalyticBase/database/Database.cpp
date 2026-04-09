@@ -25,6 +25,7 @@ Database::Database(DBType type, std::string connectionString)
 
 Database::~Database()
 {
+  delete sql;
 }
 
 uint32_t Database::createSourceTreeData(const ahn::vector<char>& data)

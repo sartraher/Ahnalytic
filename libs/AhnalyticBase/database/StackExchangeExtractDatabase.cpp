@@ -88,6 +88,9 @@ void StackExchangeExtractDatabase::splitDatabase(const std::string& outFolder, c
 
     std::filesystem::path outPath = std::filesystem::path(outFolder) / (prefix + "_" + id + ".db");
 
+    if (std::filesystem::exists(outPath))
+      return;
+
     if (!dbs.contains(id))
       dbs[id] = new StackExchangeExtractDatabase(DBType::SQLite, outPath.string());
 
@@ -96,4 +99,55 @@ void StackExchangeExtractDatabase::splitDatabase(const std::string& outFolder, c
 
   for (auto iter = dbs.begin(); iter != dbs.end(); iter++)
     delete iter->second;
+}
+
+void StackExchangeExtractDatabase::mergeDatabase(const StackExchangeExtractDatabase& db)
+{
+  // SQLite performance tuning for bulk insert
+  *sql << "PRAGMA synchronous = OFF;";
+  *sql << "PRAGMA journal_mode = WAL;";
+  *sql << "PRAGMA temp_store = MEMORY;";
+  *sql << "PRAGMA cache_size = -100000;";
+
+  soci::transaction tr(*sql);
+
+  int stackId;
+  std::string date;
+  std::string licence;
+  std::string code;
+
+  soci::statement insertStmt = (sql->prepare << "INSERT INTO StackExSnipped (StackExId, Date, Licence, Code) "
+                                                "VALUES (:stackExId, :date, :licence, :code)",
+                                soci::use(stackId, "stackExId"), soci::use(date, "date"), soci::use(licence, "licence"), soci::use(code, "code"));
+
+  soci::rowset<soci::row> rowSet = (db.sql->prepare << "SELECT StackExId, Date, Licence, Code FROM StackExSnipped");
+
+  std::size_t inserted = 0;
+  const std::size_t logStep = 100000;
+
+  for (const soci::row& r : rowSet)
+  {
+    stackId = r.get<int>(0);
+    date = r.get<std::string>(1);
+    licence = r.get<std::string>(2);
+    code = r.get<std::string>(3);
+
+    insertStmt.execute(true);
+
+    ++inserted;
+
+    if (inserted % logStep == 0)
+    {
+      // optional logging
+    }
+  }
+
+  tr.commit();
+
+  // force WAL -> main DB flush
+  *sql << "PRAGMA wal_checkpoint(FULL);";
+
+  // restore safer settings
+  *sql << "PRAGMA synchronous = FULL;";
+  *sql << "PRAGMA journal_mode = DELETE;";
 }

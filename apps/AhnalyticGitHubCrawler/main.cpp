@@ -1,9 +1,9 @@
 
+#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/database/GitHubRepoDatabase.hpp"
 #include "AhnalyticBase/github/RateLimit.hpp"
 #include "AhnalyticBase/helper/DataHelper.hpp"
 #include "AhnalyticBase/helper/Enviroment.hpp"
-#include "AhnalyticBase/cli/GitCliHelper.hpp"
 #include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
 
 #include "BS_thread_pool.hpp"
@@ -450,129 +450,135 @@ int main(int argc, char* argv[])
 
   while (!queue.empty() || !finished)
   {
-    pool.detach_task([&queue, &outQueue, env, &crawler]()
+    //while (queue.empty() || !finished)
+      //std::this_thread::sleep_for(std::chrono::seconds{1});
+
+    if (!queue.empty())
     {
-      if (queue.empty())
+      pool.detach_task([&queue, &outQueue, env, &crawler]()
       {
-        std::this_thread::sleep_for(std::chrono::seconds{1});
-      }
-      else
-      {
-        RepoInfo info = queue.wait_and_pop();
-        // std::cout << info.fullName << std::endl;
-
-        std::string headSha = GitCliHelperC::getHeadSha(info.htmlUrl, env.workFolder.string());
-
-        // Tags
-        if (info.tags.size() == 0)
+        if (queue.empty())
         {
-          ahn::vector<TagData> tagData = GitCliHelperC::getGitTagData(info.htmlUrl, env.workFolder.string());
-          for (const TagData& tag : tagData)
-            info.tags.push_back({tag.name, tag.sha});
+          std::this_thread::sleep_for(std::chrono::seconds{1});
+        }
+        else
+        {
+          RepoInfo info = queue.wait_and_pop();
+          // std::cout << info.fullName << std::endl;
 
+          std::string headSha = GitCliHelperC::getHeadSha(info.htmlUrl, env.workFolder.string());
+
+          // Tags
           if (info.tags.size() == 0)
-            info.tags.push_back({"HEAD", headSha});
-        }
-
-        std::string repoPath;
-        ahn::vector<std::string> files;
-
-        // Language
-        if (info.language == "")
-        {
-          std::string name = crawler.cleanFileName(crawler.extractOwnerRepo(info.htmlUrl));
-          repoPath = GitCliHelperC::getGitCloneShallow(name, info.htmlUrl, env.workFolder.string());
-          files = GitCliHelperC::getGitFiles(name, info.htmlUrl, env.workFolder.string());
-
-          if (files.size() == 0)
-            return;
-
-          ahn::map<std::string, int> langCount;
-          for (const std::string& file : files)
           {
-            std::string lang = DataHelperC::getFormatName(std::filesystem::path(file).extension().string());
-            if (!lang.empty())
-            {
-              if (langCount.find(lang) == langCount.end())
-                langCount[lang] = 0;
+            ahn::vector<TagData> tagData = GitCliHelperC::getGitTagData(info.htmlUrl, env.workFolder.string());
+            for (const TagData& tag : tagData)
+              info.tags.push_back({tag.name, tag.sha});
 
-              langCount[lang]++;
-            }
+            if (info.tags.size() == 0)
+              info.tags.push_back({"HEAD", headSha});
           }
 
-          std::string maxLang;
-          int maxCount = 0;
-          for (auto iter = langCount.begin(); iter != langCount.end(); iter++)
+          std::string repoPath;
+          ahn::vector<std::string> files;
+
+          // Language
+          if (info.language == "")
           {
-            if (iter->second > maxCount)
-            {
-              maxCount = iter->second;
-              maxLang = iter->first;
-            }
-          }
-
-          info.language = maxLang;
-
-          // std::cout << maxLang << std::endl;
-        }
-
-        // License
-        if (info.license == "" || info.license == "NO LICENSE")
-        {
-          std::string name = crawler.cleanFileName(crawler.extractOwnerRepo(info.htmlUrl));
-          if (repoPath.size() == 0)
+            std::string name = crawler.cleanFileName(crawler.extractOwnerRepo(info.htmlUrl));
             repoPath = GitCliHelperC::getGitCloneShallow(name, info.htmlUrl, env.workFolder.string());
-
-          if (files.size() == 0)
             files = GitCliHelperC::getGitFiles(name, info.htmlUrl, env.workFolder.string());
 
-          auto toUpper = [](std::string s) -> std::string
-          {
-            std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
-            return s;
-          };
+            if (files.size() == 0)
+              return;
 
-          auto contains = [](std::string_view str, std::string_view sub)
-          {
-            return str.find(sub) != std::string_view::npos;
-          };
+            ahn::map<std::string, int> langCount;
+            for (const std::string& file : files)
+            {
+              std::string lang = DataHelperC::getFormatName(std::filesystem::path(file).extension().string());
+              if (!lang.empty())
+              {
+                if (langCount.find(lang) == langCount.end())
+                  langCount[lang] = 0;
 
-          std::string licenseMain;
-          std::string licenseSecond;
-          for (const std::string& file : files)
-          {
-            std::string upperFile = toUpper(file);
+                langCount[lang]++;
+              }
+            }
 
-            if (upperFile.starts_with("LICENSE") || upperFile.starts_with("LICENSE."))
-              licenseMain = file;
-            else if (contains(upperFile, "LICENSE"))
-              licenseSecond = file;
+            std::string maxLang;
+            int maxCount = 0;
+            for (auto iter = langCount.begin(); iter != langCount.end(); iter++)
+            {
+              if (iter->second > maxCount)
+              {
+                maxCount = iter->second;
+                maxLang = iter->first;
+              }
+            }
+
+            info.language = maxLang;
+
+            // std::cout << maxLang << std::endl;
           }
 
-          std::string license;
-          if (licenseMain.size() > 0)
-            license = licenseMain;
-          else if (licenseSecond.size() > 0)
-            license = licenseSecond;
-
-          if (license != "")
+          // License
+          if (info.license == "" || info.license == "NO LICENSE")
           {
-            ahn::map<std::string, std::string> fileData = GitCliHelperC::getFilesWithContent(repoPath, headSha, {license});
-            info.license = DataHelperC::getLicenceName(fileData[license], env.workFolder.string());
+            std::string name = crawler.cleanFileName(crawler.extractOwnerRepo(info.htmlUrl));
+            if (repoPath.size() == 0)
+              repoPath = GitCliHelperC::getGitCloneShallow(name, info.htmlUrl, env.workFolder.string());
+
+            if (files.size() == 0)
+              files = GitCliHelperC::getGitFiles(name, info.htmlUrl, env.workFolder.string());
+
+            auto toUpper = [](std::string s) -> std::string
+            {
+              std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
+              return s;
+            };
+
+            auto contains = [](std::string_view str, std::string_view sub)
+            {
+              return str.find(sub) != std::string_view::npos;
+            };
+
+            std::string licenseMain;
+            std::string licenseSecond;
+            for (const std::string& file : files)
+            {
+              std::string upperFile = toUpper(file);
+
+              if (upperFile.starts_with("LICENSE") || upperFile.starts_with("LICENSE."))
+                licenseMain = file;
+              else if (contains(upperFile, "LICENSE"))
+                licenseSecond = file;
+            }
+
+            std::string license;
+            if (licenseMain.size() > 0)
+              license = licenseMain;
+            else if (licenseSecond.size() > 0)
+              license = licenseSecond;
+
+            if (license != "")
+            {
+              ahn::map<std::string, std::string> fileData = GitCliHelperC::getFilesWithContent(repoPath, headSha, {license});
+              info.license = DataHelperC::getLicenceName(fileData[license], env.workFolder.string());
+            }
           }
+
+          if (repoPath != "")
+          {
+            std::cout << GitCliHelperC::getCreationDate(repoPath, env.workFolder.string());
+
+            std::error_code ec;
+            std::filesystem::remove_all(repoPath, ec);
+          }
+
+          outQueue.push(info);
         }
-
-        if (repoPath != "")
-        {
-          std::cout << GitCliHelperC::getCreationDate(repoPath, env.workFolder.string());
-
-          std::error_code ec;
-          std::filesystem::remove_all(repoPath, ec);
-        }
-
-        outQueue.push(info);
-      }
-    });
+      });
+    }
 
     while (!outQueue.empty())
     {
@@ -582,9 +588,12 @@ int main(int argc, char* argv[])
 
     while (pool.get_tasks_total() > 100)
     {
-      std::this_thread::sleep_for(std::chrono::seconds{1});
+      pool.wait_for(std::chrono::seconds{1});
+      //std::this_thread::sleep_for(std::chrono::seconds{1});
     }
   }
+
+  pool.wait();
 
   while (!outQueue.empty())
   {
