@@ -150,6 +150,24 @@ export const UpdateControls = () => {
               </span>
             </div>
           </div>
+
+          {/* Progress Bar */}
+          {updateStatus.amountMax > 0 && (
+            <div className="progress-container">
+              <div className="progress-label">Update Progress</div>
+              <div className="progress-bar-wrapper">
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${(updateStatus.amountFinished / updateStatus.amountMax) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              <span className="progress-text">
+                {updateStatus.amountFinished} / {updateStatus.amountMax}
+              </span>
+            </div>
+          )}
         </>
       )}
 

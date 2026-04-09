@@ -75,6 +75,9 @@ void UpdateManager::startUpdates(const ahn::vector<std::string>& filter)
 {
   ahn::vector<UpdateRepoData> repoDatas = getUpdateRepoData(filter);
 
+  setUpdateAmountFinished(0);
+  setUpdateAmountMax(repoDatas.size());
+
   BS::thread_pool pool;
 
   ThreadSafeQueue<UpdateRepoData> finishedQueue;
@@ -111,6 +114,8 @@ void UpdateManager::startUpdates(const ahn::vector<std::string>& filter)
     else
     {
       UpdateRepoData repoData = finishedQueue.wait_and_pop();
+
+      incUpdateAmountFinished();
 
       // Check if we need to update or add;
       auto iter =
@@ -322,4 +327,34 @@ ahn::vector<UpdateRepoData> UpdateManager::getUpdateRepoData(const ahn::vector<s
   }
 
   return ret;
+}
+
+int UpdateManager::getUpdateAmountFinished() const
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex);
+  return updateAmountFinished;
+}
+
+int UpdateManager::getUpdateAmountMax() const
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex);
+  return updateAmountMax;
+}
+
+void UpdateManager::setUpdateAmountFinished(int amount)
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex);
+  updateAmountFinished = amount;
+}
+
+void UpdateManager::incUpdateAmountFinished()
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex);
+  updateAmountFinished++;
+}
+
+void UpdateManager::setUpdateAmountMax(int amount)
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex);
+  updateAmountMax = amount;
 }

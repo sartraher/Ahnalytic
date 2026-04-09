@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "AhnalyticBase/file/UpdateRepoFile.hpp"
 #include "AhnalyticBase/file/UpdateStatusFile.hpp"
 #include "AhnalyticBase/helper/ThreadSafeQueue.hpp"
-#include "AhnalyticBase/file/UpdateRepoFile.hpp"
 
 class EnviromentC;
 
@@ -45,7 +45,18 @@ public:
 
   // void checkUpdateDiff(ThreadSafeQueue<UpdateDiffInfo>& queue) const;
 
+  int getUpdateAmountFinished() const;
+  int getUpdateAmountMax() const;
+
+  void setUpdateAmountFinished(int amount);
+  void incUpdateAmountFinished();
+  void setUpdateAmountMax(int amount);
+
 private:
+  mutable std::recursive_mutex mutex;
+  int updateAmountFinished = 0;
+  int updateAmountMax = 0;
+
   EnviromentC* env;
   UpdateStatusFile installedUpdates;
 

@@ -515,6 +515,9 @@ void ScanServer::init()
 
     ret["inUpdate"] = (bool)priv->inUpdate;
 
+    ret["amountFinished"] = priv->updateManager->getUpdateAmountFinished();
+    ret["amountMax"] = priv->updateManager->getUpdateAmountMax();
+
     ok(res, ret);
     return;
   });
