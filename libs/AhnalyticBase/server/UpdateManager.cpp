@@ -126,7 +126,7 @@ void UpdateManager::startUpdates(const ahn::vector<std::string>& filter)
       else
       {
         UpdateInfo info;
-        info.name = repoData.name;
+        info.name = DataHelperC::cleanFileName(repoData.name) + "_" + repoData.language;
         info.sha = repoData.tags[repoData.tags.size() - 1].sha;
         info.type = repoData.type;
         info.language = repoData.language;
