@@ -63,6 +63,7 @@ public:
   AhnalyticFile(const std::string& path);
   ~AhnalyticFile();
 
+  std::string getTarget() const;
   AhnalyticFileTypeE getType() const;
   ThirdPartyConfig getThirdPartyConfig() const;
   ahn::vector<ResultFilter> getResultFilters() const;

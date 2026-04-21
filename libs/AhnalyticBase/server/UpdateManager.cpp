@@ -78,7 +78,7 @@ void UpdateManager::startUpdates(const ahn::vector<std::string>& filter)
   setUpdateAmountFinished(0);
   setUpdateAmountMax(repoDatas.size());
 
-  BS::thread_pool pool;
+  BS::thread_pool pool(8);
 
   ThreadSafeQueue<UpdateRepoData> finishedQueue;
 

@@ -3,11 +3,14 @@
 
 #include "AhnalyticBase/database/Database.hpp"
 #include "AhnalyticBase/tree/TreeSearch.hpp"
+#include "AhnalyticBase/file/AhnalyticFile.hpp"
 
 #include <filesystem>
+#include <shared_mutex>
 #include <unordered_map>
 #include <variant>
-#include <shared_mutex>
+
+#include <nlohmann/json.hpp>
 
 class ScanDatabasePrivate;
 
@@ -35,6 +38,23 @@ enum class ScanDataStatusE
   Running = 2,
   Aborted = 3,
   Finished = 4
+};
+
+enum class ScanFileTreeTypeE
+{
+  File,
+  Directory
+};
+
+struct DLLEXPORT ScanFileTree
+{
+  ScanFileTreeTypeE type;
+  std::string name;
+  std::list<ScanFileTree> children;
+
+  std::list<AhnalyticFile> files;
+
+  nlohmann::json getJson() const;
 };
 
 class DLLEXPORT ScanData : public BaseData, public TreeResultInterface
@@ -70,7 +90,7 @@ public:
 
   // Interface from TreeResultInterface
   virtual bool isAborted()
-  {    
+  {
     std::shared_lock lock(sharedMutex);
     return status == ScanDataStatusE::Aborted;
   }
@@ -147,9 +167,9 @@ public:
     return deepFinishedCount;
   }
 
-  //mutable std::recursive_mutex mutex;
+  // mutable std::recursive_mutex mutex;
   mutable std::shared_mutex sharedMutex;
-  
+
   ScanDataTypeE type;
   std::string dataPath;
   std::string revision;
@@ -164,6 +184,8 @@ public:
 
   int deepMaxCount = 0;
   int deepFinishedCount = 0;
+
+  ScanFileTree fileTree;
 
 private:
 protected:
@@ -234,6 +256,7 @@ public:
   void addGitData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::string& url, const std::string& sha);
   void addSvnData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::string& url, const std::string& revision);
 
+  void preScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
   void startScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
   void abortScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
   std::shared_ptr<ScanData> getScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);

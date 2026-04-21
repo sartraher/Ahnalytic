@@ -18,7 +18,7 @@ struct DLLEXPORT UpdateInfo
 
   bool operator==(const UpdateInfo& other) const
   {
-    return name == other.name && sha == other.sha && type == other.type && language == other.language && version == other.version;
+    return sha == other.sha && name == other.name && type == other.type && language == other.language && version == other.version;
   }
 };
 

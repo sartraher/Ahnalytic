@@ -10,6 +10,8 @@ struct AhnalyticFilePrivate
 
   AhnalyticFileTypeE type = AhnalyticFileTypeE::Content;
 
+  std::string target;
+
   // ThirdParty
   ThirdPartyConfig thirdPartyConfig;
 
@@ -37,7 +39,11 @@ void AhnalyticFile::load()
   {
     std::string type = priv->iniReader->getValue("type", block, "Content");
 
-    if (type == "Content")
+    if (type == "Common")
+    {
+      priv->target = priv->iniReader->getValue("target", block, "");
+    }
+    else if (type == "Content")
     {
       priv->type = AhnalyticFileTypeE::Content;
 
@@ -89,6 +95,11 @@ void AhnalyticFile::load()
       priv->type = AhnalyticFileTypeE::Ignore;
     }
   }
+}
+
+std::string AhnalyticFile::getTarget() const
+{
+  return priv->target;
 }
 
 AhnalyticFileTypeE AhnalyticFile::getType() const

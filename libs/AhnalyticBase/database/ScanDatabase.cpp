@@ -6,7 +6,6 @@
 #include <atomic>
 #include <fstream>
 
-#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 /*************************************
@@ -232,6 +231,26 @@ inline void from_json(const nlohmann::json& j, GroupData& g)
   j.at("id").get_to(g.id);
   j.at("name").get_to(g.name);
   j.at("projects").get_to(g.projects);
+}
+
+inline void to_json(json& j, const ScanFileTree& node)
+{
+  j["name"] = utf8_repair(node.name);
+  j["type"] = (node.type == ScanFileTreeTypeE::Directory ? "directory" : "file");
+
+  if (node.type == ScanFileTreeTypeE::Directory)
+    j["children"] = node.children;
+}
+
+/*************************************
+ * ScanFileTree
+ **************************************/
+
+nlohmann::json ScanFileTree::getJson() const
+{
+  nlohmann::json j;
+  to_json(j, *this);
+  return j;
 }
 
 /*************************************
@@ -595,7 +614,7 @@ size_t ScanDatabase::createScan(const std::string& name, size_t groupId, size_t 
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanData = std::make_shared<ScanData>();
@@ -628,7 +647,7 @@ void ScanDatabase::editScan(size_t id, size_t groupId, size_t projectId, size_t 
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         versionIter->second.scans[id]->name = name;
@@ -650,7 +669,7 @@ void ScanDatabase::removeScan(size_t id, size_t groupId, size_t projectId, size_
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         // if (versionIter->second.scans.contains(id))
@@ -677,7 +696,7 @@ ahn::map<size_t, std::string> ScanDatabase::getScans(size_t groupId, size_t proj
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         for (auto iter = versionIter->second.scans.begin(); iter != versionIter->second.scans.end(); iter++)
@@ -700,7 +719,7 @@ void ScanDatabase::addZipData(size_t id, size_t groupId, size_t projectId, size_
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanIter = versionIter->second.scans.find(scanId);
@@ -733,7 +752,7 @@ void ScanDatabase::addGitData(size_t id, size_t groupId, size_t projectId, size_
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanIter = versionIter->second.scans.find(scanId);
@@ -760,7 +779,7 @@ void ScanDatabase::addSvnData(size_t id, size_t groupId, size_t projectId, size_
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanIter = versionIter->second.scans.find(scanId);
@@ -770,6 +789,89 @@ void ScanDatabase::addSvnData(size_t id, size_t groupId, size_t projectId, size_
           scanIter->second->dataPath = url;
           scanIter->second->revision = revision;
           scanIter->second->type = ScanDataTypeE::Svn;
+        }
+      }
+    }
+  }
+}
+
+void ScanDatabase::preScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId)
+{
+  const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
+
+  auto groupIter = priv->groups.find(groupId);
+
+  if (groupIter != priv->groups.end())
+  {
+    auto projectIter = groupIter->second.projects.find(projectId);
+    if (projectIter != groupIter->second.projects.end())
+    {
+      auto versionIter = projectIter->second.versions.find(versionId);
+      if (versionIter != projectIter->second.versions.end())
+      {
+        auto scanIter = versionIter->second.scans.find(scanId);
+
+        if (scanIter != versionIter->second.scans.end())
+        {
+          std::shared_ptr<ScanData> scanData = scanIter->second;
+
+          std::vector<std::string> suffixFilter;
+
+          std::unique_lock lock(scanData->sharedMutex);
+          std::filesystem::path outPath = std::filesystem::path(scanData->dataPath).parent_path() / "data";
+
+          // Filter suffix
+          auto hasValidSuffix = [](const std::filesystem::path& p, const std::vector<std::string>& suffixFilter) -> bool
+          {
+            if (suffixFilter.empty())
+              return true;
+
+            std::string ext = p.extension().string();
+
+            return std::any_of(suffixFilter.begin(), suffixFilter.end(), [&](const std::string& s) { return ext == s; });
+          };
+
+          // Resursive directory scan
+          std::function<ScanFileTree(const std::filesystem::path&, const std::vector<std::string>&)> buildTree;
+          buildTree = [&buildTree, &hasValidSuffix](const std::filesystem::path& path, const std::vector<std::string>& suffixFilter) -> ScanFileTree
+          {
+            ScanFileTree node;
+
+            node.name = path.filename().string();
+
+            if (std::filesystem::is_directory(path))
+            {
+              node.type = ScanFileTreeTypeE::Directory;
+
+              for (const auto& entry : std::filesystem::directory_iterator(path))
+              {
+                // recurse into children
+
+                if (entry.path().extension() == ".ahnalytic")
+                {
+                  AhnalyticFile file(entry.path().string());
+
+                  std::string target = file.getTarget();
+                  if (target == "" || target == ".")
+                    node.files.push_back(file);
+                }
+                else
+                {
+                  auto child = buildTree(entry.path(), suffixFilter);
+                  if (child.type == ScanFileTreeTypeE::Directory || hasValidSuffix(entry.path(), suffixFilter))
+                    node.children.push_back(std::move(child));
+                }
+              }
+            }
+            else if (std::filesystem::is_regular_file(path))
+            {
+              node.type = ScanFileTreeTypeE::File;
+            }
+
+            return node;
+          };
+
+          buildTree(outPath, suffixFilter);
         }
       }
     }
@@ -787,7 +889,7 @@ void ScanDatabase::startScan(size_t id, size_t groupId, size_t projectId, size_t
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanIter = versionIter->second.scans.find(scanId);
@@ -820,7 +922,7 @@ void ScanDatabase::abortScan(size_t id, size_t groupId, size_t projectId, size_t
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanIter = versionIter->second.scans.find(scanId);
@@ -848,7 +950,7 @@ std::shared_ptr<ScanData> ScanDatabase::getScan(size_t id, size_t groupId, size_
     auto projectIter = groupIter->second.projects.find(projectId);
     if (projectIter != groupIter->second.projects.end())
     {
-      auto versionIter = projectIter->second.versions.find(projectId);
+      auto versionIter = projectIter->second.versions.find(versionId);
       if (versionIter != projectIter->second.versions.end())
       {
         auto scanIter = versionIter->second.scans.find(scanId);

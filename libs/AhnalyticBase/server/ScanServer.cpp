@@ -362,6 +362,26 @@ void ScanServer::init()
     }
   });
 
+  priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/prescan)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    const size_t groupId = std::stoull(req.matches[1]);
+    const size_t projectId = std::stoull(req.matches[2]);
+    const size_t versionId = std::stoull(req.matches[3]);
+    const size_t scanId = std::stoull(req.matches[4]);
+
+    try
+    {
+      priv->scanDatabase->preScan(scanId, groupId, projectId, versionId, scanId);
+      LoggerC::LogInfo("Pre-scan started");
+      ok(res, {{"status", "started"}});
+    }
+    catch (const std::exception& e)
+    {
+      LoggerC::LogError(std::format("Error while Prescan: {}", e.what()));
+      bad_request(res, std::string("Error while Prescan: ") + e.what());
+    }
+  });
+
   priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/start)", [&](const httplib::Request& req, httplib::Response& res)
   {
     const size_t groupId = std::stoull(req.matches[1]);
