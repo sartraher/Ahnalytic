@@ -119,6 +119,16 @@ class ApiService {
     return this.request('GET', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/files/${elementIndex}`);
   }
 
+  // Prepare scan and update data
+  prescan(groupId, projectId, versionId, scanId) {
+    return this.request('POST', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/prescan`);
+  }
+
+  // Get the scanned file tree
+  getFileTree(groupId, projectId, versionId, scanId) {
+    return this.request('GET', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/filetree`);
+  }
+
   deleteScan(groupId, projectId, versionId, scanId) {
     return this.request('DELETE', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}`);
   }

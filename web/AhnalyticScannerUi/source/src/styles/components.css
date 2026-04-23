@@ -316,6 +316,26 @@ button:disabled {
   color: #004085;
 }
 
+.status-badge.status-idle {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.status-badge.status-preparing {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.status-badge.status-ready {
+  background: #cff4fc;
+  color: #055160;
+}
+
+.status-badge.status-finished {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
 /* Results */
 .results-container {
   display: flex;

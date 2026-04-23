@@ -294,6 +294,21 @@ export const ScannerProvider = ({ children }) => {
     }
   }, [loadScanInfo]);
 
+  const prescanExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.prescan(groupId, projectId, versionId, scanId);
+      await loadScanInfo(groupId, projectId, versionId, scanId);
+      return data;
+    } catch (err) {
+      setErrorWithTimeout(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadScanInfo]);
+
   const abortExistingScan = useCallback(async (groupId, projectId, versionId, scanId) => {
     try {
       setLoading(true);
@@ -325,8 +340,8 @@ export const ScannerProvider = ({ children }) => {
 
   // ===== UPDATES =====
   const checkForUpdates = useCallback(async () => {
-    // Don't check if a scan is running
-    if (scanInfo && (scanInfo.status === 1 || scanInfo.status === 2 || 
+    // Don't check if a scan is running (Started = 3, Running = 4)
+    if (scanInfo && (scanInfo.status === 3 || scanInfo.status === 4 || 
         getStatusName(scanInfo.status) === 'running' || 
         getStatusName(scanInfo.status) === 'started')) {
       setUpdateQueuedWaiting(true);
@@ -364,8 +379,8 @@ export const ScannerProvider = ({ children }) => {
   }, []);
 
   const startExistingUpdate = useCallback(async () => {
-    // Don't start update if a scan is running
-    if (scanInfo && (scanInfo.status === 1 || scanInfo.status === 2 || 
+    // Don't start update if a scan is running (Started = 3, Running = 4)
+    if (scanInfo && (scanInfo.status === 3 || scanInfo.status === 4 || 
         getStatusName(scanInfo.status) === 'running' || 
         getStatusName(scanInfo.status) === 'started')) {
       setUpdateQueuedWaiting(true);
@@ -393,10 +408,12 @@ export const ScannerProvider = ({ children }) => {
     if (typeof status === 'string') return status;
     const statusMap = {
       0: 'idle',
-      1: 'started',
-      2: 'running',
-      3: 'aborted',
-      4: 'finished',
+      1: 'preparing',
+      2: 'ready',
+      3: 'started',
+      4: 'running',
+      5: 'aborted',
+      6: 'finished',
     };
     return statusMap[status] || 'unknown';
   };
@@ -446,6 +463,7 @@ export const ScannerProvider = ({ children }) => {
     createNewScan,
     deleteExistingScan,
     startExistingScan,
+    prescanExistingScan,
     abortExistingScan,
     loadScanInfo,
     uploadFile,

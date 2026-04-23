@@ -382,6 +382,26 @@ void ScanServer::init()
     }
   });
 
+  priv->server.Get(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/filetree)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    const size_t groupId = std::stoull(req.matches[1]);
+    const size_t projectId = std::stoull(req.matches[2]);
+    const size_t versionId = std::stoull(req.matches[3]);
+    const size_t scanId = std::stoull(req.matches[4]);
+
+    auto scanData = priv->scanDatabase->getScan(scanId, groupId, projectId, versionId, scanId);
+
+    if (scanData != nullptr)
+    {
+      ScanFileTree tree = scanData->getFileTree();
+      json ret = tree.getJson();
+      ok(res, ret);
+      return;
+    }
+
+    bad_request(res, "Scan not found");
+  });
+
   priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/start)", [&](const httplib::Request& req, httplib::Response& res)
   {
     const size_t groupId = std::stoull(req.matches[1]);
@@ -584,24 +604,23 @@ void ScanServer::updateScans()
       });
     }
 
-    auto nextData = priv->scanDatabase->getNextScan();
-    if (nextData != nullptr)
+    auto nextPreScan = priv->scanDatabase->getNextScan(ScanDataStatusE::Preparing);
+    if (nextPreScan != nullptr)
     {
-      priv->pool.detach_task([this, nextData]()
+      priv->pool.detach_task([this, nextPreScan]()
       {
-        LoggerC::LogInfo("Scan started started");
-        nextData->setStatus(ScanDataStatusE::Running);
+        LoggerC::LogInfo("Pre-scan started");
 
-        // Unzip/Checkout Data
+        if (nextPreScan->isAborted())
+          return;
+
+         // Unzip/Checkout Data
         std::string path;
         std::string revision;
         ScanDataTypeE type;
-        nextData->getData(path, revision, type);
+        nextPreScan->getData(path, revision, type);
 
-        if (nextData->isAborted())
-          return;
-
-        std::filesystem::path outPath = std::filesystem::path(nextData->dataPath).parent_path() / "data";
+        std::filesystem::path outPath = std::filesystem::path(nextPreScan->dataPath).parent_path() / "data";
 
         // Start Scan
         switch (type)
@@ -613,28 +632,45 @@ void ScanServer::updateScans()
           checkoutSvnRevision(path, revision, outPath);
           break;
         case ScanDataTypeE::Archive:
-          extractArchive(nextData->dataPath, outPath);
+          extractArchive(nextPreScan->dataPath, outPath);
           break;
         }
 
-        if (nextData->isAborted())
+        priv->scanDatabase->executePreScan(nextPreScan);
+        nextPreScan->setStatus(ScanDataStatusE::Ready);
+        priv->scanDatabase->save();
+        LoggerC::LogInfo("Pre-scan finished");
+      });
+    }
+
+    auto nextStarted = priv->scanDatabase->getNextScan(ScanDataStatusE::Started);
+    if (nextStarted != nullptr)
+    {
+      priv->pool.detach_task([this, nextStarted]()
+      {
+        LoggerC::LogInfo("Scan started started");
+        nextStarted->setStatus(ScanDataStatusE::Running);
+
+        if (nextStarted->isAborted())
           return;
+
+        std::filesystem::path outPath = std::filesystem::path(nextStarted->dataPath).parent_path() / "data";
 
         // First level scan
         TreeSearch treeSearch;
-        treeSearch.search(outPath, priv->env, nextData.operator->());
+        treeSearch.search(outPath, priv->env, nextStarted.operator->());
 
-        if (nextData->isAborted())
+        if (nextStarted->isAborted())
           return;
 
         // Deep scan on first level results
-        treeSearch.searchDeep(outPath, priv->env, nextData.operator->());
+        treeSearch.searchDeep(outPath, priv->env, nextStarted.operator->());
 
-        if (nextData->isAborted())
+        if (nextStarted->isAborted())
           return;
 
         // Just for consistency
-        nextData->setStatus(ScanDataStatusE::Finished);
+        nextStarted->setStatus(ScanDataStatusE::Finished);
         priv->scanDatabase->save();
         LoggerC::LogInfo("Scan started finished");
       });

@@ -6,7 +6,7 @@
 
 struct AhnalyticFilePrivate
 {
-  IniReader* iniReader = nullptr;
+  std::shared_ptr<IniReader> iniReader;
 
   AhnalyticFileTypeE type = AhnalyticFileTypeE::Content;
 
@@ -21,15 +21,24 @@ struct AhnalyticFilePrivate
   ahn::vector<ResultFilter> resultFilter;
 };
 
+AhnalyticFile::AhnalyticFile() : priv(new AhnalyticFilePrivate())
+{
+}
+
 AhnalyticFile::AhnalyticFile(const std::string& path) : priv(new AhnalyticFilePrivate())
 {
-  priv->iniReader = new IniReader(path);
+  priv->iniReader = std::make_shared<IniReader>(path);
   load();
+}
+
+AhnalyticFile::AhnalyticFile(const AhnalyticFile& other)
+{
+  priv = new AhnalyticFilePrivate(*other.priv);
 }
 
 AhnalyticFile::~AhnalyticFile()
 {
-  delete priv->iniReader;
+  delete priv;
 }
 
 void AhnalyticFile::load()
@@ -120,4 +129,42 @@ ahn::vector<ResultFilter> AhnalyticFile::getResultFilters() const
 ahn::vector<CVEConfig> AhnalyticFile::getCVEConfigs() const
 {
   return priv->cveConfigs;
+}
+
+nlohmann::json AhnalyticFile::getJson() const
+{
+  nlohmann::json j;
+  j["type"] = (priv->type == AhnalyticFileTypeE::Content ? "Content" : (priv->type == AhnalyticFileTypeE::ThirdParty ? "3rdParty" : "Ignore"));
+  j["target"] = priv->target;
+
+  // ThirdParty
+  if (priv->type == AhnalyticFileTypeE::ThirdParty)
+  {
+    j["thirdParty"] = {{"vendor", priv->thirdPartyConfig.vendor},
+                       {"product", priv->thirdPartyConfig.product},
+                       {"copyright", priv->thirdPartyConfig.copyright},
+                       {"version", priv->thirdPartyConfig.version},
+                       {"displayName", priv->thirdPartyConfig.displayName},
+                       {"displayVersion", priv->thirdPartyConfig.displayVersion},
+                       {"url", priv->thirdPartyConfig.url},
+                       {"date", priv->thirdPartyConfig.date}};
+  }
+
+  // Content
+  if (priv->type == AhnalyticFileTypeE::Content)
+  {
+    for (const auto& filter : priv->resultFilter)
+    {
+      j["resultFilters"].push_back(
+          {{"dbFile", filter.dbFile}, {"searchFile", filter.searchFile}, {"reason", magic_enum::enum_name(filter.reason)}, {"comment", filter.comment}});
+    }
+  }
+
+  // CVE
+  for (const auto& cve : priv->cveConfigs)
+  {
+    j["cveConfigs"].push_back({{"id", cve.id}, {"comment", cve.comment}, {"status", magic_enum::enum_name(cve.status)}});
+  }
+
+  return j;
 }

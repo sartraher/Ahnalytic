@@ -2,13 +2,14 @@
 #define ScanDatabase_hpp__
 
 #include "AhnalyticBase/database/Database.hpp"
-#include "AhnalyticBase/tree/TreeSearch.hpp"
 #include "AhnalyticBase/file/AhnalyticFile.hpp"
+#include "AhnalyticBase/tree/TreeSearch.hpp"
 
 #include <filesystem>
 #include <shared_mutex>
 #include <unordered_map>
 #include <variant>
+#include <list>
 
 #include <nlohmann/json.hpp>
 
@@ -34,25 +35,21 @@ enum class ScanDataTypeE
 enum class ScanDataStatusE
 {
   Idle = 0,
-  Started = 1,
-  Running = 2,
-  Aborted = 3,
-  Finished = 4
-};
-
-enum class ScanFileTreeTypeE
-{
-  File,
-  Directory
+  Preparing = 1,
+  Ready = 2,
+  Started = 3,
+  Running = 4,
+  Aborted = 5,
+  Finished = 6
 };
 
 struct DLLEXPORT ScanFileTree
 {
-  ScanFileTreeTypeE type;
   std::string name;
-  std::list<ScanFileTree> children;
+  std::list<ScanFileTree> folders;
+  std::list<ScanFileTree> files;
 
-  std::list<AhnalyticFile> files;
+  ahn::map<std::string, std::shared_ptr<AhnalyticFile>> configurations;
 
   nlohmann::json getJson() const;
 };
@@ -167,6 +164,12 @@ public:
     return deepFinishedCount;
   }
 
+  virtual ScanFileTree getFileTree()
+  {
+    std::shared_lock lock(sharedMutex);
+    return fileTree;
+  }
+
   // mutable std::recursive_mutex mutex;
   mutable std::shared_mutex sharedMutex;
 
@@ -257,12 +260,13 @@ public:
   void addSvnData(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId, const std::string& url, const std::string& revision);
 
   void preScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
+  void executePreScan(std::shared_ptr<ScanData> scanData);
   void startScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
   void abortScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
   std::shared_ptr<ScanData> getScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId);
 
-  std::shared_ptr<ScanData> getNextScan();
-
+  std::shared_ptr<ScanData> getNextScan(ScanDataStatusE filter);
+  
 private:
   ScanDatabasePrivate* priv;
 

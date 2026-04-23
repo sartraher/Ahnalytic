@@ -7,10 +7,12 @@ const getStatusName = (status) => {
   if (typeof status === 'string') return status;
   const statusMap = {
     0: 'idle',
-    1: 'started',
-    2: 'running',
-    3: 'aborted',
-    4: 'finished',
+    1: 'preparing',
+    2: 'ready',
+    3: 'started',
+    4: 'running',
+    5: 'aborted',
+    6: 'finished',
   };
   return statusMap[status] || 'unknown';
 };
@@ -237,10 +239,12 @@ export const ScanControls = () => {
     scanInfo,
     loading,
     startExistingScan,
+    prescanExistingScan,
     abortExistingScan,
     loadScanInfo,
   } = useScanner();
   const [polling, setPolling] = useState(false);
+  const [prescanLoading, setPrescanLoading] = useState(false);
 
   // Auto-poll for scan info while scanning
   useEffect(() => {
@@ -256,7 +260,7 @@ export const ScanControls = () => {
   // Stop polling if scan is complete
   useEffect(() => {
     const statusName = getStatusName(scanInfo?.status);
-    if (statusName === 'completed' || statusName === 'aborted' || statusName === 'failed') {
+    if (statusName === 'finished' || statusName === 'aborted' || statusName === 'idle') {
       setPolling(false);
     }
   }, [scanInfo?.status]);
@@ -264,6 +268,17 @@ export const ScanControls = () => {
   if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
     return null;
   }
+
+  const handlePrescan = async () => {
+    try {
+      setPrescanLoading(true);
+      await prescanExistingScan(currentGroup, currentProject, currentVersion, currentScan);
+    } catch (err) {
+      console.error('Prescan failed:', err);
+    } finally {
+      setPrescanLoading(false);
+    }
+  };
 
   const handleStart = async () => {
     try {
@@ -287,6 +302,12 @@ export const ScanControls = () => {
 
   const statusName = getStatusName(scanInfo?.status);
   const isRunning = statusName === 'running' || statusName === 'started';
+  
+  // Prescan allowed: idle (0), finished (6), aborted (5)
+  const canPrescan = scanInfo && (scanInfo.status === 0 || scanInfo.status === 5 || scanInfo.status === 6) && !isRunning;
+  
+  // Start Scan allowed: ready (2), finished (6), aborted (5)
+  const canStart = scanInfo && (scanInfo.status === 2 || scanInfo.status === 5 || scanInfo.status === 6) && !isRunning;
 
   return (
     <div className="form-container">
@@ -312,12 +333,23 @@ export const ScanControls = () => {
 
       <div className="button-group">
         <button
+          onClick={handlePrescan}
+          disabled={loading || prescanLoading || !canPrescan}
+          className="btn-secondary"
+          title={!canPrescan ? 'Prescan available in Idle, Aborted, or Finished states' : 'Prepare and scan the file tree'}
+        >
+          {prescanLoading ? 'Prescanning...' : 'Prescan'}
+        </button>
+
+        <button
           onClick={handleStart}
-          disabled={loading || isRunning}
+          disabled={loading || isRunning || !canStart}
           className="btn-success"
+          title={!canStart ? 'Start available in Ready, Aborted, or Finished states' : 'Start the scan'}
         >
           {isRunning ? 'Scanning...' : 'Start Scan'}
         </button>
+
         {isRunning && (
           <button
             onClick={handleAbort}

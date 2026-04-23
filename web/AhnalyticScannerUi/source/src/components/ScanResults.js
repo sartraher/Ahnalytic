@@ -3,16 +3,19 @@ import { useScanner } from '../context/ScannerContext';
 import { DiffViewer } from './DiffViewer';
 import api from '../services/api';
 import '../styles/components.css';
+import '../styles/configuration.css';
 
 // Helper function to convert numeric status codes to status names
 const getStatusName = (status) => {
   if (typeof status === 'string') return status;
   const statusMap = {
     0: 'idle',
-    1: 'started',
-    2: 'running',
-    3: 'aborted',
-    4: 'finished',
+    1: 'preparing',
+    2: 'ready',
+    3: 'started',
+    4: 'running',
+    5: 'aborted',
+    6: 'finished',
   };
   return statusMap[status] || 'unknown';
 };
@@ -48,57 +51,386 @@ const buildFileTree = (results) => {
   return tree;
 };
 
+// Configuration viewer component
+const ConfigurationViewer = ({ config, onEdit, onClose }) => {
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'Content': return '#3498db';
+      case '3rdParty': return '#e74c3c';
+      case 'Ignore': return '#95a5a6';
+      default: return '#34495e';
+    }
+  };
+
+  return (
+    <div className="config-viewer">
+      <div className="config-header">
+        <div className="config-title">
+          <span className="config-name">{config.data.name}</span>
+          <span className="config-type-badge" style={{ backgroundColor: getTypeColor(config.data.data.type) }}>
+            {config.data.data.type}
+          </span>
+        </div>
+        <button className="btn-icon" onClick={onClose} title="Close">✕</button>
+      </div>
+
+      <div className="config-content">
+        <div className="config-section">
+          <h5>Target</h5>
+          <div className="config-value code">{config.data.data.target}</div>
+        </div>
+
+        {config.data.data.type === '3rdParty' && config.data.data.thirdParty && (
+          <div className="config-section">
+            <h5>Third Party Details</h5>
+            <div className="config-row">
+              <span className="label">Vendor:</span>
+              <span className="value">{config.data.data.thirdParty.vendor}</span>
+            </div>
+            <div className="config-row">
+              <span className="label">Product:</span>
+              <span className="value">{config.data.data.thirdParty.product}</span>
+            </div>
+            <div className="config-row">
+              <span className="label">Version:</span>
+              <span className="value">{config.data.data.thirdParty.version}</span>
+            </div>
+          </div>
+        )}
+
+        {config.data.data.type === 'Content' && config.data.data.resultFilters && config.data.data.resultFilters.length > 0 && (
+          <div className="config-section">
+            <h5>Result Filters ({config.data.data.resultFilters.length})</h5>
+            {config.data.data.resultFilters.map((filter, idx) => (
+              <div key={idx} className="config-subsection">
+                <div className="config-row">
+                  <span className="label">DB File:</span>
+                  <span className="value code">{filter.dbFile}</span>
+                </div>
+                <div className="config-row">
+                  <span className="label">Search File:</span>
+                  <span className="value code">{filter.searchFile}</span>
+                </div>
+                <div className="config-row">
+                  <span className="label">Reason:</span>
+                  <span className="value">{filter.reason}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {config.data.data.cveConfigs && config.data.data.cveConfigs.length > 0 && (
+          <div className="config-section">
+            <h5>CVE Configurations ({config.data.data.cveConfigs.length})</h5>
+            {config.data.data.cveConfigs.map((cve, idx) => (
+              <div key={idx} className="config-subsection">
+                <div className="config-row">
+                  <span className="label">ID:</span>
+                  <span className="value">{cve.id}</span>
+                </div>
+                <div className="config-row">
+                  <span className="label">Status:</span>
+                  <span className="value">{cve.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="config-footer">
+        <button className="btn-primary" onClick={() => onEdit(config)}>Edit Configuration</button>
+      </div>
+    </div>
+  );
+};
+
+// Configuration editor component for creating/editing configurations
+const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = false }) => {
+  const [formData, setFormData] = useState(config || {
+    name: '',
+    data: {
+      type: 'Content',
+      target: '',
+      resultFilters: [],
+      thirdParty: null,
+      cveConfigs: []
+    }
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleDataChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      data: {
+        ...prev.data,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSave = () => {
+    if (!formData.name.trim()) {
+      alert('Configuration name is required');
+      return;
+    }
+    if (!formData.data.target.trim()) {
+      alert('Target is required');
+      return;
+    }
+    onSave(filePath, formData);
+  };
+
+  return (
+    <div className="config-editor-inline">
+      <div className="config-editor-header">
+        <h3>{isNew ? 'Create New Configuration' : 'Edit Configuration'}</h3>
+        <button className="btn-icon" onClick={onCancel} title="Close">✕</button>
+      </div>
+
+      <div className="config-editor-content">
+          <div className="form-group">
+            <label>Configuration Name *</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              placeholder="e.g., MyConfig"
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Type</label>
+            <select
+              value={formData.data.type}
+              onChange={(e) => handleDataChange('type', e.target.value)}
+              className="form-input"
+            >
+              <option value="Content">Content</option>
+              <option value="3rdParty">3rd Party</option>
+              <option value="Ignore">Ignore</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Target *</label>
+            <input
+              type="text"
+              value={formData.data.target}
+              onChange={(e) => handleDataChange('target', e.target.value)}
+              placeholder="e.g., *.c"
+              className="form-input"
+            />
+          </div>
+
+          {formData.data.type === '3rdParty' && (
+            <>
+              <div className="form-group">
+                <label>Vendor</label>
+                <input
+                  type="text"
+                  value={formData.data.thirdParty?.vendor || ''}
+                  onChange={(e) => handleDataChange('thirdParty', {
+                    ...formData.data.thirdParty,
+                    vendor: e.target.value
+                  })}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>Product</label>
+                <input
+                  type="text"
+                  value={formData.data.thirdParty?.product || ''}
+                  onChange={(e) => handleDataChange('thirdParty', {
+                    ...formData.data.thirdParty,
+                    product: e.target.value
+                  })}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>Version</label>
+                <input
+                  type="text"
+                  value={formData.data.thirdParty?.version || ''}
+                  onChange={(e) => handleDataChange('thirdParty', {
+                    ...formData.data.thirdParty,
+                    version: e.target.value
+                  })}
+                  className="form-input"
+                />
+              </div>
+            </>
+          )}
+
+          <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
+            File/Folder: <code>{filePath}</code>
+          </p>
+        </div>
+
+      <div className="config-editor-footer">
+        <button className="btn-secondary" onClick={onCancel}>Cancel</button>
+        <button className="btn-primary" onClick={handleSave}>
+          {isNew ? 'Create Configuration' : 'Save Configuration'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // File tree renderer - properly shows folders and files in tree structure
-const FileTreeRenderer = ({ tree, selectedPath, onSelect, expandedPaths, onToggleExpand }) => {
-  const renderNode = (node) => {
-    const isSelected = selectedPath === node.path;
-    const isExpanded = expandedPaths[node.path] || false;
-    const hasChildren = Object.keys(node.children).length > 0;
-    const isFolder = !node.isFile;
+const FileTreeRenderer = ({ tree, selectedPath, onSelect, expandedPaths, onToggleExpand, onSelectConfig, onAddConfig }) => {
+  if (!tree) {
+    return <div className="file-tree-container"><p className="empty-message">No file tree available</p></div>;
+  }
+
+  const renderNode = (node, path = '', isRoot = false) => {
+    const nodePath = path ? `${path}/${node.name}` : node.name;
+    const isSelected = selectedPath === nodePath;
+    // Auto-expand root node
+    const isExpanded = isRoot || expandedPaths[nodePath] || false;
+    const hasChildren = (node.folders && node.folders.length > 0) || (node.files && node.files.length > 0) || (node.configurations && node.configurations.length > 0);
+
+    // For empty root node, render children directly without container
+    if (isRoot && !node.name) {
+      return (
+        <div className="file-tree-children">
+          {/* Render subfolders */}
+          {node.folders && node.folders.map((folder) => renderNode(folder, nodePath))}
+          
+          {/* Render files */}
+          {node.files && node.files.map((file) => (
+            <div key={`${nodePath}/${file.name}`} className="file-tree-node">
+              <div
+                className={`file-tree-node-content ${isSelected === `${nodePath}/${file.name}` ? 'active' : ''} file`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(`${nodePath}/${file.name}`);
+                }}
+              >
+                <span className="file-tree-expander empty"></span>
+                <span className="file-tree-icon">📄</span>
+                <span className="file-tree-label">{file.name}</span>
+                {file.configurations && file.configurations.length > 0 && (
+                  <span className="config-count">⚙️ {file.configurations.length}</span>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Render configurations */}
+          {node.configurations && node.configurations.map((config) => (
+            <div key={`${nodePath}/config-${config.name}`} className="file-tree-node config-node">
+              <div
+                className="file-tree-node-content config"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectConfig({ path: nodePath, config });
+                }}
+              >
+                <span className="file-tree-expander empty"></span>
+                <span className="file-tree-icon">⚙️</span>
+                <span className="file-tree-label">{config.name}</span>
+                <span className="config-type-badge-small" style={{
+                  backgroundColor: config.data.type === 'Content' ? '#3498db' : (config.data.type === '3rdParty' ? '#e74c3c' : '#95a5a6'),
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  marginLeft: '4px'
+                }}>
+                  {config.data.type}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
 
     return (
-      <div key={node.path} className="file-tree-node">
+      <div key={nodePath} className="file-tree-node">
         <div
-          className={`file-tree-node-content ${isSelected ? 'active' : ''} ${isFolder ? 'folder' : 'file'}`}
+          className={`file-tree-node-content ${isSelected ? 'active' : ''} folder`}
           onClick={(e) => {
             e.stopPropagation();
-            // Toggle expand for folders
-            if (isFolder && hasChildren) {
-              onToggleExpand(node.path);
-            } else {
-              // Only select files or empty folders
-              onSelect(node.path);
-            }
+            onSelect(nodePath);
+            onToggleExpand(nodePath);
           }}
         >
-          {isFolder ? (
-            <>
-              {hasChildren ? (
-                <span className="file-tree-expander">
-                  {isExpanded ? '▼' : '▶'}
-                </span>
-              ) : (
-                <span className="file-tree-expander empty"></span>
-              )}
-              <span className="file-tree-icon">📁</span>
-            </>
+          {hasChildren ? (
+            <span className="file-tree-expander">
+              {isExpanded ? '▼' : '▶'}
+            </span>
           ) : (
-            <>
-              <span className="file-tree-expander empty"></span>
-              <span className="file-tree-icon">📄</span>
-            </>
+            <span className="file-tree-expander empty"></span>
           )}
+          <span className="file-tree-icon">📁</span>
           <span className="file-tree-label">{node.name}</span>
-          {isFolder && hasChildren && (
-            <span className="file-tree-count">({Object.values(node.children).flat().length})</span>
-          )}
-          {!isFolder && node.resultCount > 0 && (
-            <span className="file-result-count">{node.resultCount}</span>
+          {node.configurations && node.configurations.length > 0 && (
+            <span className="config-count">⚙️ {node.configurations.length}</span>
           )}
         </div>
-        {isExpanded && isFolder && hasChildren && (
+        {isExpanded && hasChildren && (
           <div className="file-tree-children">
-            {Object.values(node.children).map((child) => renderNode(child))}
+            {/* Render subfolders */}
+            {node.folders && node.folders.map((folder) => renderNode(folder, nodePath))}
+            
+            {/* Render files */}
+            {node.files && node.files.map((file) => (
+              <div key={`${nodePath}/${file.name}`} className="file-tree-node">
+                <div
+                  className={`file-tree-node-content ${isSelected === `${nodePath}/${file.name}` ? 'active' : ''} file`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(`${nodePath}/${file.name}`);
+                  }}
+                >
+                  <span className="file-tree-expander empty"></span>
+                  <span className="file-tree-icon">📄</span>
+                  <span className="file-tree-label">{file.name}</span>
+                  {file.configurations && file.configurations.length > 0 && (
+                    <span className="config-count">⚙️ {file.configurations.length}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Render configurations */}
+            {node.configurations && node.configurations.map((config) => (
+              <div key={`${nodePath}/config-${config.name}`} className="file-tree-node config-node">
+                <div
+                  className="file-tree-node-content config"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectConfig({ path: nodePath, config });
+                  }}
+                >
+                  <span className="file-tree-expander empty"></span>
+                  <span className="file-tree-icon">⚙️</span>
+                  <span className="file-tree-label">{config.name}</span>
+                  <span className="config-type-badge-small" style={{
+                    backgroundColor: config.data.type === 'Content' ? '#3498db' : (config.data.type === '3rdParty' ? '#e74c3c' : '#95a5a6'),
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    marginLeft: '4px'
+                  }}>
+                    {config.data.type}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -107,7 +439,7 @@ const FileTreeRenderer = ({ tree, selectedPath, onSelect, expandedPaths, onToggl
 
   return (
     <div className="file-tree-container">
-      {Object.values(tree).map((node) => renderNode(node))}
+      {renderNode(tree, '', true)}
     </div>
   );
 };
@@ -176,7 +508,17 @@ const ResultsListSection = React.memo(({
   groupId,
   projectId,
   versionId,
-  scanId
+  scanId,
+  prescanLoading,
+  selectedConfig,
+  onSelectConfig,
+  onCloseConfig,
+  results,
+  onAddConfig,
+  configPathBeingEdited,
+  editingConfig,
+  onSaveConfig,
+  onCancelEditConfig
 }) => {
   const getSeverityColor = (matchCount) => {
     if (matchCount === 0) return 'green';
@@ -187,14 +529,29 @@ const ResultsListSection = React.memo(({
 
   return (
     <div className="scan-results-content">
+      {/* Configuration Panel */}
+      {selectedConfig && (
+        <div className="config-panel">
+          <ConfigurationViewer
+            config={selectedConfig.config}
+            onEdit={(config) => {}}
+            onClose={onCloseConfig}
+          />
+        </div>
+      )}
+
       {/* File Tree Panel */}
       <div className="file-tree-panel">
         <div className="file-tree-header">
-          <h4>Files</h4>
-          {selectedFilePath && (
+          <h4>Files {selectedConfig && <span style={{fontSize: '0.85rem', fontWeight: 'normal'}}>- Config Selected</span>}</h4>
+          {prescanLoading && <span className="loading-indicator">Loading...</span>}
+          {(selectedFilePath || selectedConfig) && (
             <button
               className="btn-icon"
-              onClick={() => onSelectFile(null)}
+              onClick={() => {
+                onSelectFile(null);
+                onCloseConfig();
+              }}
               title="Clear selection"
             >
               ✕
@@ -207,12 +564,57 @@ const ResultsListSection = React.memo(({
           onSelect={onSelectFile}
           expandedPaths={expandedPaths}
           onToggleExpand={onToggleExpand}
+          onSelectConfig={onSelectConfig}
+          onAddConfig={onAddConfig}
         />
       </div>
 
-      {/* Results Panel */}
+      {/* Results/Configuration Panel */}
       <div className="results-panel">
-        {filteredResults.length === 0 ? (
+        {/* Configuration Details Panel */}
+        {selectedConfig && (
+          <div className="config-details-panel">
+            <ConfigurationViewer
+              config={selectedConfig.config}
+              onEdit={(config) => {}}
+              onClose={onCloseConfig}
+            />
+          </div>
+        )}
+
+        {/* Add/Edit Configuration Panel */}
+        {!selectedConfig && selectedFilePath && (
+          <div className="add-config-panel">
+            {!configPathBeingEdited ? (
+              <div className="empty-state">
+                <div className="empty-icon">⚙️</div>
+                <h4>Add Configuration</h4>
+                <p>Create a new configuration for this file/folder</p>
+                <button
+                  className="btn-primary"
+                  onClick={() => onAddConfig(selectedFilePath)}
+                >
+                  + Add Configuration
+                </button>
+              </div>
+            ) : (
+              <ConfigurationEditorForm
+                filePath={configPathBeingEdited}
+                config={editingConfig}
+                onSave={onSaveConfig}
+                onCancel={onCancelEditConfig}
+                isNew={!editingConfig}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Scan Results Display */}
+        {results.length === 0 && !selectedConfig && !selectedFilePath ? (
+          <p className="empty-message">No matches found in this scan</p>
+        ) : results.length === 0 && !selectedConfig ? (
+          <p className="empty-message">No results for selected file</p>
+        ) : filteredResults.length === 0 && results.length > 0 ? (
           <p className="empty-message">No results for selected file</p>
         ) : (
           <div className="results-container" ref={scrollContainerRef}>
@@ -347,6 +749,11 @@ export const ScanResults = () => {
   const [expandedResultId, setExpandedResultId] = useState(null);
   const [selectedFilePath, setSelectedFilePath] = useState(null);
   const [expandedPaths, setExpandedPaths] = useState({});
+  const [apiFileTree, setApiFileTree] = useState(null);
+  const [prescanLoading, setPrescanLoading] = useState(false);
+  const [selectedConfig, setSelectedConfig] = useState(null);
+  const [configPathBeingEdited, setConfigPathBeingEdited] = useState(null);
+  const [editingConfig, setEditingConfig] = useState(null);
   const scrollContainerRef = useRef(null);
   const scrollPositionRef = useRef(0);
   
@@ -360,6 +767,26 @@ export const ScanResults = () => {
       loadScanInfo(currentGroup, currentProject, currentVersion, currentScan);
     }
   }, [currentGroup, currentProject, currentVersion, currentScan, loadScanInfo]);
+
+  // Load file tree when scan is selected (without prescan)
+  useEffect(() => {
+    if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
+      return;
+    }
+
+    const loadTree = async () => {
+      try {
+        // Get the file tree without calling prescan
+        const tree = await api.getFileTree(currentGroup, currentProject, currentVersion, currentScan);
+        setApiFileTree(tree);
+      } catch (err) {
+        console.error('Failed to load file tree:', err);
+        setApiFileTree(null);
+      }
+    };
+
+    loadTree();
+  }, [currentGroup, currentProject, currentVersion, currentScan]);
 
   // Initialize progress state from scanInfo when it loads
   useEffect(() => {
@@ -395,8 +822,8 @@ export const ScanResults = () => {
       return;
     }
 
-    // Check if scan is still running based on current scanInfo
-    const isRunning = scanInfo && (scanInfo.status === 1 || scanInfo.status === 2 || scanInfo.status === 'started' || scanInfo.status === 'running');
+    // Check if scan is still running based on current scanInfo (Started = 3, Running = 4)
+    const isRunning = scanInfo && (scanInfo.status === 3 || scanInfo.status === 4 || scanInfo.status === 'started' || scanInfo.status === 'running');
     
     if (!isRunning) {
       if (progressTimeoutRef.current) {
@@ -438,11 +865,12 @@ export const ScanResults = () => {
     };
   }, [currentGroup, currentProject, currentVersion, currentScan, scanInfo]);
 
-  // Build file tree from results
+  // Use the API file tree (or build from results as fallback)
   const fileTree = useMemo(() => {
-    if (!scanInfo || !scanInfo.results) return {};
+    if (apiFileTree) return apiFileTree;
+    if (!scanInfo || !scanInfo.results) return null;
     return buildFileTree(scanInfo.results);
-  }, [scanInfo]);
+  }, [apiFileTree, scanInfo]);
 
   // Filter results based on selected file path
   const filteredResults = useMemo(() => {
@@ -484,6 +912,24 @@ export const ScanResults = () => {
     }
   };
 
+  const handleAddConfig = (filePath) => {
+    setConfigPathBeingEdited(filePath);
+    setEditingConfig(null); // null means creating new
+  };
+
+  const handleSaveConfig = (filePath, configData) => {
+    // TODO: Send to API to save the configuration
+    console.log('Saving configuration:', { filePath, configData });
+    // For now, just close the editor
+    setConfigPathBeingEdited(null);
+    setEditingConfig(null);
+  };
+
+  const handleCancelEditConfig = () => {
+    setConfigPathBeingEdited(null);
+    setEditingConfig(null);
+  };
+
   if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
     return (
       <div className="component-container">
@@ -523,25 +969,32 @@ export const ScanResults = () => {
         deepMaxCount={progress.deepMaxCount}
       />
 
-      {results.length === 0 ? (
-        <p className="empty-message">No matches found in this scan</p>
-      ) : (
-        <ResultsListSection
-          filteredResults={filteredResults}
-          selectedFilePath={selectedFilePath}
-          fileTree={fileTree}
-          expandedPaths={expandedPaths}
-          expandedResultId={expandedResultId}
-          onToggleExpand={handleToggleExpand}
-          onSelectFile={handleSelectFile}
-          onToggleResultExpand={toggleExpanded}
-          scrollContainerRef={scrollContainerRef}
-          groupId={currentGroup}
-          projectId={currentProject}
-          versionId={currentVersion}
-          scanId={currentScan}
-        />
-      )}
+      <ResultsListSection
+        filteredResults={filteredResults}
+        selectedFilePath={selectedFilePath}
+        fileTree={fileTree}
+        expandedPaths={expandedPaths}
+        expandedResultId={expandedResultId}
+        onToggleExpand={handleToggleExpand}
+        onSelectFile={handleSelectFile}
+        onToggleResultExpand={toggleExpanded}
+        scrollContainerRef={scrollContainerRef}
+        groupId={currentGroup}
+        projectId={currentProject}
+        versionId={currentVersion}
+        scanId={currentScan}
+        prescanLoading={prescanLoading}
+        selectedConfig={selectedConfig}
+        onSelectConfig={(data) => setSelectedConfig(data)}
+        onCloseConfig={() => setSelectedConfig(null)}
+        results={results}
+        onAddConfig={handleAddConfig}
+        configPathBeingEdited={configPathBeingEdited}
+        editingConfig={editingConfig}
+        onSaveConfig={handleSaveConfig}
+        onCancelEditConfig={handleCancelEditConfig}
+      />
+
     </div>
   );
 };

@@ -3,6 +3,8 @@
 
 #include "AhnalyticBase/Export.hpp"
 
+#include <nlohmann/json.hpp>
+
 #include <string>
 #include <vector>
 
@@ -60,7 +62,9 @@ enum class AhnalyticFileTypeE
 class DLLEXPORT AhnalyticFile
 {
 public:
+  AhnalyticFile();
   AhnalyticFile(const std::string& path);
+  AhnalyticFile(const AhnalyticFile& other);
   ~AhnalyticFile();
 
   std::string getTarget() const;
@@ -68,6 +72,8 @@ public:
   ThirdPartyConfig getThirdPartyConfig() const;
   ahn::vector<ResultFilter> getResultFilters() const;
   ahn::vector<CVEConfig> getCVEConfigs() const;
+
+  nlohmann::json getJson() const;
 
 private:
   AhnalyticFilePrivate* priv = nullptr;

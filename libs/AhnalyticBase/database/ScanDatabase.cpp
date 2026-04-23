@@ -1,4 +1,5 @@
 #include "AhnalyticBase/database/ScanDatabase.hpp"
+#include "AhnalyticBase/tree/SourceScanner.hpp"
 
 #include "soci/soci.h"
 #include "soci/sqlite3/soci-sqlite3.h"
@@ -172,7 +173,7 @@ inline void from_json(const nlohmann::json& j, ScanData& s)
   j.at("revision").get_to(s.revision);
   j.at("status").get_to(s.status);
 
-  if (s.status == ScanDataStatusE::Running)
+  if (s.status == ScanDataStatusE::Running || s.status == ScanDataStatusE::Preparing)
     s.status = ScanDataStatusE::Aborted;
 
   // j.at("results").get_to(s.results);
@@ -236,10 +237,21 @@ inline void from_json(const nlohmann::json& j, GroupData& g)
 inline void to_json(json& j, const ScanFileTree& node)
 {
   j["name"] = utf8_repair(node.name);
-  j["type"] = (node.type == ScanFileTreeTypeE::Directory ? "directory" : "file");
 
-  if (node.type == ScanFileTreeTypeE::Directory)
-    j["children"] = node.children;
+  if (node.folders.size() > 0)
+    j["folders"] = node.folders;
+
+  if (node.files.size() > 0)
+    j["files"] = node.files;
+
+  for (auto iter = node.configurations.begin(); iter != node.configurations.end(); iter++)
+  {
+    // j["configurations"][""] = iter->second;
+    json configJson;
+    configJson["name"] = iter->first;
+    configJson["data"] = iter->second->getJson();
+    j["configurations"].push_back(configJson);
+  }
 }
 
 /*************************************
@@ -269,6 +281,8 @@ public:
   std::atomic<int> versionId = 0;
   std::atomic<int> scanId = 0;
 
+  std::list<std::string> supportedExt;
+
 private:
 protected:
 };
@@ -276,6 +290,10 @@ protected:
 ScanDatabase::ScanDatabase(const std::filesystem::path& scanFolder) : priv(new ScanDatabasePrivate())
 {
   priv->scanFolder = scanFolder;
+
+  SourceScanner scanner;
+  priv->supportedExt = scanner.getFileTypes();
+
   load();
 }
 
@@ -813,69 +831,87 @@ void ScanDatabase::preScan(size_t id, size_t groupId, size_t projectId, size_t v
 
         if (scanIter != versionIter->second.scans.end())
         {
-          std::shared_ptr<ScanData> scanData = scanIter->second;
-
-          std::vector<std::string> suffixFilter;
-
-          std::unique_lock lock(scanData->sharedMutex);
-          std::filesystem::path outPath = std::filesystem::path(scanData->dataPath).parent_path() / "data";
-
-          // Filter suffix
-          auto hasValidSuffix = [](const std::filesystem::path& p, const std::vector<std::string>& suffixFilter) -> bool
           {
-            if (suffixFilter.empty())
-              return true;
+            std::unique_lock lock(scanIter->second->sharedMutex);
+            scanIter->second->results.clear();
+            scanIter->second->deepResults.clear();
+            scanIter->second->fileTree = ScanFileTree();
+            scanIter->second->status = ScanDataStatusE::Preparing;
+            scanIter->second->finishedCount = 0;
+          }
 
-            std::string ext = p.extension().string();
-
-            return std::any_of(suffixFilter.begin(), suffixFilter.end(), [&](const std::string& s) { return ext == s; });
-          };
-
-          // Resursive directory scan
-          std::function<ScanFileTree(const std::filesystem::path&, const std::vector<std::string>&)> buildTree;
-          buildTree = [&buildTree, &hasValidSuffix](const std::filesystem::path& path, const std::vector<std::string>& suffixFilter) -> ScanFileTree
-          {
-            ScanFileTree node;
-
-            node.name = path.filename().string();
-
-            if (std::filesystem::is_directory(path))
-            {
-              node.type = ScanFileTreeTypeE::Directory;
-
-              for (const auto& entry : std::filesystem::directory_iterator(path))
-              {
-                // recurse into children
-
-                if (entry.path().extension() == ".ahnalytic")
-                {
-                  AhnalyticFile file(entry.path().string());
-
-                  std::string target = file.getTarget();
-                  if (target == "" || target == ".")
-                    node.files.push_back(file);
-                }
-                else
-                {
-                  auto child = buildTree(entry.path(), suffixFilter);
-                  if (child.type == ScanFileTreeTypeE::Directory || hasValidSuffix(entry.path(), suffixFilter))
-                    node.children.push_back(std::move(child));
-                }
-              }
-            }
-            else if (std::filesystem::is_regular_file(path))
-            {
-              node.type = ScanFileTreeTypeE::File;
-            }
-
-            return node;
-          };
-
-          buildTree(outPath, suffixFilter);
+          save();
         }
       }
     }
   }
+}
+
+void ScanDatabase::executePreScan(std::shared_ptr<ScanData> scanData)
+{
+  // std::vector<std::string> suffixFilter;
+
+  std::unique_lock lock(scanData->sharedMutex);
+  std::filesystem::path outPath = std::filesystem::path(scanData->dataPath).parent_path() / "data";
+
+  // Filter suffix
+  auto hasValidSuffix = [](const std::filesystem::path& p, const std::list<std::string>& suffixFilter) -> bool
+  {
+    if (suffixFilter.empty())
+      return true;
+
+    std::string ext = p.extension().string();
+
+    return std::any_of(suffixFilter.begin(), suffixFilter.end(), [&](const std::string& s) { return ext == s; });
+  };
+
+  // Resursive directory scan
+  std::function<void(const std::filesystem::path&, const std::list<std::string>&, ScanFileTree&, const ahn::map<std::string, std::shared_ptr<AhnalyticFile>>&)> buildTree;
+  buildTree = [&buildTree, &hasValidSuffix](const std::filesystem::path& path, const std::list<std::string>& suffixFilter, ScanFileTree& parent,
+                                            const ahn::map<std::string, std::shared_ptr<AhnalyticFile>>& parentConfigs)
+  {
+    ScanFileTree node;
+    node.name = path.filename().string();
+
+    if (std::filesystem::is_directory(path))
+    {
+      ahn::map<std::string, ahn::map<std::string, std::shared_ptr<AhnalyticFile>>> configurations;
+
+      std::vector<std::filesystem::path> childPaths;
+      for (const auto& entry : std::filesystem::directory_iterator(path))
+      {
+        std::filesystem::path childPath = entry.path();
+
+        if (childPath.extension() == ".ahnalytic")
+        {
+          std::shared_ptr<AhnalyticFile> file = std::make_shared<AhnalyticFile>(childPath.string());
+
+          std::string target = file->getTarget();
+          if (target == "" || target == ".")
+            node.configurations[childPath.filename().string()] = file;
+          else
+            configurations[target][childPath.filename().string()] = file;
+        }
+        else
+          childPaths.push_back(childPath);
+      }
+
+      for (const auto& childPath : childPaths)
+      {
+        auto iter = configurations.find(childPath.filename().string());
+        buildTree(childPath, suffixFilter, node, configurations[childPath.filename().string()]);
+      }
+
+      parent.folders.push_back(node);
+    }
+    else if (std::filesystem::is_regular_file(path))
+    {
+      if (hasValidSuffix(path, suffixFilter))
+        parent.files.push_back(node);
+    }
+  };
+
+  buildTree(outPath, priv->supportedExt, scanData->fileTree, ahn::map<std::string, std::shared_ptr<AhnalyticFile>>());
 }
 
 void ScanDatabase::startScan(size_t id, size_t groupId, size_t projectId, size_t versionId, size_t scanId)
@@ -896,15 +932,22 @@ void ScanDatabase::startScan(size_t id, size_t groupId, size_t projectId, size_t
 
         if (scanIter != versionIter->second.scans.end())
         {
+          if (scanIter->second->status == ScanDataStatusE::Ready)
           {
-            std::unique_lock lock(scanIter->second->sharedMutex);
-            scanIter->second->results.clear();
-            scanIter->second->deepResults.clear();
-            scanIter->second->status = ScanDataStatusE::Started;
-            scanIter->second->finishedCount = 0;
-          }
+            {
+              std::unique_lock lock(scanIter->second->sharedMutex);
+              scanIter->second->results.clear();
+              scanIter->second->deepResults.clear();
+              scanIter->second->status = ScanDataStatusE::Started;
+              scanIter->second->finishedCount = 0;
+            }
 
-          save();
+            save();
+          }
+          else
+          {
+            // TODO: error
+          }
         }
       }
     }
@@ -966,7 +1009,7 @@ std::shared_ptr<ScanData> ScanDatabase::getScan(size_t id, size_t groupId, size_
   return nullptr;
 }
 
-std::shared_ptr<ScanData> ScanDatabase::getNextScan()
+std::shared_ptr<ScanData> ScanDatabase::getNextScan(ScanDataStatusE filter)
 {
   const std::lock_guard<std::recursive_mutex> lock(priv->mutex);
 
@@ -978,7 +1021,7 @@ std::shared_ptr<ScanData> ScanDatabase::getNextScan()
       {
         for (auto scanIter = versionIter->second.scans.begin(); scanIter != versionIter->second.scans.end(); scanIter++)
         {
-          if (scanIter->second->status == ScanDataStatusE::Started)
+          if (scanIter->second->status == filter)
           {
             return scanIter->second;
           }
