@@ -129,6 +129,11 @@ class ApiService {
     return this.request('GET', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/filetree`);
   }
 
+  // Save configuration for a file/folder
+  saveConfiguration(groupId, projectId, versionId, scanId, configData) {
+    return this.request('POST', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}/configuration`, configData);
+  }
+
   deleteScan(groupId, projectId, versionId, scanId) {
     return this.request('DELETE', `/groups/${groupId}/projects/${projectId}/versions/${versionId}/scans/${scanId}`);
   }

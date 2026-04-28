@@ -529,6 +529,24 @@ void ScanServer::init()
     }
   });
 
+  priv->server.Post(R"(/groups/(\d+)/projects/(\d+)/versions/(\d+)/scans/(\d+)/configuration)", [&](const httplib::Request& req, httplib::Response& res)
+  {
+    const size_t groupId = std::stoull(req.matches[1]);
+    const size_t projectId = std::stoull(req.matches[2]);
+    const size_t versionId = std::stoull(req.matches[3]);
+    const size_t scanId = std::stoull(req.matches[4]);
+
+    auto body = json::parse(req.body, nullptr, false);
+    if (!body.contains("path"))
+    {
+      LoggerC::LogError("Scan creation failed: missing path");
+      return bad_request(res, "Missing 'path'");
+    }
+
+    LoggerC::LogInfo("Configuration updated");
+    ok(res, {{"status", "updated"}});
+  });
+
   priv->server.Get(R"(/updates/check)", [&](const httplib::Request& req, httplib::Response& res)
   {
     json ret;
@@ -614,7 +632,7 @@ void ScanServer::updateScans()
         if (nextPreScan->isAborted())
           return;
 
-         // Unzip/Checkout Data
+        // Unzip/Checkout Data
         std::string path;
         std::string revision;
         ScanDataTypeE type;

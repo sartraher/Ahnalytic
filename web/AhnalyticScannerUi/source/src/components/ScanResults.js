@@ -148,43 +148,44 @@ const ConfigurationViewer = ({ config, onEdit, onClose }) => {
 
 // Configuration editor component for creating/editing configurations
 const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = false }) => {
+  // Extract name from path (filename or folder name without path)
+  const getNameFromPath = (path) => {
+    if (!path) return '';
+    const parts = path.split(/[\\\\\\/]/);
+    return parts[parts.length - 1] || '';
+  };
+
+  // Determine target based on whether it's a file or folder
+  const getTargetFromPath = (path) => {
+    if (!path) return '.';
+    // If path contains a file extension, it's likely a file - use just filename
+    // Otherwise it's a folder, use '.'
+    const parts = path.split(/[\\\\\\/]/);
+    const lastPart = parts[parts.length - 1];
+    // Check if last part has an extension (contains a dot)
+    return lastPart.includes('.') ? lastPart : '.';
+  };
+
+  const autoName = getNameFromPath(filePath);
+  const autoTarget = getTargetFromPath(filePath);
+
   const [formData, setFormData] = useState(config || {
-    name: '',
-    data: {
-      type: 'Content',
-      target: '',
-      resultFilters: [],
-      thirdParty: null,
-      cveConfigs: []
-    }
+    name: autoName,
+    type: 'Content',
+    target: autoTarget,
+    resultFilters: [],
+    thirdParty: null,
+    cveConfigs: []
   });
 
-  const handleChange = (field, value) => {
+  const handleDataChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleDataChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      data: {
-        ...prev.data,
-        [field]: value
-      }
-    }));
-  };
-
   const handleSave = () => {
-    if (!formData.name.trim()) {
-      alert('Configuration name is required');
-      return;
-    }
-    if (!formData.data.target.trim()) {
-      alert('Target is required');
-      return;
-    }
     onSave(filePath, formData);
   };
 
@@ -195,22 +196,20 @@ const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = f
         <button className="btn-icon" onClick={onCancel} title="Close">✕</button>
       </div>
 
-      <div className="config-editor-content">
+      <div className="config-editor-content\">
+          {/* Show info about the selection */}
           <div className="form-group">
-            <label>Configuration Name *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="e.g., MyConfig"
-              className="form-input"
-            />
+            <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1rem' }}>
+              <strong>Path:</strong> {filePath}<br />
+              <strong>Configuration Name:</strong> {formData.name}<br />
+              <strong>Target:</strong> {formData.target}
+            </p>
           </div>
 
           <div className="form-group">
             <label>Type</label>
             <select
-              value={formData.data.type}
+              value={formData.type}
               onChange={(e) => handleDataChange('type', e.target.value)}
               className="form-input"
             >
@@ -220,26 +219,15 @@ const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = f
             </select>
           </div>
 
-          <div className="form-group">
-            <label>Target *</label>
-            <input
-              type="text"
-              value={formData.data.target}
-              onChange={(e) => handleDataChange('target', e.target.value)}
-              placeholder="e.g., *.c"
-              className="form-input"
-            />
-          </div>
-
-          {formData.data.type === '3rdParty' && (
+          {formData.type === '3rdParty' && (
             <>
               <div className="form-group">
                 <label>Vendor</label>
                 <input
                   type="text"
-                  value={formData.data.thirdParty?.vendor || ''}
+                  value={formData.thirdParty?.vendor || ''}
                   onChange={(e) => handleDataChange('thirdParty', {
-                    ...formData.data.thirdParty,
+                    ...formData.thirdParty,
                     vendor: e.target.value
                   })}
                   className="form-input"
@@ -249,9 +237,9 @@ const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = f
                 <label>Product</label>
                 <input
                   type="text"
-                  value={formData.data.thirdParty?.product || ''}
+                  value={formData.thirdParty?.product || ''}
                   onChange={(e) => handleDataChange('thirdParty', {
-                    ...formData.data.thirdParty,
+                    ...formData.thirdParty,
                     product: e.target.value
                   })}
                   className="form-input"
@@ -261,9 +249,9 @@ const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = f
                 <label>Version</label>
                 <input
                   type="text"
-                  value={formData.data.thirdParty?.version || ''}
+                  value={formData.thirdParty?.version || ''}
                   onChange={(e) => handleDataChange('thirdParty', {
-                    ...formData.data.thirdParty,
+                    ...formData.thirdParty,
                     version: e.target.value
                   })}
                   className="form-input"
@@ -271,10 +259,6 @@ const ConfigurationEditorForm = ({ filePath, config, onSave, onCancel, isNew = f
               </div>
             </>
           )}
-
-          <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
-            File/Folder: <code>{filePath}</code>
-          </p>
         </div>
 
       <div className="config-editor-footer">
@@ -756,6 +740,7 @@ export const ScanResults = () => {
   const [editingConfig, setEditingConfig] = useState(null);
   const scrollContainerRef = useRef(null);
   const scrollPositionRef = useRef(0);
+  const treePollingRef = useRef(null);
   
   // Separate progress state to avoid re-rendering the entire component during polling
   const [progress, setProgress] = useState({ finishedCount: 0, maxCount: 0, deepFinishedCount: 0, deepMaxCount: 0 });
@@ -787,6 +772,61 @@ export const ScanResults = () => {
 
     loadTree();
   }, [currentGroup, currentProject, currentVersion, currentScan]);
+
+  // Poll file tree while prescan is PREPARING (status 1), stop when READY (status 2) or tree is populated
+  useEffect(() => {
+    if (currentGroup == null || currentProject == null || currentVersion == null || currentScan == null) {
+      return;
+    }
+
+    // Only poll if status is PREPARING (1)
+    const isPreparing = scanInfo?.status === 1;
+    // Check if tree has actual content (not just empty root)
+    const hasTreeData = apiFileTree && apiFileTree.folders && apiFileTree.folders.length > 0;
+    
+    console.log(`🔍 Status: ${getStatusName(scanInfo?.status)} (${scanInfo?.status}), HasTreeData: ${hasTreeData}, Polling: ${isPreparing && !hasTreeData}`);
+
+    // Clean up any existing polling
+    if (treePollingRef.current) {
+      clearInterval(treePollingRef.current);
+      treePollingRef.current = null;
+    }
+
+    // Stop if not preparing OR if we already have tree data
+    if (!isPreparing || hasTreeData) {
+      console.log(`🛑 Stopping polling - Status: ${isPreparing ? 'PREPARING' : 'NOT PREPARING'}, HasData: ${hasTreeData}`);
+      return;
+    }
+
+    const pollFileTree = async () => {
+      try {
+        const tree = await api.getFileTree(currentGroup, currentProject, currentVersion, currentScan);
+        console.log(`📋 Polled tree:`, tree);
+        setApiFileTree(tree);
+        
+        // Check if we now have data - if so, next effect run will stop polling
+        if (tree && tree.folders && tree.folders.length > 0) {
+          console.log('✅ Tree data received, polling will stop next check');
+        }
+      } catch (err) {
+        console.error('❌ Polling error:', err);
+      }
+    };
+
+    // Immediate poll
+    console.log('🚀 Starting file tree polling (PREPARING)');
+    pollFileTree();
+    
+    // Start polling interval - every 1 second while PREPARING
+    treePollingRef.current = setInterval(pollFileTree, 1000);
+
+    return () => {
+      if (treePollingRef.current) {
+        clearInterval(treePollingRef.current);
+        treePollingRef.current = null;
+      }
+    };
+  }, [currentGroup, currentProject, currentVersion, currentScan, scanInfo?.status, apiFileTree?.folders?.length]);
 
   // Initialize progress state from scanInfo when it loads
   useEffect(() => {
@@ -917,12 +957,38 @@ export const ScanResults = () => {
     setEditingConfig(null); // null means creating new
   };
 
-  const handleSaveConfig = (filePath, configData) => {
-    // TODO: Send to API to save the configuration
-    console.log('Saving configuration:', { filePath, configData });
-    // For now, just close the editor
-    setConfigPathBeingEdited(null);
-    setEditingConfig(null);
+  const handleSaveConfig = async (filePath, configData) => {
+    try {
+      // Build flat JSON with path and all config data
+      const flatConfig = {
+        path: filePath,
+        name: configData.name,
+        type: configData.type,
+        target: configData.target,
+        resultFilters: configData.resultFilters || [],
+        cveConfigs: configData.cveConfigs || []
+      };
+
+      // Add thirdParty if type is 3rdParty
+      if (configData.type === '3rdParty' && configData.thirdParty) {
+        flatConfig.thirdParty = configData.thirdParty;
+      }
+
+      console.log('Saving configuration:', flatConfig);
+      
+      // Send to API
+      await api.saveConfiguration(currentGroup, currentProject, currentVersion, currentScan, flatConfig);
+      
+      // Close editor on success
+      setConfigPathBeingEdited(null);
+      setEditingConfig(null);
+      
+      // Optionally reload tree or show success message
+      console.log('Configuration saved successfully');
+    } catch (err) {
+      console.error('Failed to save configuration:', err);
+      alert('Failed to save configuration: ' + err.message);
+    }
   };
 
   const handleCancelEditConfig = () => {
